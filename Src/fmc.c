@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "fmc.h"
 
-#include "tud_seceng.h"
+#include "memory_control.h"
 
 /* USER CODE BEGIN 0 */
 

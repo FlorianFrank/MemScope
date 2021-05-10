@@ -4,7 +4,7 @@
   * Description        : Methods for experiments
   ******************************************************************************
 */
-#include "tud_seceng.h"
+#include "memory_control.h"
 #include <string.h>
 #include <stdlib.h>
 

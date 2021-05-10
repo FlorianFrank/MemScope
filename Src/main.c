@@ -60,7 +60,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "tud_seceng.h"
+#include "memory_control.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
