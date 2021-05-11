@@ -156,12 +156,10 @@ int main(void)
   while (1)
   {
 
-	  executeCommand(NULL,10);
-
 	  if(Transfer_cplt==1)
 	  {
 #ifdef USE_UART
-		  executeCommand(&huart4);
+		  executeCommandUART(&huart4);
 #endif
 
 
