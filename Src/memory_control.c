@@ -168,7 +168,7 @@ uint16_t SRAM_Read_16b(uint32_t adr){
  * @brief								fills the whole SRAM with 0's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void SRAM_Fill_With_Zeros(UART_HandleTypeDef *huart){
+void SRAM_Fill_With_Zeros(uint8_t *buffer, uint32_t *buffLen){
 	write_mode = 0x1;
 	// reset the counter for statistical analysis
 	init_counter();
@@ -209,20 +209,21 @@ void SRAM_Fill_With_Zeros(UART_HandleTypeDef *huart){
 
 	// display return message
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeZeroAll' was successful\r\n\n");
+		sprintf(buffer, "'writeZeroAll' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeZeroAll' failed\r\n\n");
+		sprintf(buffer, "'writeZeroAll' failed\r\n\n");
 	}
-	sprintf(STRING_BUFFER, "\n\r~~~~~~~~~~~~~~~\n\r");
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(buffer, "\n\r~~~~~~~~~~~~~~~\n\r"); // FIXME
+	*buffLen = strlen(buffer);
+
+//	send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
  * @brief								fills the whole SRAM with 1's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void SRAM_Fill_With_Ones(UART_HandleTypeDef *huart){
+void SRAM_Fill_With_Ones(uint8_t *buffer, uint32_t *bufferLen){
 	// reset the counter for statistical analysis
 	init_counter();
 	// reset the arguments
@@ -265,17 +266,18 @@ void SRAM_Fill_With_Ones(UART_HandleTypeDef *huart){
 
 	// display return message
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeOneAll' was successful\r\n\n");
+		sprintf(buffer, "'writeOneAll' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeOneAll' failed\r\n\n");
+		sprintf(buffer, "'writeOneAll' failed\r\n\n");
 	}
 
-	sprintf(STRING_BUFFER, "\n\r~~~~~~~~~~~~~~~\n\r");
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(buffer, "\n\r~~~~~~~~~~~~~~~\n\r");
+	len = strlen(buffer);
+	*bufferLen = len;
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
-void SRAM_Get_Values(UART_HandleTypeDef *huart){
+void SRAM_Get_Values(uint8_t *buffer, uint32_t *bufferLen){
 	total_one = 0;
 	total_zero = 0;
 
@@ -300,40 +302,41 @@ void SRAM_Get_Values(UART_HandleTypeDef *huart){
 	}
 
 	// displays the total 1's
-	sprintf(STRING_BUFFER, "Total number of ones in SRAM:  %lu\r\n", (unsigned long)total_one);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(buffer, "Total number of ones in SRAM:  %lu\r\n", (unsigned long)total_one);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 	// displays the total 0's
-	sprintf(STRING_BUFFER, "Total number of zeros in SRAM:  %lu\r\n", (unsigned long)total_zero);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(&buffer[len], "Total number of zeros in SRAM:  %lu\r\n", (unsigned long)total_zero);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)buffer, len);
 
 	if(MEM_ACCESS_WIDTH_BIT == 16)
 	{
 		// displays the total 0's
-		sprintf(STRING_BUFFER, "Percent zeros:  %.16f%%\r\n", (float)total_zero / (MEM_SIZE_ADR * 16) * 100);
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(&buffer[len], "Percent zeros:  %.16f%%\r\n", (float)total_zero / (MEM_SIZE_ADR * 16) * 100);
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)buffer, len);
 
 		// displays the total 0's
-		sprintf(STRING_BUFFER, "Percent ones:  %.16f%%\r\n", (float)total_one / (MEM_SIZE_ADR * 16) * 100);
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(&buffer[len], "Percent ones:  %.16f%%\r\n", (float)total_one / (MEM_SIZE_ADR * 16) * 100);
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)buffer, len);
 	}
 
 	if(MEM_ACCESS_WIDTH_BIT == 8)
 	{
 		// displays the total 0's - (float)total_zero / (SRAM_SIZE * 8) * 100);
-		sprintf(STRING_BUFFER, "Percent zeros:  %.8f%%\r\n", (float)total_zero / (MEM_SIZE_ADR * 8) * 100);
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(&buffer[len], "Percent zeros:  %.8f%%\r\n", (float)total_zero / (MEM_SIZE_ADR * 8) * 100);
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 		// displays the total 0's - (float)total_one / (SRAM_SIZE * 8) * 100);
-		sprintf(STRING_BUFFER, "Percent ones:  %.8f%%\r\n", (float)total_one / (MEM_SIZE_ADR * 8) * 100);
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(&buffer[len], "Percent ones:  %.8f%%\r\n", (float)total_one / (MEM_SIZE_ADR * 8) * 100);
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 	}
+	*bufferLen = len;
 
 }
 
@@ -342,12 +345,12 @@ void SRAM_Get_Values(UART_HandleTypeDef *huart){
  * 										displays an error message and exits, if no write operation was performed
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void SRAM_Get_Performance_Measures(UART_HandleTypeDef *huart){
+void SRAM_Get_Performance_Measures(uint8_t *buffer, uint32_t *buffLen){
 	// if no write access was performed => warning
 	if(write_mode == 0xFF){
-		sprintf(STRING_BUFFER, "Caution. No write operation was performed. Therefore we have no values to compare with...\r\nExit\r\n\n");
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(buffer, "Caution. No write operation was performed. Therefore we have no values to compare with...\r\nExit\r\n\n");
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 		return;
 	}
 
@@ -468,60 +471,60 @@ void SRAM_Get_Performance_Measures(UART_HandleTypeDef *huart){
 
 	// prevent division by zero
 	if(total_one == 0){
-		sprintf(STRING_BUFFER, "P(1->0) = NaN\r\n");
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(buffer, "P(1->0) = NaN\r\n");
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 	}else{
 		// displays the probability that a 1 changes to a 0
 		float p_one_to_zero = ((float)flipped_one / (float)total_one) * 100;
-		sprintf(STRING_BUFFER, "P(1->0) = %.16f%%\r\n", p_one_to_zero);
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(buffer, "P(1->0) = %.16f%%\r\n", p_one_to_zero);
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 	}
 
 	if(total_zero == 0){
-		sprintf(STRING_BUFFER, "P(0->1) = NaN\r\n");
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(&buffer[len], "P(0->1) = NaN\r\n");
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 	}else{
 		// displays the probability that a 0 changes to a 1
 		float p_zero_to_one = ((float)flipped_zero / (float)total_zero) * 100;
-		sprintf(STRING_BUFFER, "P(0->1) = %.16f%%\r\n", p_zero_to_one);
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(&buffer[len], "P(0->1) = %.16f%%\r\n", p_zero_to_one);
+		len = strlen(buffer);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 	}
 	float p_total_flip_probability = ((float)(flipped_one + flipped_zero) / (float)(total_one + total_zero)) * 100;
 
 	// displays the total flip probability
-	sprintf(STRING_BUFFER, "P(flip) = %.16f%%\r\n", p_total_flip_probability);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(&buffer[len], "P(flip) = %.16f%%\r\n", p_total_flip_probability);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 	// displays the total flip 1's
-	sprintf(STRING_BUFFER, "Total number of flipped 1->0:  %lu\r\n", (unsigned long)flipped_one);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(&buffer[len], "Total number of flipped 1->0:  %lu\r\n", (unsigned long)flipped_one);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 	// displays the total 1's
-	sprintf(STRING_BUFFER, "Total number of ones in expected value:  %lu\r\n", (unsigned long)total_one);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(&buffer[len], "Total number of ones in expected value:  %lu\r\n", (unsigned long)total_one);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 	// displays the total flip 0's
-	sprintf(STRING_BUFFER, "Total number of flipped 0->1:  %lu\r\n", (unsigned long)flipped_zero);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(&buffer[len], "Total number of flipped 0->1:  %lu\r\n", (unsigned long)flipped_zero);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 	// displays the total 0's
-	sprintf(STRING_BUFFER, "Total number of zeros in expected value:  %lu\r\n", (unsigned long)total_zero);
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	sprintf(&buffer[len], "Total number of zeros in expected value:  %lu\r\n", (unsigned long)total_zero);
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 	// displays the total flipped bits
-	sprintf(STRING_BUFFER, "Total number of flipped bits:  %lu\r\n\n", (unsigned long)(flipped_one + flipped_zero));
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
-
+	sprintf(&buffer[len], "Total number of flipped bits:  %lu\r\n\n", (unsigned long)(flipped_one + flipped_zero));
+	len = strlen(buffer);
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
+	*buffLen = len;
 	/*
 	//sprintf(STRING_BUFFER, "total_one = %lu\r\n\n", (unsigned long)total_one);
 	sprintf(STRING_BUFFER, "write_mode = %d\r\n\n", write_mode);
@@ -536,7 +539,7 @@ void SRAM_Get_Performance_Measures(UART_HandleTypeDef *huart){
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *arguments			the start value to count up
  */
-void SRAM_Write_Ascending(UART_HandleTypeDef *huart, uint32_t *arguments){
+void SRAM_Write_Ascending(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments){
 	// reset the counter for statistical analysis
 	init_counter();
 	// reset the arguments
@@ -575,19 +578,20 @@ void SRAM_Write_Ascending(UART_HandleTypeDef *huart, uint32_t *arguments){
 	}
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeValueAsc' was successful\r\n\n");
+		sprintf(buffer, "'writeValueAsc' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeValueAsc' failed\r\n\n");
+		sprintf(buffer, "'writeValueAsc' failed\r\n\n");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
  * @brief								fills the whole SRAM with alternating 010101010....
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void SRAM_Write_Alternate_Zero_One(UART_HandleTypeDef *huart){
+void SRAM_Write_Alternate_Zero_One(uint8_t *buffer, uint32_t *bufferLen){
 	// reset the counter for statistical analysis
 	init_counter();
 	// reset the arguments
@@ -622,19 +626,20 @@ void SRAM_Write_Alternate_Zero_One(UART_HandleTypeDef *huart){
 	}
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeAlternateZeroOne' was successful\r\n\n");
+		sprintf(buffer, "'writeAlternateZeroOne' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeAlternateZeroOne' failed\r\n\n");
+		sprintf(buffer, "'writeAlternateZeroOne' failed\r\n\n");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+
+//	send(huart, (uint8_t *)buffer, len);
 }
 
 /*
  * @brief								fills the whole SRAM with alternating 101010101....
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void SRAM_Write_Alternate_One_Zero(UART_HandleTypeDef *huart){
+void SRAM_Write_Alternate_One_Zero(uint8_t *buffer, uint32_t *bufferLen){
 	// reset the counter for statistical analysis
 	init_counter();
 	// reset the arguments
@@ -669,12 +674,13 @@ void SRAM_Write_Alternate_One_Zero(UART_HandleTypeDef *huart){
 	}
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeAlternateOneZero' was successful\r\n\n");
+		sprintf(buffer, "'writeAlternateOneZero' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeAlternateOneZero' failed\r\n\n");
+		sprintf(buffer, "'writeAlternateOneZero' failed\r\n\n");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*bufferLen = len;
+	//send(huart, (uint8_t *)buffer, len);
 }
 
 /*
@@ -683,7 +689,7 @@ void SRAM_Write_Alternate_One_Zero(UART_HandleTypeDef *huart){
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *arguments			first element is the address, second element is the value
  */
-void SRAM_Write_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
+void SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments){
 	// reset the counter for statistical analysis
 	init_counter();
 	// reset the arguments
@@ -720,12 +726,13 @@ void SRAM_Write_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
 	}
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeSRAM' was successful\r\n\n");
+		sprintf(buffer, "'writeSRAM' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeSRAM' failed\r\n\n");
+		sprintf(buffer, "'writeSRAM' failed\r\n\n");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+//	send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
@@ -736,7 +743,7 @@ void SRAM_Write_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
  * @param uint32_t *arguments			first element is the start address, second element is the end address
  * 										third element is the value
  */
-void SRAM_Write_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
+void SRAM_Write_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments){
 	// reset the counter for statistical analysis
 	init_counter();
 	// reset the arguments
@@ -792,19 +799,20 @@ void SRAM_Write_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
 	}
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
-		sprintf(STRING_BUFFER, "'writeSRAMRange' was successful\r\n\n");
+		sprintf(buffer, "'writeSRAMRange' was successful\r\n\n");
 	}else{
-		sprintf(STRING_BUFFER, "'writeSRAMRange' failed\r\n\n");
+		sprintf(buffer, "'writeSRAMRange' failed\r\n\n");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
  * @brief								reads the whole SRAM and print it as hexadecimal values
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void SRAM_Read_SRAM(UART_HandleTypeDef *huart){
+void SRAM_Read_SRAM(uint8_t *buffer, uint32_t *buffLen){
 
 	srambp = SRAM_BUFFER;
 
@@ -817,9 +825,8 @@ void SRAM_Read_SRAM(UART_HandleTypeDef *huart){
 			srambp += sprintf(srambp, "%04X\t", real_value);// 0xff 0xffff 0xffffffff
 			counter++;
 			if(counter == 8192){
-				//STRING_BUFFER + sprintf(STRING_BUFFER, (char *)output, real_value);
 				len = strlen(SRAM_BUFFER);
-				send(huart, (uint8_t *)SRAM_BUFFER, len);
+				//send(huart, (uint8_t *)SRAM_BUFFER, len);
 				counter = 0;
 				srambp = SRAM_BUFFER;
 			}
@@ -852,25 +859,26 @@ void SRAM_Read_SRAM(UART_HandleTypeDef *huart){
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *arguments			the address to read from
  */
-void SRAM_Get_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
+void SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments){
 	uint32_t adr = arguments[0];
 
 	if(MEM_ACCESS_WIDTH_BIT == 16)
 	{
 		uint16_t real_value = 0;
 		real_value = SRAM_Read_16b(adr);
-		sprintf(STRING_BUFFER, "Address: %lu\tValue: %#06X\n\n\r", (unsigned long)adr, real_value);
+		sprintf(buffer, "Address: %lu\tValue: %#06X\n\n\r", (unsigned long)adr, real_value);
 	}
 
 	if(MEM_ACCESS_WIDTH_BIT == 8)
 	{
 		uint8_t real_value = 0;
 		real_value = SRAM_Read_8b(adr);
-		sprintf(STRING_BUFFER, "Address: %lu\tValue: %#03X\n\n\r", (unsigned long)adr, real_value);
+		sprintf(buffer, "Address: %lu\tValue: %#03X\n\n\r", (unsigned long)adr, real_value);
 	}
 
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
@@ -880,7 +888,7 @@ void SRAM_Get_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *arguments			the address to read from, the value to compare with
  */
-void SRAM_Check_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
+void SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments){
 	uint32_t adr = arguments[0];
 	TestStatus state = PASSED;
 
@@ -893,9 +901,9 @@ void SRAM_Check_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
 		}
 		if(state == PASSED){
 			//sprintf(STRING_BUFFER, "%#06X == %#06X\n\rTRUE\n\n\r", real_value, expected_value);
-			sprintf(STRING_BUFFER, "TRUE\n\n\r");
+			sprintf(buffer, "TRUE\n\n\r");
 		}else{
-			sprintf(STRING_BUFFER, "%#06X != %#06X\n\rFALSE\n\n\r", real_value, expected_value);
+			sprintf(buffer, "%#06X != %#06X\n\rFALSE\n\n\r", real_value, expected_value);
 		}
 
 	}
@@ -909,15 +917,16 @@ void SRAM_Check_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
 		}
 		if(state == PASSED){
 			//sprintf(STRING_BUFFER, "%#06X == %#06X\n\rTRUE\n\n\r", real_value, expected_value);
-			sprintf(STRING_BUFFER, "TRUE\n\n\r");
+			sprintf(buffer, "TRUE\n\n\r");
 		}else{
-			sprintf(STRING_BUFFER, "%#03X != %#03X\n\rFALSE\n\n\r", real_value, expected_value);
+			sprintf(buffer, "%#03X != %#03X\n\rFALSE\n\n\r", real_value, expected_value);
 		}
 
 	}
 
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
@@ -929,7 +938,7 @@ void SRAM_Check_Address(UART_HandleTypeDef *huart, uint32_t *arguments){
  * @param uint32_t *arguments			the start address to read from, the end address to read from
  * 										the value to compare with
  */
-void SRAM_Check_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
+void SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments){
 	uint32_t start_local = arguments[0];
 	uint32_t end_local = arguments[1];
 	TestStatus state = PASSED;
@@ -944,9 +953,9 @@ void SRAM_Check_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
 					real_value_local = SRAM_Read_16b(adr);
 					if(real_value_local != expected_value_local){
 						state = FAILED;
-						sprintf(STRING_BUFFER, "Address: %lu\t%#06X != %#06X\n\r", (unsigned long)adr, real_value_local, expected_value_local);
-						len = strlen(STRING_BUFFER);
-						send(huart, (uint8_t *)STRING_BUFFER, len);
+						sprintf(buffer, "Address: %lu\t%#06X != %#06X\n\r", (unsigned long)adr, real_value_local, expected_value_local);
+						len = strlen(buffer);
+						//send(huart, (uint8_t *)STRING_BUFFER, len);
 					}
 				}
 			}else{
@@ -967,9 +976,9 @@ void SRAM_Check_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
 					real_value_local = SRAM_Read_8b(adr);
 					if(real_value_local != expected_value_local){
 						state = FAILED;
-						sprintf(STRING_BUFFER, "Address: %lu\t%#03X != %#06X\n\r", (unsigned long)adr, real_value_local, expected_value_local);
-						len = strlen(STRING_BUFFER);
-						send(huart, (uint8_t *)STRING_BUFFER, len);
+						sprintf(buffer, "Address: %lu\t%#03X != %#06X\n\r", (unsigned long)adr, real_value_local, expected_value_local);
+						len = strlen(buffer);
+					//	send(huart, (uint8_t *)STRING_BUFFER, len);
 					}
 				}
 			}else{
@@ -982,12 +991,14 @@ void SRAM_Check_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
 		//sprintf(STRING_BUFFER, "%#06X == %#06X\n\rTRUE\n\n\r", real_value, expected_value);
-		sprintf(STRING_BUFFER, "TRUE\n\n\r");
+		sprintf(&buffer[len], "TRUE\n\n\r");
 	}else{
-		sprintf(STRING_BUFFER, "FALSE\n\n\r");
+		sprintf(&buffer[len], "FALSE\n\n\r");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+
+//	send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 
@@ -1000,13 +1011,14 @@ void SRAM_Check_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments){
  * @param uint32_t *arguments			the start address to read from, the end address to read from
  * 										the value to compare with
  */
-void SRAM_Check_Read_Write_Status(UART_HandleTypeDef *huart){
+void SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen){
 
 	// if no write access was performed => warning
 	if(write_mode == 0xFF){
-		sprintf(STRING_BUFFER, "Caution. No write access was performed. Therefore we have no values to compare with...\r\nExit\r\n\n");
-		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		sprintf(buffer, "Caution. No write access was performed. Therefore we have no values to compare with...\r\nExit\r\n\n");
+		len = strlen(buffer);
+		*buffLen = len;
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 		return;
 	}
 
@@ -1054,14 +1066,15 @@ void SRAM_Check_Read_Write_Status(UART_HandleTypeDef *huart){
 			break;
 		}
 
+		len = 0;
 		if(start_local <= MEM_SIZE_ADR && end_local <= MEM_SIZE_ADR){
 			for(uint32_t adr = start_local; adr < end_local; adr++){
 				real_value = SRAM_Read_16b(adr);
 				if(real_value != expected_value){
 					state = FAILED;
-					sprintf(STRING_BUFFER, "Address: %lu\t%#06X != %#06X\n\r", (unsigned long)adr, real_value, expected_value);
-					len = strlen(STRING_BUFFER);
-					send(huart, (uint8_t *)STRING_BUFFER, len);
+					sprintf(&buffer[len], "Address: %lu\t%#06X != %#06X\n\r", (unsigned long)adr, real_value, expected_value);
+					len = strlen(buffer);
+					//send(huart, (uint8_t *)STRING_BUFFER, len);
 				}
 				if(write_mode == 3){
 					expected_value++;
@@ -1117,9 +1130,9 @@ void SRAM_Check_Read_Write_Status(UART_HandleTypeDef *huart){
 				real_value = SRAM_Read_8b(adr);
 				if(real_value != expected_value){
 					state = FAILED;
-					sprintf(STRING_BUFFER, "Address: %lu\t%#06X != %#06X\n\r", (unsigned long)adr, real_value, expected_value);
-					len = strlen(STRING_BUFFER);
-					send(huart, (uint8_t *)STRING_BUFFER, len);
+					sprintf(&buffer[len], "Address: %lu\t%#06X != %#06X\n\r", (unsigned long)adr, real_value, expected_value);
+					len = strlen(buffer);
+					//send(huart, (uint8_t *)STRING_BUFFER, len);
 				}
 				if(write_mode == 3){
 					expected_value++;
@@ -1128,17 +1141,19 @@ void SRAM_Check_Read_Write_Status(UART_HandleTypeDef *huart){
 		}else{
 			state = FAILED;
 		}
+		*buffLen = len;
 	}
 
 
 	if(state == PASSED && (MEM_ACCESS_WIDTH_BIT == 8 || MEM_ACCESS_WIDTH_BIT == 16)){
 		//sprintf(STRING_BUFFER, "%#06X == %#06X\n\rTRUE\n\n\r", real_value, expected_value);
-		sprintf(STRING_BUFFER, "TRUE\n\n\r");
+		sprintf(&buffer[len], "TRUE\n\n\r");
 	}else{
-		sprintf(STRING_BUFFER, "FALSE\n\n\r");
+		sprintf(&buffer[len], "FALSE\n\n\r");
 	}
-	len = strlen(STRING_BUFFER);
-	send(huart, (uint8_t *)STRING_BUFFER, len);
+	len = strlen(buffer);
+	*buffLen = len;
+	//send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 /*
@@ -1421,16 +1436,17 @@ void sendUSB(uint8_t *srcBuffer, uint16_t bufferSize){
  * @brief								prints the help for the commands
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void showHelp(UART_HandleTypeDef *huart){
-	sprintf(STRING_BUFFER, "\rThis program provides the following commands:\n\n\r");
-	len = strlen(STRING_BUFFER);
-	printf(STRING_BUFFER);
-	//send(huart, (uint8_t *)STRING_BUFFER, len);
+void showHelp(uint8_t *buffer, uint32_t *bufferLen){
+	uint32_t len;
+	sprintf(buffer, "\rThis program provides the following commands:\n\n\r");
+	len = strlen(buffer);
+//	send(huart, (uint8_t *)STRING_BUFFER, len);
 	for(uint8_t i = 0; i < COMMAND_COUNT; i++){
-		sprintf(STRING_BUFFER, "%s\r\n", command_help[i]);
-		len = strlen(STRING_BUFFER);
+		sprintf(&(buffer[len]), "%s\r\n", command_help[i]);
+		len = strlen(buffer);
+		*bufferLen = len;
+		// TODO check bufferLen
 		//send(huart, (uint8_t *)STRING_BUFFER, len);
-		printf(STRING_BUFFER);
 	}
 }
 
@@ -1558,128 +1574,132 @@ void showHelp(UART_HandleTypeDef *huart){
 //	}
 //}
 
+void executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBuffLen, Command cmdIdx)
+{
+	UART_HandleTypeDef *huart = NULL;
+	switch(cmdIdx){
+		case SHOW_HELP:
+			// no write operation will be performed in this method
+			//write_mode = 0xFF;
+			return showHelp(outBuff, outBuffLen);
+		case FILL_WITH_ZEROS:
+			// write operation in mode 1 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x1;
+			return SRAM_Fill_With_Zeros(outBuff, outBuffLen);
+		case FILL_WITH_ONES:
+			// write operation in mode 2 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x2;
+			return SRAM_Fill_With_Ones(outBuff, outBuffLen);
+		case WRITE_ASCENDING:
+			// write operation in mode 3 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x3;
+			return SRAM_Write_Ascending(outBuff, outBuffLen, arguments);
+		case WRITE_ALTERNATE_ZERO_ONE:
+			// write operation in mode 4 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x4;
+			return SRAM_Write_Alternate_Zero_One(outBuff, outBuffLen);
+		case WRITE_ALTERNATE_ONE_ZERO:
+			// write operation in mode 5 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x5;
+			return SRAM_Write_Alternate_One_Zero(outBuff, outBuffLen);
+		case WRITE_ADDRESS:
+			// write operation in mode 6 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x6;
+			return SRAM_Write_Address(outBuff, outBuffLen, arguments);
+		case WRITE_ADDRESS_RANGE:
+			// write operation in mode 7 will be performed in this method
+			// therefore reset the counters/arguments
+			// they will be set in the function
+			write_mode = 0x7;
+			return SRAM_Write_Address_Range(outBuff, outBuffLen, arguments);
+		case GET_PERFORMANCE_MEASURES:
+			// no write operation will be performed in this method
+			// reset the counter for statistical analysis
+			//write_mode = 0xFF;
+			return SRAM_Get_Performance_Measures(outBuff, outBuffLen);
+		case GET_ADDRESS:
+			// no write operation will be performed in this method
+			// reset the counter for statistical analysis
+			//write_mode = 0xFF;
+			return SRAM_Get_Address(outBuff, outBuffLen, arguments);
+		case READ:
+			// no write operation will be performed in this method
+			//write_mode = 0xFF;
+			return SRAM_Read_SRAM(outBuff, outBuffLen);
+			break;
+		case WRITE:
+			// no write operation will be performed in this method
+			//write_mode = 0xFF;
+			return SRAM_Check_Read_Write_Status(outBuff, outBuffLen);
+		case CHECK_ADDRESS:
+			// no write operation will be performed in this method
+			//write_mode = 0xFF;
+			return SRAM_Check_Address(outBuff, outBuffLen, arguments);
+		case CHECK_ADDRESS_RANGE:
+			// no write operation will be performed in this method
+			//write_mode = 0xFF;
+			return SRAM_Check_Address_Range(outBuff, outBuffLen, arguments);
+		case GET_VALUES:
+			return SRAM_Get_Values(outBuff, outBuffLen);
+		default:
+			sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
+			len = strlen(STRING_BUFFER);
+
+			send(huart, (uint8_t *)STRING_BUFFER, len);
+		}
+}
 
 
 /*
  * @brief								parse the command, set the required variables, parse the arguments
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-void executeCommand(UART_HandleTypeDef *huart, int idx){
-	command_mode = idx; // invalid command4
-	// parse command
-#if 0
-	for(uint8_t i = 0; i < COMMAND_COUNT; i++){
-		// check if the command equals a command specified in the array 'command'
-		// if so set command_mode different from 0xFF
-		uint8_t command_end_index = get_space(Rx_Buffer);
-		if((uint8_t)strlen(command[i]) == command_end_index) && strncmp(command[i], Rx_Buffer, command_end_index) == 0){
-			command_mode = i;
-			char tmp[30];
-			uint16_t len_rx_buffer = strlen(Rx_Buffer);
-			uint16_t len_command = strlen(command[i]);
-			// if there are arguments after the command
-			if(len_rx_buffer - len_command > 0){
-				// extract the arguments from the string
-				strncpy(tmp, Rx_Buffer + len_command, len_rx_buffer - len_command);
-				// tokenize the arguments and fill the array 'arguments'
-				tokenize_arguments(tmp);
+void executeCommandUART(UART_HandleTypeDef *huart, Command cmdIdx){
+	command_mode = 0xFF; // invalid command
+		// parse command
+		for(uint8_t i = 0; i < COMMAND_COUNT; i++){
+			// check if the command equals a command specified in the array 'command'
+			// if so set command_mode different from 0xFF
+			uint8_t command_end_index = get_space(Rx_Buffer);
+			if((uint8_t)strlen(command[i]) == command_end_index && strncmp(command[i], Rx_Buffer, command_end_index) == 0){
+				command_mode = i;
+				char tmp[30];
+				uint16_t len_rx_buffer = strlen(Rx_Buffer);
+				uint16_t len_command = strlen(command[i]);
+				// if there are arguments after the command
+				if(len_rx_buffer - len_command > 0){
+					// extract the arguments from the string
+					strncpy(tmp, Rx_Buffer + len_command, len_rx_buffer - len_command);
+					// tokenize the arguments and fill the array 'arguments'
+					tokenize_arguments(tmp);
+				}
+				break;
 			}
-			break;
 		}
-	}
-#endif //TODO FLORIAN
 
-	//sprintf(STRING_BUFFER, "Length: %d, String: %d %d %d %d\r\n", (uint16_t)strlen(Rx_Buffer), Rx_Buffer[0], Rx_Buffer[1], Rx_Buffer[2], Rx_Buffer[3]);
-	// prints the command
-	sprintf(STRING_BUFFER, ">\r\n");
-	len = strlen(STRING_BUFFER);
-	//printf(STRING_BUFFER);
-	//send(huart, (uint8_t *)STRING_BUFFER, len); // TODO FLORIAN FRANK
-
-	// reset the counter before every write execution
-	//
-	switch(command_mode){
-	case SHOW_HELP:
-		// no write operation will be performed in this method
-		//write_mode = 0xFF;
-		return showHelp(huart);
-	case FILL_WITH_ZEROS:
-		// write operation in mode 1 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x1;
-		return SRAM_Fill_With_Zeros(huart);
-	case FILL_WITH_ONES:
-		// write operation in mode 2 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x2;
-		return SRAM_Fill_With_Ones(huart);
-	case WRITE_ASCENDING:
-		// write operation in mode 3 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x3;
-		return SRAM_Write_Ascending(huart, arguments);
-	case WRITE_ALTERNATE_ZERO_ONE:
-		// write operation in mode 4 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x4;
-		return SRAM_Write_Alternate_Zero_One(huart);
-	case WRITE_ALTERNATE_ONE_ZERO:
-		// write operation in mode 5 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x5;
-		return SRAM_Write_Alternate_One_Zero(huart);
-	case WRITE_ADDRESS:
-		// write operation in mode 6 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x6;
-		return SRAM_Write_Address(huart, arguments);
-	case WRITE_ADDRESS_RANGE:
-		// write operation in mode 7 will be performed in this method
-		// therefore reset the counters/arguments
-		// they will be set in the function
-		write_mode = 0x7;
-		return SRAM_Write_Address_Range(huart, arguments);
-	case GET_PERFORMANCE_MEASURES:
-		// no write operation will be performed in this method
-		// reset the counter for statistical analysis
-		//write_mode = 0xFF;
-		return SRAM_Get_Performance_Measures(huart);
-	case GET_ADDRESS:
-		// no write operation will be performed in this method
-		// reset the counter for statistical analysis
-		//write_mode = 0xFF;
-		return SRAM_Get_Address(huart, arguments);
-	case READ:
-		// no write operation will be performed in this method
-		//write_mode = 0xFF;
-		return SRAM_Read_SRAM(huart, NULL);
-		break;
-	case WRITE:
-		// no write operation will be performed in this method
-		//write_mode = 0xFF;
-		return SRAM_Check_Read_Write_Status(huart);
-	case CHECK_ADDRESS:
-		// no write operation will be performed in this method
-		//write_mode = 0xFF;
-		return SRAM_Check_Address(huart, arguments);
-	case CHECK_ADDRESS_RANGE:
-		// no write operation will be performed in this method
-		//write_mode = 0xFF;
-		return SRAM_Check_Address_Range(huart, arguments);
-	case GET_VALUES:
-		return SRAM_Get_Values(huart);
-	default:
-		sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
+		//sprintf(STRING_BUFFER, "Length: %d, String: %d %d %d %d\r\n", (uint16_t)strlen(Rx_Buffer), Rx_Buffer[0], Rx_Buffer[1], Rx_Buffer[2], Rx_Buffer[3]);
+		// prints the command
+		sprintf(STRING_BUFFER, ">\r\n");
 		len = strlen(STRING_BUFFER);
-
 		send(huart, (uint8_t *)STRING_BUFFER, len);
-	}
+
+		// reset the counter before every write execution
+		uint32_t len = BUFFER_SIZE;
+		executeCommand(arguments, 0 /*TODO*/, STRING_BUFFER, &len, command_mode);
+		if(len > 0)
+			send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
 

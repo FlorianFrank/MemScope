@@ -95,10 +95,10 @@ extern void receive(UART_HandleTypeDef *huart, uint8_t *dstBuffer, uint32_t buff
 extern void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize);
 
 
-extern void showHelp(UART_HandleTypeDef *huart);
+void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 extern void showHelpUSB();
 
-extern void executeCommand(UART_HandleTypeDef *huart, int idx);
+void executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBufflen, Command cmdIdx);extern void executeCommandUART(UART_HandleTypeDef *huart, Command idx);
 extern void executeCommandUSB();
 
 // functions to access the SRAM
@@ -109,21 +109,21 @@ uint16_t SRAM_Read_16b(uint32_t adr);
 
 
 // user functions
-void SRAM_Fill_With_Zeros(UART_HandleTypeDef *huart);
-void SRAM_Fill_With_Ones(UART_HandleTypeDef *huart);
-void SRAM_Get_Values(UART_HandleTypeDef *huart);
+void SRAM_Fill_With_Zeros(uint8_t *buffer, uint32_t *buffLen);
+void SRAM_Fill_With_Ones(uint8_t *buffer, uint32_t *bufferLen);
+void SRAM_Get_Values(uint8_t *buffer, uint32_t *bufferLen);
 
-void SRAM_Get_Performance_Measures(UART_HandleTypeDef *huart);
-void SRAM_Write_Ascending(UART_HandleTypeDef *huart, uint32_t *arguments);
-void SRAM_Write_Alternate_Zero_One(UART_HandleTypeDef *huart);
-void SRAM_Write_Alternate_One_Zero(UART_HandleTypeDef *huart);
-void SRAM_Write_Address(UART_HandleTypeDef *huart, uint32_t *arguments);
-void SRAM_Write_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments);
-void SRAM_Read_SRAM(UART_HandleTypeDef *huart);
-void SRAM_Get_Address(UART_HandleTypeDef *huart, uint32_t *arguments);
-void SRAM_Check_Address(UART_HandleTypeDef *huart, uint32_t *arguments);
-void SRAM_Check_Address_Range(UART_HandleTypeDef *huart, uint32_t *arguments);
-void SRAM_Check_Read_Write_Status(UART_HandleTypeDef *huart);
+void SRAM_Get_Performance_Measures(uint8_t *buffer, uint32_t *buffLen);
+void SRAM_Write_Ascending(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+void SRAM_Write_Alternate_Zero_One(uint8_t *buffer, uint32_t *bufferLen);
+void SRAM_Write_Alternate_One_Zero(uint8_t *buffer, uint32_t *bufferLen);
+void SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+void SRAM_Write_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+void SRAM_Read_SRAM(uint8_t *buffer, uint32_t *buffLen);
+void SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+void SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+void SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+void SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen);
 
 
 // helper functions
