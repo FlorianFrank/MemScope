@@ -837,7 +837,7 @@ void SRAM_Read_SRAM(UART_HandleTypeDef *huart){
 			counter++;
 			if(counter == 1024){ //8192//512//1024
 				len = strlen(SRAM_BUFFER);
-				send(huart, (uint8_t *)SRAM_BUFFER, len);
+				//send(huart, (uint8_t *)SRAM_BUFFER, len);
 				counter = 0;
 				srambp = SRAM_BUFFER;
 			}
@@ -1599,80 +1599,80 @@ void executeCommand(UART_HandleTypeDef *huart, int idx){
 	// reset the counter before every write execution
 	//
 	switch(command_mode){
-	case 0x0:
+	case SHOW_HELP:
 		// no write operation will be performed in this method
 		//write_mode = 0xFF;
 		return showHelp(huart);
-	case 0x1:
+	case FILL_WITH_ZEROS:
 		// write operation in mode 1 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x1;
 		return SRAM_Fill_With_Zeros(huart);
-	case 0x2:
+	case FILL_WITH_ONES:
 		// write operation in mode 2 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x2;
 		return SRAM_Fill_With_Ones(huart);
-	case 0x3:
+	case WRITE_ASCENDING:
 		// write operation in mode 3 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x3;
 		return SRAM_Write_Ascending(huart, arguments);
-	case 0x4:
+	case WRITE_ALTERNATE_ZERO_ONE:
 		// write operation in mode 4 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x4;
 		return SRAM_Write_Alternate_Zero_One(huart);
-	case 0x5:
+	case WRITE_ALTERNATE_ONE_ZERO:
 		// write operation in mode 5 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x5;
 		return SRAM_Write_Alternate_One_Zero(huart);
-	case 0x6:
+	case WRITE_ADDRESS:
 		// write operation in mode 6 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x6;
 		return SRAM_Write_Address(huart, arguments);
-	case 0x7:
+	case WRITE_ADDRESS_RANGE:
 		// write operation in mode 7 will be performed in this method
 		// therefore reset the counters/arguments
 		// they will be set in the function
 		write_mode = 0x7;
 		return SRAM_Write_Address_Range(huart, arguments);
-	case 0x8:
+	case GET_PERFORMANCE_MEASURES:
 		// no write operation will be performed in this method
 		// reset the counter for statistical analysis
 		//write_mode = 0xFF;
 		return SRAM_Get_Performance_Measures(huart);
-	case 0x9:
+	case GET_ADDRESS:
 		// no write operation will be performed in this method
 		// reset the counter for statistical analysis
 		//write_mode = 0xFF;
 		return SRAM_Get_Address(huart, arguments);
-	case 0xA:
+	case READ:
 		// no write operation will be performed in this method
 		//write_mode = 0xFF;
-		return SRAM_Read_SRAM(huart);
+		return SRAM_Read_SRAM(huart, NULL);
 		break;
-	case 0xB:
+	case WRITE:
 		// no write operation will be performed in this method
 		//write_mode = 0xFF;
 		return SRAM_Check_Read_Write_Status(huart);
-	case 0xC:
+	case CHECK_ADDRESS:
 		// no write operation will be performed in this method
 		//write_mode = 0xFF;
 		return SRAM_Check_Address(huart, arguments);
-	case 0xD:
+	case CHECK_ADDRESS_RANGE:
 		// no write operation will be performed in this method
 		//write_mode = 0xFF;
 		return SRAM_Check_Address_Range(huart, arguments);
-	case 0xE:
+	case GET_VALUES:
 		return SRAM_Get_Values(huart);
 	default:
 		sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
