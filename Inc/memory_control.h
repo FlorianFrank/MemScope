@@ -128,19 +128,8 @@ void SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen);
 
 // helper functions
 void clearBuffer(uint8_t index);
-uint16_t hamming_weight_16b(uint16_t bitstring);
-uint8_t hamming_weight_8b(uint8_t bitstring);
 void init_counter(void);
 void tokenize_arguments(char *args);
-uint16_t get_num_one_16b(uint16_t bitstring);
-uint16_t get_num_zero_16b(uint16_t bitstring);
-uint8_t get_num_one_8b(uint8_t bitstring);
-uint8_t get_num_zero_8b(uint8_t bitstring);
-uint16_t flipped_one_16b(uint16_t expected_value, uint16_t real_value);
-uint16_t flipped_zero_16b(uint16_t expected_value, uint16_t real_value);
-uint8_t flipped_one_8b(uint8_t expected_value, uint8_t real_value);
-uint8_t flipped_zero_8b(uint8_t expected_value, uint8_t real_value);
-
 void init_arguments(void);
 uint8_t get_space(char *rx_buffer);
 
