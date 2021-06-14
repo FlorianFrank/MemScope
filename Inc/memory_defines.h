@@ -13,6 +13,9 @@
 //#define RERAM_ADESTO_RM25C512C_LTAI_T
 //#define RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
 
+#define PARALLEL 0
+#define SPI 1
+
 #ifdef SRAM_ALLIANCE_AS7C34098A
 
 #define MEM_ACCESS_IF 				PARALLEL
@@ -41,6 +44,7 @@
 
 #ifdef SRAM_CYPRESS_CY62157EV30
 
+#define FMC_COM
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		((uint8_t)16)
