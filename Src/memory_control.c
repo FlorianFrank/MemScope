@@ -114,7 +114,26 @@ void my_HAL_Delay(uint32_t milliseconds)
  */
 void SRAM_Write_8b(uint32_t adr, uint8_t value)
 {
+#if MEM_ACCESS_IF==SPI
+    // Set Write Enable Latch
+	HAL_GPIO_WritePin(WP_for_ReRAM_GPIO_Port, WP_for_ReRAM_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi5, &ReRAM_WREN, 1, 10);
+	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(WP_for_ReRAM_GPIO_Port, WP_for_ReRAM_Pin, GPIO_PIN_RESET);
+
+	// Write Execugtion
+	uint8_t initialize_write_data[] = {ReRAM_WRITE,((adr >> 16) & 0xFF), ((adr >> 8) & 0xFF), ((adr >>  0) & 0xFF), value};
+	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi5, &initialize_write_data, 5, 10);
+	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
+#endif // MEM_ACCESS_IF == SPI
+
+
+#if MEM_ACCESS_IF==PARALLEL
 	*(__IO uint8_t *) (SRAM_BANK_ADDR + adr) = value;
+#endif //MEM_ACCESS_IF == PARALLEL
+
 }
 
 /*
@@ -125,11 +144,24 @@ void SRAM_Write_8b(uint32_t adr, uint8_t value)
  */
 uint8_t SRAM_Read_8b(uint32_t adr)
 {
-	// initialize the return value
+#if MEM_ACCESS_IF==SPI
+    uint8_t read_data[] = {ReRAM_READ,((adr >> 16) & 0xFF),((adr >> 8) & 0xFF),((adr >>  0) & 0xFF)};
+	uint8_t ret_wert;
+
+	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
+	//HAL_SPI_TransmitReceive(&hspi5, &read_data,&ret_wert, 5, 10);
+	HAL_SPI_Transmit(&hspi5, &read_data, 4, 10);
+	HAL_SPI_Receive(&hspi5, &ret_wert, 1, 10);
+	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
+#endif // MEM_ACCESS_IF==SPI
+
+#if MEM_ACCESS_IF==PARALLEL
+    // initialize the return value
 	uint8_t ret_wert;
 
 	//read 8-bit data from memory
 	ret_wert = *(__IO uint8_t *) (SRAM_BANK_ADDR + adr);
+#endif // MEM_ACCESS_IF==PARALLEL
 
 	return ret_wert;
 }
@@ -1829,3 +1861,33 @@ uint8_t get_total_flip_probability_8b(uint8_t expected_value, uint8_t real_value
 }
 */
 
+#ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
+int WIP_Polling(){
+
+    uint8_t reply;
+    int it1, it2;
+
+    //start timer
+    start_timer();
+    it1 = get_timer();
+
+    int count = 0;
+    reply = 0xFF;
+
+    while(1 > 0) {
+        count += 1;
+        HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
+        HAL_SPI_Transmit(&hspi5, &ReRAM_RDSR, 1, 10);
+        HAL_SPI_Receive(&hspi5, &reply, 1, 10);
+        HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
+        if (reply != 0b00000011) {
+            it2 = get_timer() - it1;
+            stop_timer();
+            break;
+        }
+    }
+
+    //return it2;
+    return count;
+}
+#endif // #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
