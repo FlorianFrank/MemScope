@@ -1,0 +1,3 @@
+[submodule "stm32_usb_lib"]
+	path = stm32_usb_lib
+	url = https://git.fim.uni-passau.de/frankfl/stm32_usb_lib.git
