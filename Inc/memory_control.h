@@ -36,7 +36,16 @@ typedef enum {
 	GET_VALUES = 0xE
 } Command; // List of possible commands
 
+struct
+{
+	uint8_t wp_enable_Pin;
+	uint8_t auto_power_down_enable;
+	uint8_t low_power_standby_enable;
+	uint8_t block_protection_bits;
+	uint8_t write_enable_bit;
+	uint8_t write_in_progress_bit;
 
+} typedef MemoryStatusRegister;
 
 
 // private defines
@@ -72,7 +81,7 @@ char Rx_Data[2];
 char Rx_Buffer[100];
 char Transfer_cplt;
 
-//char hallo[12];
+
 
 
 
@@ -102,8 +111,8 @@ void executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint
 extern void executeCommandUSB();
 
 // functions to access the SRAM
-void SRAM_Write_8b(uint32_t adr, uint8_t value);
-uint8_t SRAM_Read_8b(uint32_t adr);
+void SRAM_Write_8b(const uint32_t adr, uint8_t value);
+uint8_t SRAM_Read_8b(const uint32_t adr);
 void SRAM_Write_16b(uint32_t adr, uint16_t value);
 uint16_t SRAM_Read_16b(uint32_t adr);
 
@@ -133,6 +142,20 @@ void tokenize_arguments(char *args);
 void init_arguments(void);
 uint8_t get_space(char *rx_buffer);
 
+#define start_timer()    *((volatile uint32_t*)0xE0001000) = 0x40000001  // Enable CYCCNT register
+#define stop_timer()   *((volatile uint32_t*)0xE0001000) = 0x40000000  // Disable CYCCNT register
+#define get_timer()   *((volatile uint32_t*)0xE0001004)               // Get value from CYCCNT register
+
+#ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
+int WIP_Polling();
+void Set_WriteEnable();
+void Reset_WriteEnable();
+void Set_WriteEnableLatch();
+void Reset_WriteEnableLatch();
+MemoryStatusRegister ReadStatusRegister();
+
+//#endif
+#endif //ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
 //delete: CRAP
 //void SRAM_Get_Whole_Content(UART_HandleTypeDef *huart);
 //uint16_t get_total_flip_probability_16b(uint16_t expected_value, uint16_t real_value);

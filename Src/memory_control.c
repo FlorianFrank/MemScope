@@ -6,8 +6,10 @@
 */
 #include "memory_control.h"
 #include "metrics.h"
+#include "spi.h"
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 //#define strlen(s)   (s)? strlen(s) : 0
@@ -84,6 +86,23 @@ const char *command_help[] = {
 
 
 
+//  OPcode for FUJITSU MB85AS4MT
+uint8_t ReRAM_WREN = 0x06;  // Set Write Enable Latch
+uint8_t ReRAM_WRDI = 0x04;  // Reset Write Enable Latch
+uint8_t ReRAM_RDSR = 0x05;  // Read Status Register
+uint8_t ReRAM_WRSR = 0x01;  // Write Status Register
+uint8_t ReRAM_READ = 0x03;  // Read Memory Code
+uint8_t ReRAM_WRITE = 0x02; // Write Memory Code
+uint8_t ReRAM_CERS[] = {0x60, 0xC7};  // Chip Erase
+uint8_t ReRAM_PD = 0x09;  // Chip Erase
+uint8_t ReRAM_UDPD = 0x79;  // Chip Erase
+uint8_t ReRAM_RES = 0xAB;  // Resume from Power Down
+uint8_t ReRAM_RDID = 0b10011111;  // Read Device ID
+uint8_t ReRAM_SLEEP = 0b10111001; // Sleep Mode
+
+uint8_t ReRam_PowerDown = 0xB9;
+
+
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 void USBCDCRXCallback(uint8_t *dstBuffer, uint32_t bufferSize);
@@ -105,33 +124,99 @@ void my_HAL_Delay(uint32_t milliseconds)
 
 // implementation of the functions
 
-/*
+//#ifdef SPI
+void Set_WriteEnable()
+{
+	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
+}
+
+void Reset_WriteEnable()
+{
+	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
+}
+
+void Set_WriteEnableLatch()
+{
+	printf("Set Latch\n\n");
+	MemoryStatusRegister statusRegister = ReadStatusRegister();
+   // PrintStatusRegister(statusRegister);
+
+    Set_WriteEnable();
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi5, &ReRAM_WREN, 1, 1000);
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
+	Reset_WriteEnable();
+
+	printf("**END**\n\n");
+	statusRegister = ReadStatusRegister();
+    //PrintStatusRegister(statusRegister);
+}
+
+void Reset_WriteEnableLatch()
+{
+	Set_WriteEnable();
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
+	HAL_SPI_Transmit(&hspi5, &ReRAM_WRDI, 1, 10);
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
+	Reset_WriteEnable();
+}
+
+
+MemoryStatusRegister ParseStatusRegister(uint8_t statusRegister) {
+	return (MemoryStatusRegister ) { (statusRegister & 128) >> 7,
+							   (statusRegister & 64) >> 6,
+							   (statusRegister & 32) >> 5,
+							   (statusRegister & 12) >> 3,
+							   (statusRegister& 2) >> 2,
+							   (statusRegister & 1) } ;
+		}
+
+void PrintStatusRegister(MemoryStatusRegister reg)
+{
+	printf("WP_Enalbe: %d\n"
+			"Auto_Power_Down_Enable: %d\n"
+			"Low_Power_Standby_Enable: %d\n"
+			"Block_Protection_Bits: %d\n"
+			"Write_Enable_Bits: %d\n"
+			"Write_In_Progess_Bits: %d\n",
+			reg.wp_enable_Pin,
+			reg.auto_power_down_enable,
+			reg.low_power_standby_enable,
+			reg.block_protection_bits,
+			reg.write_enable_bit,
+			reg.write_in_progress_bit);
+}
+
+//#endif
+
+		/*
  * @brief					writes a 8-Bit(1-byte-word) value to the specified address to SRAM
  * @param uint32_t adr		relative address to the base address (specified as macro 'SRAM_BANK_ADDR') of SRAM
  * 							to be written to
  * @param uint8_t value	    value to be written to the specified address in SRAM
  * @retval					None
  */
-void SRAM_Write_8b(uint32_t adr, uint8_t value)
+void SRAM_Write_8b(const uint32_t adr, uint8_t value)
 {
 #if MEM_ACCESS_IF==SPI
-    // Set Write Enable Latch
-	HAL_GPIO_WritePin(WP_for_ReRAM_GPIO_Port, WP_for_ReRAM_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi5, &ReRAM_WREN, 1, 10);
-	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(WP_for_ReRAM_GPIO_Port, WP_for_ReRAM_Pin, GPIO_PIN_RESET);
 
-	// Write Execugtion
-	uint8_t initialize_write_data[] = {ReRAM_WRITE,((adr >> 16) & 0xFF), ((adr >> 8) & 0xFF), ((adr >>  0) & 0xFF), value};
-	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi5, &initialize_write_data, 5, 10);
-	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
+	Set_WriteEnableLatch();
+
+	// Write Execution
+	//#ifdef Adesto
+	//uint8_t initialize_write_data[] = {ReRAM_WRITE,((adr >> 16) & 0xFF), ((adr >> 8) & 0xFF), ((adr >>  0) & 0xFF), value};
+	uint8_t initialize_write_data[] = {ReRAM_WRITE, ((adr >> 8) & 0xFF), ((adr >>  0) & 0xFF), value};
+	Set_WriteEnable();
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
+	HAL_Delay(1);
+	HAL_SPI_Transmit(&hspi5, initialize_write_data, 4/*260*/, 10);
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
+	Reset_WriteEnable();
 #endif // MEM_ACCESS_IF == SPI
 
 
 #if MEM_ACCESS_IF==PARALLEL
-	*(__IO uint8_t *) (SRAM_BANK_ADDR + adr) = value;
+	//*(__IO uint8_t *) (SRAM_BANK_ADDR + adr) = value;
 #endif //MEM_ACCESS_IF == PARALLEL
 
 }
@@ -142,28 +227,31 @@ void SRAM_Write_8b(uint32_t adr, uint8_t value)
  * 							to be read from
  * @retval uint8_t			value at address in SRAM
  */
-uint8_t SRAM_Read_8b(uint32_t adr)
+uint8_t SRAM_Read_8b(const uint32_t adr)
 {
 #if MEM_ACCESS_IF==SPI
-    uint8_t read_data[] = {ReRAM_READ,((adr >> 16) & 0xFF),((adr >> 8) & 0xFF),((adr >>  0) & 0xFF)};
-	uint8_t ret_wert;
+ //   uint8_t read_data[] = {ReRAM_READ,((adr >> 16) & 0xFF),((adr >> 8) & 0xFF),((adr >>  0) & 0xFF)};
+	 uint8_t read_data[] = {ReRAM_READ,((adr >> 8) & 0xFF),((adr >>  0) & 0xFF)};
+	uint8_t ret_wert[4];
+	memset(ret_wert, 0x00, 4);
 
-	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
 	//HAL_SPI_TransmitReceive(&hspi5, &read_data,&ret_wert, 5, 10);
-	HAL_SPI_Transmit(&hspi5, &read_data, 4, 10);
-	HAL_SPI_Receive(&hspi5, &ret_wert, 1, 10);
-	HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
+	//HAL_SPI_Transmit(&hspi5, read_data, 4, 10);
+	HAL_SPI_Transmit(&hspi5, read_data, 3, 100);
+	HAL_SPI_Receive(&hspi5, ret_wert, 4, 100);
+	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
 #endif // MEM_ACCESS_IF==SPI
 
-#if MEM_ACCESS_IF==PARALLEL
-    // initialize the return value
-	uint8_t ret_wert;
+//#if MEM_ACCESS_IF==PARALLEL
+//    // initialize the return value
+//	uint8_t ret_wert;
+//
+//	//read 8-bit data from memory
+//	ret_wert = *(__IO uint8_t *) (SRAM_BANK_ADDR + adr);
+//#endif // MEM_ACCESS_IF==PARALLEL
 
-	//read 8-bit data from memory
-	ret_wert = *(__IO uint8_t *) (SRAM_BANK_ADDR + adr);
-#endif // MEM_ACCESS_IF==PARALLEL
-
-	return ret_wert;
+	return ret_wert[0];
 }
 
 /*
@@ -252,6 +340,98 @@ void SRAM_Fill_With_Zeros(uint8_t *buffer, uint32_t *buffLen){
 //	send(huart, (uint8_t *)STRING_BUFFER, len);
 }
 
+
+/*
+ * @brief								fills the whole SRAM with 1's
+ * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
+ */
+void SRAM_Fill_With_Ones_8b(UART_HandleTypeDef *huart){
+	// reset the counter for statistical analysis
+	init_counter();
+	// reset the arguments
+	init_arguments();
+
+	// variables for measuring write latency
+	uint32_t it1, it2;
+
+	int ctr = 0;
+	float percentCtr = 1;
+	char sendBuffer[4096];
+	memset(sendBuffer, 0x00, 4096);
+
+	uint32_t adr = 0; // TODO remove
+	//for(uint32_t adr = 0x00; adr < 524288; adr++)
+	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
+
+    // Set Write Enable Latch
+
+
+
+
+	while(adr < MEM_SIZE_ADR)
+	{
+		// Write "010101010101" for initialization
+		SRAM_Write_8b(adr,0x55);
+
+		// Wait until the WEL latch turns reset
+		WIP_Polling();
+
+		// Write "1010101010"
+		SRAM_Write_8b(adr,0xAA);
+
+		// Measure write latency
+		int write_latency = 0;
+		write_latency = WIP_Polling();
+
+		int ret = SRAM_Read_8b(adr);
+
+		if(ret == 0xAA)
+			sprintf(&sendBuffer[strlen(sendBuffer)], "%d; %d\n", adr, write_latency);
+		else
+			sprintf(&sendBuffer[strlen(sendBuffer)], "%d; %d; %s; %d\n", adr, write_latency, "corrupt", ret);
+
+		if(ctr >= 100)
+		{
+			ctr = 0;
+			sendUART(huart, (uint8_t *)sendBuffer, strlen(sendBuffer));
+			memset(sendBuffer, 0x00, 4096);
+		}
+		ctr++;
+
+		len = strlen(STRING_BUFFER);
+		sendUART(huart, (uint8_t *)STRING_BUFFER, len);
+
+		// Check if the writing is executed properly
+	/*	uint8_t* real_value = 0xFF;
+		real_value = SRAM_Read_8b(adr);
+
+		if(real_value != 0xAA){
+		sprintf(STRING_BUFFER, "\n\r  Failed  Adr: %d, Value : %x \n\r", adr, real_value);
+		len = strlen(STRING_BUFFER);
+		printf(STRING_BUFFER); //send(huart, (uint8_t *)STRING_BUFFER, len);
+					//break;
+			}*/
+
+			if(adr % 5243 == 0)
+			{
+				percentCtr+= 0.1;
+				printf("Progress %f\n", percentCtr);
+			}
+			adr++;
+		}
+		HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
+
+
+		if(ctr > 1)
+			sendUART(huart, (uint8_t *)sendBuffer, strlen(sendBuffer));
+
+
+		sprintf(STRING_BUFFER, "\n\rFinished\n\r");
+		len = strlen(STRING_BUFFER);
+		send(huart, (uint8_t *)STRING_BUFFER, len);
+}
+
+
 /*
  * @brief								fills the whole SRAM with 1's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
@@ -328,7 +508,8 @@ void SRAM_Get_Values(uint8_t *buffer, uint32_t *bufferLen){
 	{
 		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
 				uint8_t real_value;
-				real_value = SRAM_Read_8b(adr);
+				real_value = SRAM_Read_8b(adr
+						);
 				total_one += get_num_one_8b(real_value);
 				total_zero += get_num_zero_8b(real_value);
 		}
@@ -749,11 +930,10 @@ void SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments)
 	if(MEM_ACCESS_WIDTH_BIT == 8)
 	{
 		start_value = (uint8_t)arguments[1];
-		*(__IO uint8_t *) (SRAM_BANK_ADDR + start_adr) = start_value;
-		//SRAM_Write_8b(start_adr, start_value);
-		real_value = *(__IO uint8_t *) (SRAM_BANK_ADDR + start_adr);
-		//uint8_t real_value = SRAM_Read_8b(start_adr);
-		if(real_value != start_value){
+
+		SRAM_Write_8b(start_adr, start_value);
+		uint8_t real_value = SRAM_Read_8b(start_adr);
+		if(real_value == start_value){
 			state = PASSED;
 		}
 	}
@@ -1411,17 +1591,16 @@ void USBCDCRXCallback(uint8_t* Buf, uint32_t Len)
 //}
 
 
-void send(UART_HandleTypeDef *huart, uint8_t *srcBuffer, uint32_t bufferSize)
+void send(UART_HandleTypeDef *huart, uint8_t *sendBuffer, uint32_t bufferSize)
 {
-	printf(srcBuffer);
-	return;
+	printf((char*)sendBuffer);
 	if(huart == NULL)
 	{
-		sendUSB(srcBuffer, bufferSize);
+		sendUSB(sendBuffer, bufferSize);
 	}
 	else
 	{
-		sendUART(huart, srcBuffer, bufferSize);
+		sendUART(huart, sendBuffer, bufferSize);
 	}
 
 }
@@ -1861,6 +2040,23 @@ uint8_t get_total_flip_probability_8b(uint8_t expected_value, uint8_t real_value
 }
 */
 
+MemoryStatusRegister ReadStatusRegister()
+{
+	uint8_t reg;
+    HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
+    HAL_SPI_Transmit(&hspi5, &ReRAM_RDSR, 1, 10);
+    HAL_SPI_Receive(&hspi5, &reg, 1, 10);
+    HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
+    return ParseStatusRegister(reg);
+}
+
+
+void WriteStatusRegister()
+{
+
+}
+
+
 #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
 int WIP_Polling(){
 
@@ -1876,18 +2072,15 @@ int WIP_Polling(){
 
     while(1 > 0) {
         count += 1;
-        HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_RESET);
-        HAL_SPI_Transmit(&hspi5, &ReRAM_RDSR, 1, 10);
-        HAL_SPI_Receive(&hspi5, &reply, 1, 10);
-        HAL_GPIO_WritePin(NCS_MEMS_SPI_GPIO_Port, NCS_MEMS_SPI_Pin, GPIO_PIN_SET);
-        if (reply != 0b00000011) {
+        MemoryStatusRegister statusRegister = ReadStatusRegister();
+        if (statusRegister.write_in_progress_bit == 0) {
+        	stop_timer();
             it2 = get_timer() - it1;
-            stop_timer();
             break;
         }
     }
 
     //return it2;
-    return count;
+    return it2;
 }
 #endif // #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
