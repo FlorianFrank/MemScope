@@ -11,6 +11,7 @@
 #include "stm32f4xx_hal.h"
 #include "usbd_cdc_if.h"
 #include "memory_defines.h"
+#include "memory_error_handling.h"
 
 
 typedef enum {
@@ -36,16 +37,7 @@ typedef enum {
 	GET_VALUES = 0xE
 } Command; // List of possible commands
 
-struct
-{
-	uint8_t wp_enable_Pin;
-	uint8_t auto_power_down_enable;
-	uint8_t low_power_standby_enable;
-	uint8_t block_protection_bits;
-	uint8_t write_enable_bit;
-	uint8_t write_in_progress_bit;
 
-} typedef MemoryStatusRegister;
 
 
 // private defines
@@ -107,32 +99,32 @@ extern void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize);
 void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 extern void showHelpUSB();
 
-void executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBufflen, Command cmdIdx);extern void executeCommandUART(UART_HandleTypeDef *huart, Command idx);
+MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBufflen, Command cmdIdx);extern void executeCommandUART(UART_HandleTypeDef *huart, Command idx);
 extern void executeCommandUSB();
 
 // functions to access the SRAM
-void SRAM_Write_8b(const uint32_t adr, uint8_t value);
-uint8_t SRAM_Read_8b(const uint32_t adr);
-void SRAM_Write_16b(uint32_t adr, uint16_t value);
-uint16_t SRAM_Read_16b(uint32_t adr);
+MEM_ERROR SRAM_Write_8b(const uint32_t adr, uint8_t value);
+MEM_ERROR SRAM_Read_8b(const uint32_t adr, uint8_t *ret);
+MEM_ERROR SRAM_Write_16b(uint32_t adr, uint16_t value);
+MEM_ERROR SRAM_Read_16b(uint32_t adr, uint16_t *value);
 
 
 // user functions
-void SRAM_Fill_With_Zeros(uint8_t *buffer, uint32_t *buffLen);
-void SRAM_Fill_With_Ones(uint8_t *buffer, uint32_t *bufferLen);
-void SRAM_Get_Values(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR SRAM_Fill_With_Zeros(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR SRAM_Fill_With_Ones(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR SRAM_Get_Values(uint8_t *buffer, uint32_t *bufferLen);
 
-void SRAM_Get_Performance_Measures(uint8_t *buffer, uint32_t *buffLen);
-void SRAM_Write_Ascending(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
-void SRAM_Write_Alternate_Zero_One(uint8_t *buffer, uint32_t *bufferLen);
-void SRAM_Write_Alternate_One_Zero(uint8_t *buffer, uint32_t *bufferLen);
-void SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
-void SRAM_Write_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
-void SRAM_Read_SRAM(uint8_t *buffer, uint32_t *buffLen);
-void SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
-void SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
-void SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
-void SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR SRAM_Get_Performance_Measures(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR SRAM_Write_Ascending(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+MEM_ERROR SRAM_Write_Alternate_Zero_One(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR SRAM_Write_Alternate_One_Zero(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+MEM_ERROR SRAM_Write_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+MEM_ERROR SRAM_Read_SRAM(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+MEM_ERROR SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+MEM_ERROR SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, uint32_t *arguments);
+MEM_ERROR SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen);
 
 
 // helper functions
@@ -147,11 +139,11 @@ uint8_t get_space(char *rx_buffer);
 #define get_timer()   *((volatile uint32_t*)0xE0001004)               // Get value from CYCCNT register
 
 #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
-int WIP_Polling();
-void Set_WriteEnable();
-void Reset_WriteEnable();
-void Set_WriteEnableLatch();
-void Reset_WriteEnableLatch();
+uint32_t WIP_Polling();
+MEM_ERROR Set_WriteEnable();
+MEM_ERROR Reset_WriteEnable();
+MEM_ERROR Set_WriteEnableLatch(bool checkRegister);
+MEM_ERROR Reset_WriteEnableLatch();
 MemoryStatusRegister ReadStatusRegister();
 
 //#endif

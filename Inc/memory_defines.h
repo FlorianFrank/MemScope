@@ -1,17 +1,17 @@
 // Memory Definitions: Select only one! Note: 0°C = 273°K
-//#define SRAM_ALLIANCE_AS7C34098A
-//#define SRAM_ALLIANCE_AS7C38098A
-//#define SRAM_CYPRESS_CY62157EV30
-//#define SRAM_CYPRESS_CY7C1041CV33
-//#define SRAM_CYPRESS_CY7C1051DV33
+//#define SRAM_ALLIANCE_AS7C34098A 1
+//#define SRAM_ALLIANCE_AS7C38098A 1
+//#define SRAM_CYPRESS_CY62157EV30 1
+//#define SRAM_CYPRESS_CY7C1041CV33 1
+//#define SRAM_CYPRESS_CY7C1051DV33 1
 //#define SRAM_ISSI_IS61WV51216BLL
-//#define MRAM_EVERSPIN_MR4A08BYS35
-//#define MRAM_EVERSPIN_MR4A08BUYS45
-#define FRAM_CYPRESS_FM22L16_55_TG
-//#define FRAM_ROHM_MR48V256CTAZAARL
-//#define FRAM_FUJITSU_MB85R1001ANC_GE1
-//#define RERAM_ADESTO_RM25C512C_LTAI_T
-//#define RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
+//#define MRAM_EVERSPIN_MR4A08BYS35 1
+//#define MRAM_EVERSPIN_MR4A08BUYS45 1
+//#define FRAM_CYPRESS_FM22L16_55_TG 1
+//#define FRAM_ROHM_MR48V256CTAZAARL 1
+//#define FRAM_FUJITSU_MB85R1001ANC_GE1 1
+//#define RERAM_ADESTO_RM25C512C_LTAI_T 1
+#define RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1 1
 
 #define PARALLEL 0
 #define SPI 1
@@ -44,7 +44,6 @@
 
 #ifdef SRAM_CYPRESS_CY62157EV30
 
-#define FMC_COM
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		((uint8_t)16)
@@ -174,6 +173,16 @@
 #endif
 
 #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
+struct
+{
+	uint8_t wp_enable_Pin;
+	uint8_t auto_power_down_enable;
+	uint8_t low_power_standby_enable;
+	uint8_t block_protection_bits;
+	uint8_t write_enable_bit;
+	uint8_t write_in_progress_bit;
+
+} typedef MemoryStatusRegister;
 
 #define MEM_ACCESS_IF 				SPI
 #define MEM_SIZE_ADR 				((uint32_t)524288)

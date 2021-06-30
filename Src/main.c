@@ -96,6 +96,8 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+extern void initialise_monitor_handles();
+
 /* USER CODE END 0 */
 
 /**
@@ -105,7 +107,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	initialise_monitor_handles();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -130,7 +132,10 @@ int main(void)
   MX_UART4_Init();
   MX_USB_DEVICE_Init();
   MX_SPI4_Init();
+  MX_SPI5_Init();
   /* USER CODE BEGIN 2 */
+
+
 
 #ifdef USE_UART
   receive(&huart4, (uint8_t *)Rx_Data, 1); // activate uart rx interrupt every time receiving 1 byte
@@ -147,6 +152,52 @@ int main(void)
   //showHelp(NULL);
 #endif
 
+
+//  HAL_Delay(1000);
+//  char buff[30];
+//  for (int i = 0; i < 10; i++)
+//  {
+//	  StartTimer();
+//	  for(int i2 = 0; i2 < 1000; i2++)
+//	  {
+//	  uint8_t result = SRAM_Read_8b(0x00 + i);
+//	  }
+//	  uint32_t ret =  StopGetTime();
+//	  memset(buff, 0x00, 30);
+//	  sprintf(buff, "%d, %f", i, (float)(TransformClockFrequencyToNs(ret)));
+//	  sendUART(&huart4, (uint8_t *)buff, strlen(buff));
+//  }
+
+
+  // ######## testing the memory ########
+  char responseBuffer[128];
+  char* responseString = responseBuffer;
+  uint32_t responseLength = 0;
+
+  // fill with zeros
+//  SRAM_Fill_With_Zeros((uint8_t*)responseString, &responseLength);
+//  printf(responseString);
+
+  // fill with ones
+  //SRAM_Write_Alternate_Zero_One((uint8_t*)responseString, &responseLength);
+  //printf(responseString);
+
+  // write 0xAA to address 0x00 (0xAA equals 10101010 (base 2) and 170 (base 10))
+  uint32_t address = 0x02;
+  uint32_t arguments[2] = { address , 0xAA };
+  SRAM_Measure_WIP_Polling(&huart4);
+  //SRAM_Write_Address((uint8_t*)responseString, &responseLength, arguments);
+  //printf(responseString);
+
+  // reading address 0x00
+  //uint8_t result = SRAM_Read_8b(address);
+  //printf("Value: %x\n", result);
+
+  // reading address 0x00 after writing 0x01 to it
+  //SRAM_Write_8b(address, 0x01);
+  //result = SRAM_Read_8b(address);
+  //printf("Value: %x\n", result);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -159,7 +210,7 @@ int main(void)
 	  if(Transfer_cplt==1)
 	  {
 #ifdef USE_UART
-		  executeCommandUART(&huart4);
+		 // executeCommandUART(&huart4);
 #endif
 
 
@@ -191,7 +242,7 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -199,10 +250,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 72;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -213,10 +264,10 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
     Error_Handler();
   }
