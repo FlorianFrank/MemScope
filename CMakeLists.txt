@@ -32,7 +32,8 @@ file(GLOB_RECURSE MiddlewareFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/*c")
 
 file(GLOB_RECURSE DriverFiles
-	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/*h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/USB_HOST/App"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/USB_HOST/Target"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Source/*c"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc/*h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Src/*c")
@@ -42,10 +43,13 @@ if("${specs}" STREQUAL "rdimon.specs")
 	add_definitions(-DRDMON_SPECS=1)
 endif() # disable syscalls.c
 
+add_subdirectory(stm32_usb_lib)
 
 
 add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
 
+target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/STM32_USB_Lib/include")
 
 set(BuildFolder "${CMAKE_CURRENT_SOURCE_DIR}/tmp")
 
