@@ -10,8 +10,8 @@
 //#define FRAM_CYPRESS_FM22L16_55_TG 1
 //#define FRAM_ROHM_MR48V256CTAZAARL 1
 //#define FRAM_FUJITSU_MB85R1001ANC_GE1 1
-//#define RERAM_ADESTO_RM25C512C_LTAI_T 1
-#define RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1 1
+#define RERAM_ADESTO_RM25C512C_LTAI_T 1
+//#define RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1 1
 
 #define PARALLEL 0
 #define SPI 1
@@ -162,28 +162,17 @@
 #ifdef RERAM_ADESTO_RM25C512C_LTAI_T
 
 #define MEM_ACCESS_IF 				SPI
-#define MEM_SIZE_ADR 				((uint32_t)512)
-#define MEM_ACCESS_WIDTH_BIT		((uint8_t)1024)
-#define MEM_ACCESS_TIME_NS			((uint32_t)150)
-#define MEM_SUPPLY_VOLTAGE_MIN_MV	((uint16_t)1650)
-#define MEM_SUPPLY_VOLTAGE_MAX_MV	((uint16_t)3600)
-#define MEM_OP_TEMP_MAX_K			((uint16_t)233)
-#define MEM_OP_TEMP_MIN_K			((uint16_t)358)
+#define MEM_SIZE_ADR 				512
+#define MEM_ACCESS_WIDTH_BIT		8
+#define MEM_ACCESS_TIME_NS			150
+#define MEM_SUPPLY_VOLTAGE_MIN_MV	1650
+#define MEM_SUPPLY_VOLTAGE_MAX_MV	3600
+#define MEM_OP_TEMP_MAX_K			233
+#define MEM_OP_TEMP_MIN_K			358
 
 #endif
 
 #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
-struct
-{
-	uint8_t wp_enable_Pin;
-	uint8_t auto_power_down_enable;
-	uint8_t low_power_standby_enable;
-	uint8_t block_protection_bits;
-	uint8_t write_enable_bit;
-	uint8_t write_in_progress_bit;
-
-} typedef MemoryStatusRegister;
-
 #define MEM_ACCESS_IF 				SPI
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		((uint8_t)8)
