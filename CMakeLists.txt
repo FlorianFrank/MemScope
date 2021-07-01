@@ -43,13 +43,13 @@ if("${specs}" STREQUAL "rdimon.specs")
 	add_definitions(-DRDMON_SPECS=1)
 endif() # disable syscalls.c
 
-add_subdirectory(stm32_usb_lib)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib")
 
 
 add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
 
 target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/STM32_USB_Lib/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib/include")
 
 set(BuildFolder "${CMAKE_CURRENT_SOURCE_DIR}/tmp")
 
