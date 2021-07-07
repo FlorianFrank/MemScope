@@ -90,7 +90,7 @@ static bool host_port_open = false;
 extern USBD_CDC_ItfTypeDef USBD_Interface_fops_HS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-bool Virtual_Com_Port_IsHostPortOpen();
+__unused bool Virtual_Com_Port_IsHostPortOpen();
 void flushRead();
 /* USER CODE END EXPORTED_VARIABLES */
 
