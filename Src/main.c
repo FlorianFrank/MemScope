@@ -51,16 +51,20 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <meta_data_handler.h>
+#include <time.h>
+#include <test_cases.h>
 #include "main.h"
-#include "spi.h"
-#include "usart.h"
-#include "usb_device.h"
-#include "gpio.h"
-#include "fmc.h"
+#include "SystemFiles/spi.h"
+#include "SystemFiles/usart.h"
+#include "SystemFiles/usb_device.h"
+#include "SystemFiles/gpio.h"
+#include "SystemFiles/fmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "memory_control.h"
+#include "usb_handler.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,6 +93,8 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -130,13 +136,12 @@ int main(void)
   MX_GPIO_Init();
   MX_FMC_Init();
   MX_UART4_Init();
-  MX_USB_DEVICE_Init();
+  //MX_USB_DEVICE_Init();
   MX_SPI4_Init();
   MX_SPI5_Init();
   /* USER CODE BEGIN 2 */
 
-
-
+    executeReadLatencyTestFRAMRohm();
 #ifdef USE_UART
   receive(&huart4, (uint8_t *)Rx_Data, 1); // activate uart rx interrupt every time receiving 1 byte
   //showHelp(&huart4); // UART
@@ -157,22 +162,21 @@ int main(void)
 //  char buff[30];
 //  for (int i = 0; i < 10; i++)
 //  {
-//	  StartTimer();
+//	  USB_StartTimer();
 //	  for(int i2 = 0; i2 < 1000; i2++)
 //	  {
 //	  uint8_t result = SRAM_Read_8b(0x00 + i);
 //	  }
-//	  uint32_t ret =  StopGetTime();
+//	  uint32_t ret =  USB_StopGetTime();
 //	  memset(buff, 0x00, 30);
-//	  sprintf(buff, "%d, %f", i, (float)(TransformClockFrequencyToNs(ret)));
+//	  sprintf(buff, "%d, %f", i, (float)(USB_TransformClockFrequencyToNs(ret)));
 //	  sendUART(&huart4, (uint8_t *)buff, strlen(buff));
 //  }
 
-
   // ######## testing the memory ########
-  char responseBuffer[128];
+  /*char responseBuffer[128];
   char* responseString = responseBuffer;
-  uint32_t responseLength = 0;
+  uint32_t responseLength = 0;*/
 
   // fill with zeros
 //  SRAM_Fill_With_Zeros((uint8_t*)responseString, &responseLength);
@@ -183,9 +187,9 @@ int main(void)
   //printf(responseString);
 
   // write 0xAA to address 0x00 (0xAA equals 10101010 (base 2) and 170 (base 10))
-  uint32_t address = 0x02;
-  uint32_t arguments[2] = { address , 0xAA };
-  SRAM_Measure_WIP_Polling(&huart4);
+  //uint32_t address = 0x02;
+  //uint32_t arguments[2] = { address , 0xAA };
+  //SRAM_Measure_WIP_Polling(&huart4);
   //SRAM_Write_Address((uint8_t*)responseString, &responseLength, arguments);
   //printf(responseString);
 
@@ -202,7 +206,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int count = 0;
   //showHelp(NULL);
   while (1)
   {
@@ -236,6 +239,7 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
+#if 0
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
@@ -271,6 +275,42 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+#endif
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+    /** Configure the main internal regulator output voltage
+    */
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+    /** Initializes the RCC Oscillators according to the specified parameters
+    * in the RCC_OscInitTypeDef structure.
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 4;
+    RCC_OscInitStruct.PLL.PLLN = 72;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = 3;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    /** Initializes the CPU, AHB and APB buses clocks
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                                  |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /* USER CODE BEGIN 4 */

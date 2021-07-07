@@ -88,6 +88,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define SPI4_WP_Pin GPIO_PIN_13
+#define SPI4_WP_GPIO_Port GPIOC
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
 #define PC14_OSC32_IN_GPIO_Port GPIOC
 #define PC15_OSC32_OUT_Pin GPIO_PIN_15
@@ -104,16 +106,16 @@ void Error_Handler(void);
 #define A4_GPIO_Port GPIOF
 #define A5_Pin GPIO_PIN_5
 #define A5_GPIO_Port GPIOF
+#define SPI5_CS_Pin GPIO_PIN_6
+#define SPI5_CS_GPIO_Port GPIOF
 #define SPI5_MISO_Pin GPIO_PIN_8
 #define SPI5_MISO_GPIO_Port GPIOF
 #define SPI5_MOSI_Pin GPIO_PIN_9
 #define SPI5_MOSI_GPIO_Port GPIOF
-#define ENABLE_Pin GPIO_PIN_10
-#define ENABLE_GPIO_Port GPIOF
+#define SPI5_HOLDspi5_Pin GPIO_PIN_10
+#define SPI5_HOLDspi5_GPIO_Port GPIOF
 #define PH0_OSC_IN_Pin GPIO_PIN_0
 #define PH0_OSC_IN_GPIO_Port GPIOH
-#define PH1_OSC_OUT_Pin GPIO_PIN_1
-#define PH1_OSC_OUT_GPIO_Port GPIOH
 #define SDNWE_Pin GPIO_PIN_0
 #define SDNWE_GPIO_Port GPIOC
 #define NCS_MEMS_SPI_Pin GPIO_PIN_1
@@ -204,8 +206,8 @@ void Error_Handler(void);
 #define DOTCLK_GPIO_Port GPIOG
 #define SDCLK_Pin GPIO_PIN_8
 #define SDCLK_GPIO_Port GPIOG
-#define HSYNC_Pin GPIO_PIN_6
-#define HSYNC_GPIO_Port GPIOC
+#define SPI5_WP_Pin GPIO_PIN_6
+#define SPI5_WP_GPIO_Port GPIOC
 #define G6_Pin GPIO_PIN_7
 #define G6_GPIO_Port GPIOC
 #define I2C3_SDA_Pin GPIO_PIN_9
