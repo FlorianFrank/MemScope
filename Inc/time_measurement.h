@@ -10,9 +10,9 @@
 
 #include <stdint.h>
 
-void USB_StartTimer();
-void USB_ResetTimer();
-uint32_t USB_StopGetTime();
+uint32_t StartTimer();
+void ResetTimer();
+uint32_t StopGetTime();
 
 #endif /* INC_TIME_MEASUREMENT_H_ */
 
