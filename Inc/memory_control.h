@@ -8,7 +8,7 @@
 #ifndef __TUD_SECENG_H
 #define __TUD_SECENG_H
 
-#include "usbd_cdc_if.h"
+#include "SystemFiles/usbd_cdc_if.h"
 #include "memory_defines.h"
 #include "memory_error_handling.h"
 

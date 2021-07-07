@@ -7,7 +7,7 @@
 
 #include "memory_control.h"
 #include "metrics.h"
-#include "spi.h"
+#include "SystemFiles/spi.h"
 #include "cmd_parser.h"
 #include <string.h>
 #include <stdlib.h>
@@ -85,7 +85,7 @@ MEM_ERROR Set_WriteEnable()
 
 MEM_ERROR Reset_WriteEnable()
 {
-	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
 	return MEM_NO_ERROR;
 }
 
@@ -107,19 +107,20 @@ MEM_ERROR Set_WriteEnableLatch(bool checkRegister)
 {
     Set_WriteEnable();
     MEM_ERROR ret = SendSPICommand(ReRAM_WREN, NULL, false);
-	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
 	Reset_WriteEnable();
 	if(ret != MEM_NO_ERROR)
 		return ret;
 
 	if(checkRegister)
 	{
-	    MemoryStatusRegister statusRegister;
-        MEM_ERROR err = ReadStatusRegister(&statusRegister);
-		if(err != MEM_NO_ERROR)
-			return err;
-		if(statusRegister.write_enable_bit != 1)
-		    return MEM_REGISTER_NOT_SET;
+        MemoryStatusRegister statusRegister;
+        do
+        {
+            MEM_ERROR err = ReadStatusRegister(&statusRegister);
+            if (err != MEM_NO_ERROR)
+                return err;
+        }while(statusRegister.write_enable_bit != 1);
+            //return MEM_REGISTER_NOT_SET;
 	}
 	return MEM_NO_ERROR;
 }
@@ -141,7 +142,7 @@ MemoryStatusRegister ParseStatusRegister(uint8_t statusRegister) {
 							   (statusRegister & 64) >> 6,
 							   (statusRegister & 32) >> 5,
 							   (statusRegister & 12) >> 3,
-							   (statusRegister& 2) >> 2,
+							   (statusRegister& 2) >> 1,
 							   (statusRegister & 1) } ;
 		}
 
@@ -229,10 +230,10 @@ uint32_t WIP_Polling(uint32_t timeoutCycles)
         if(err != MEM_NO_ERROR )
             return err;
 
-        if (statusRegister.write_in_progress_bit == 0) {
+        if (statusRegister.write_enable_bit == 0) {
         	stop_timer();
             endTS = get_timer() - startTS;
-            break;
+            return endTS;
         }
         if(timeoutCycles != 0)
             endTS = get_timer();
@@ -271,8 +272,7 @@ MEM_ERROR SRAM_Write_8b(const uint32_t adr, uint8_t value)
 
 	Set_WriteEnable();
 	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
-	HAL_Delay(1);
-	err = HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, initialize_write_data, sizeof(initialize_write_data), 10));
+	err = HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, initialize_write_data, sizeof(initialize_write_data), 1000));
 	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
 	Reset_WriteEnable();
 
@@ -306,7 +306,11 @@ MEM_ERROR SRAM_Read_8b(const uint32_t adr, uint8_t *ret)
 	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
 	MEM_ERROR err = HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, read_data, sizeof(read_data), 100)); // TODO variable length
 	if(err == MEM_NO_ERROR)
-		err = HAL_StatusTypeDefToErr(HAL_SPI_Receive(&hspi5, ret, 1, 100));
+    {
+        uint8_t ret_val[4];
+        err = HAL_StatusTypeDefToErr(HAL_SPI_Receive(&hspi5, ret_val, 4, 100));
+        *ret = ret_val[0];
+    }
 	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
 	if(err != MEM_NO_ERROR)
 		return err;
@@ -476,13 +480,11 @@ __unused MEM_ERROR SRAM_Measure_WIP_Polling(UART_HandleTypeDef *huart){
 		if(ctr >= 100)
 		{
 			ctr = 0;
-			sendUART(huart, (uint8_t *)sendBuffer, strlen(sendBuffer));
 			memset(sendBuffer, 0x00, 4096);
 		}
 		ctr++;
 
 		len = strlen(STRING_BUFFER);
-		sendUART(huart, (uint8_t *)STRING_BUFFER, len);
 
 		// Check if the writing is executed properly
 	/*	uint8_t* real_value = 0xFF;
@@ -505,13 +507,13 @@ __unused MEM_ERROR SRAM_Measure_WIP_Polling(UART_HandleTypeDef *huart){
 		HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
 
 
-		if(ctr > 1)
-			sendUART(huart, (uint8_t *)sendBuffer, strlen(sendBuffer));
+	/*	if(ctr > 1)
+			sendUART(huart, (uint8_t *)sendBuffer, strlen(sendBuffer));*/
 
 
 		sprintf(STRING_BUFFER, "\n\rFinished\n\r");
 		len = strlen(STRING_BUFFER);
-		send(huart, (uint8_t *)STRING_BUFFER, len);
+		//send(huart, (uint8_t *)STRING_BUFFER, len);
 
 		return MEM_NO_ERROR;
 }
@@ -870,7 +872,7 @@ MEM_ERROR SRAM_Write_Ascending(uint8_t *buffer, uint32_t *buffLen, const uint32_
 	TestStatus state = PASSED;
 
 #if MEM_ACCESS_WIDTH_BIT == 16
-		start_value = (uint16_t)arguments[0];
+		start_value = (uint16_t)args[0];
 		uint16_t real_value = 0x0;
 		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
 			MEM_ERROR ret = SRAM_Write_16b(adr, start_value);
@@ -1071,7 +1073,7 @@ MEM_ERROR SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t 
 
 #if MEM_ACCESS_WIDTH_BIT == 16
 		uint16_t real_value = 0;
-		start_value = (uint16_t)arguments[1];
+		start_value = (uint16_t)args[1];
 		MEM_ERROR ret = SRAM_Write_16b(start_adr, start_value);
 		if(ret != MEM_NO_ERROR)
 			return ret;
@@ -1143,11 +1145,11 @@ MEM_ERROR SRAM_Write_Address_Range(uint8_t *buffer, uint32_t *buffLen, const uin
 	end_adr = args[1] + 1;
 
 #if MEM_ACCESS_WIDTH_BIT == 16
-		start_value = (uint16_t)arguments[2];
+		start_value = (uint16_t)args[2];
 		uint16_t real_value;
 		if(start_adr < MEM_SIZE_ADR && end_adr <= MEM_SIZE_ADR){
-			start_adr = arguments[0];
-			end_adr = arguments[1] + 1;
+			start_adr = args[0];
+			end_adr = args[1] + 1;
 			for(uint32_t adr = start_adr; adr < end_adr; adr++){
 				MEM_ERROR ret = SRAM_Write_16b(adr, start_value);
 				if(ret != MEM_NO_ERROR)
@@ -1269,7 +1271,7 @@ MEM_ERROR SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *a
     MEM_ERROR ret = SRAM_Read_16b(args[0], &real_value);
     if(ret != MEM_NO_ERROR)
         return ret;
-    sprintf((char*)buffer, "Address: %lu\tValue: %#06X\n\n\r", (unsigned long)adr, real_value);
+    sprintf((char*)buffer, "Address: %lu\tValue: %#06X\n\n\r", (unsigned long)args[0], real_value);
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
 #if MEM_ACCESS_WIDTH_BIT == 8
@@ -1299,9 +1301,9 @@ MEM_ERROR SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t 
 	TestStatus state = PASSED;
 
 #if MEM_ACCESS_WIDTH_BIT == 16
-		uint16_t expected_value = (uint16_t)arguments[1];
+		uint16_t expected_value = (uint16_t)args[1];
 		uint16_t real_value = 0;
-		MEM_ERROR ret = SRAM_Read_16b(adr, &real_value);
+		MEM_ERROR ret = SRAM_Read_16b(args[0], &real_value);
 		if(ret != MEM_NO_ERROR)
 			return ret;
 
@@ -1355,7 +1357,7 @@ MEM_ERROR SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, const uin
 	TestStatus state = PASSED;
 
 #if MEM_ACCESS_WIDTH_BIT == 16
-		uint16_t expected_value_local = (uint16_t)arguments[2];
+		uint16_t expected_value_local = (uint16_t)args[2];
 		uint16_t real_value_local = 0;
 		if(start_local <= end_local){
 			if(start_local < MEM_SIZE_ADR && end_local <= MEM_SIZE_ADR){
