@@ -18,9 +18,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "fmc.h"
-
-#include "memory_control.h"
+#include "SystemFiles/fmc.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -49,18 +47,7 @@ void MX_FMC_Init(void)
   hsram1.Init.NSBank = FMC_NORSRAM_BANK2;
   hsram1.Init.DataAddressMux = FMC_DATA_ADDRESS_MUX_DISABLE;
   hsram1.Init.MemoryType = FMC_MEMORY_TYPE_SRAM;
-
-  if(MEM_ACCESS_WIDTH_BIT == 8)
-  {
   hsram1.Init.MemoryDataWidth = FMC_NORSRAM_MEM_BUS_WIDTH_8;
-  }
-
-  if(MEM_ACCESS_WIDTH_BIT == 16)
-  {
-  hsram1.Init.MemoryDataWidth = FMC_NORSRAM_MEM_BUS_WIDTH_16;
-  }
-
-
   hsram1.Init.BurstAccessMode = FMC_BURST_ACCESS_MODE_DISABLE;
   hsram1.Init.WaitSignalPolarity = FMC_WAIT_SIGNAL_POLARITY_LOW;
   hsram1.Init.WrapMode = FMC_WRAP_MODE_DISABLE;

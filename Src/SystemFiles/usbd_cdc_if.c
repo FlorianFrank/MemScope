@@ -1,3 +1,4 @@
+#include <argz.h>
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -20,7 +21,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_cdc_if.h"
+#include "SystemFiles/usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
 
@@ -131,7 +132,7 @@ __weak void USBCDCRXCallback(uint8_t* Buf, uint32_t Len)
    */
 }
 
-bool Virtual_Com_Port_IsHostPortOpen()
+__unused bool Virtual_Com_Port_IsHostPortOpen()
 {
 	uint8_t state = ((USBD_HandleTypeDef)hUsbDeviceHS).dev_state;
     return ( (state == USBD_STATE_CONFIGURED) && host_port_open);

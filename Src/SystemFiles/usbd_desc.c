@@ -21,8 +21,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_core.h"
-#include "usbd_desc.h"
-#include "usbd_conf.h"
+#include "SystemFiles/usbd_desc.h"
+#include "SystemFiles/usbd_conf.h"
 
 /* USER CODE BEGIN INCLUDE */
 
