@@ -18,7 +18,7 @@
 
 #ifdef SRAM_ALLIANCE_AS7C34098A
 
-#define MEM_NAME                    SRAM_ALLIANCE_AS7C34098A
+#define MEM_NAME                    "SRAM_ALLIANCE_AS7C34098A"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)262144)
 #define MEM_ACCESS_WIDTH_BIT	    16
@@ -32,7 +32,7 @@
 
 #ifdef SRAM_ALLIANCE_AS7C38098A
 
-#define MEM_NAME                    SRAM_ALLIANCE_AS7C38098A
+#define MEM_NAME                    "SRAM_ALLIANCE_AS7C38098A"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -46,7 +46,7 @@
 
 #ifdef SRAM_CYPRESS_CY62157EV30
 
-#define MEM_NAME                    SRAM_CYPRESS_CY62157EV30
+#define MEM_NAME                    "SRAM_CYPRESS_CY62157EV30"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -60,7 +60,7 @@
 
 #ifdef SRAM_CYPRESS_CY7C1041CV33
 
-#define MEM_NAME                    SRAM_CYPRESS_CY7C1041CV33
+#define MEM_NAME                    "SRAM_CYPRESS_CY7C1041CV33"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)262144)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -74,7 +74,7 @@
 
 #ifdef SRAM_CYPRESS_CY7C1051DV33
 
-#define MEM_NAME                    SRAM_CYPRESS_CY7C1051DV33
+#define MEM_NAME                    "SRAM_CYPRESS_CY7C1051DV33"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -88,7 +88,7 @@
 
 #ifdef SRAM_ISSI_IS61WV51216BLL
 
-#define MEM_NAME                    SRAM_ISSI_IS61WV51216BLL
+#define MEM_NAME                    "SRAM_ISSI_IS61WV51216BLL"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -102,7 +102,7 @@
 
 #ifdef MRAM_EVERSPIN_MR4A08BYS35
 
-#define MEM_NAME                    MRAM_EVERSPIN_MR4A08BYS35
+#define MEM_NAME                    "MRAM_EVERSPIN_MR4A08BYS35"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)2097152)
 #define MEM_ACCESS_WIDTH_BIT		8
@@ -116,7 +116,7 @@
 
 #ifdef MRAM_EVERSPIN_MR4A08BUYS45
 
-#define MEM_NAME                    MRAM_EVERSPIN_MR4A08BUYS45
+#define MEM_NAME                    "MRAM_EVERSPIN_MR4A08BUYS45"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)2097152)
 #define MEM_ACCESS_WIDTH_BIT		8
@@ -130,7 +130,7 @@
 
 #ifdef FRAM_CYPRESS_FM22L16_55_TG
 
-#define MEM_NAME                    FRAM_CYPRESS_FM22L16_55_TG
+#define MEM_NAME                    "FRAM_CYPRESS_FM22L16_55_TG"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)262144)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -144,7 +144,7 @@
 
 #ifdef FRAM_ROHM_MR48V256CTAZAARL
 
-#define MEM_NAME                    FRAM_ROHM_MR48V256CTAZAARL
+#define MEM_NAME                    "FRAM_ROHM_MR48V256CTAZAARL"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				32768
 #define MEM_ACCESS_WIDTH_BIT		8
@@ -158,7 +158,7 @@
 
 #ifdef FRAM_FUJITSU_MB85R1001ANC_GE1
 
-#define MEM_NAME                    FRAM_FUJITSU_MB85R1001ANC_GE1
+#define MEM_NAME                    "FRAM_FUJITSU_MB85R1001ANC_GE1"
 #define MEM_ACCESS_IF 				PARALLEL
 #define MEM_SIZE_ADR 				((uint32_t)131072)
 #define MEM_ACCESS_WIDTH_BIT		8
@@ -172,7 +172,7 @@
 
 #ifdef RERAM_ADESTO_RM25C512C_LTAI_T
 
-#define MEM_NAME                    RERAM_ADESTO_RM25C512C_LTAI_T
+#define MEM_NAME                    "RERAM_ADESTO_RM25C512C_LTAI_T"
 #define MEM_ACCESS_IF 				SPI
 #define MEM_SIZE_ADR 				((uint32_t)512)
 #define MEM_ACCESS_WIDTH_BIT		16
@@ -185,6 +185,7 @@
 #endif
 
 #ifdef RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
+#define MEM_NAME                    "RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1"
 #define MEM_ACCESS_IF 				SPI
 #define MEM_SIZE_ADR 				((uint32_t)524288)
 #define MEM_ACCESS_WIDTH_BIT		((uint8_t)8)
