@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "spi.h"
+#include "SystemFiles/spi.h"
 #include "metrics.h"
 #include "memory_control.h"
 #include "cmd_parser.h"
@@ -12,7 +12,7 @@
 uint8_t command_mode = 0xFF;
 uint32_t arguments[3];
 
-extern uint8_t write_mode = 0xFF;
+uint8_t write_mode = 0xFF;
 
 
 
@@ -175,12 +175,12 @@ __unused void executeCommandUART(UART_HandleTypeDef *huart, Command cmdIdx){
 			uint8_t command_end_index = get_space(Rx_Buffer);
 			if((uint8_t)strlen(command[i]) == command_end_index && strncmp(command[i], Rx_Buffer, command_end_index) == 0){
 				command_mode = i;
-				char tmp[30];
 				uint16_t len_rx_buffer = strlen(Rx_Buffer);
 				uint16_t len_command = strlen(command[i]);
 				// if there are arguments after the command
 				if(len_rx_buffer - len_command > 0){
-					// extract the arguments from the string
+                    char tmp[30];
+                    // extract the arguments from the string
 					strncpy(tmp, Rx_Buffer + len_command, len_rx_buffer - len_command);
 					// tokenize the arguments and fill the array 'arguments'
 					tokenize_arguments(tmp);
@@ -244,7 +244,7 @@ void sendUSB(uint8_t *srcBuffer, uint16_t bufferSize){
 	do
 	{
 		result = CDC_Transmit_HS(srcBuffer, bufferSize);
-		my_HAL_Delay(10);
+		HAL_Delay(10);
 	}
 	while(result != USBD_OK);
 }

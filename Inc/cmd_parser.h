@@ -37,7 +37,7 @@ MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff,
 extern void executeCommandUART(UART_HandleTypeDef *huart, Command idx);
 
 #include "memory_control.h"
-#include "usbd_cdc_if.h"
+#include "SystemFiles/usbd_cdc_if.h"
 #include "memory_defines.h"
 
 #endif //MEMORY_TESTING_FW_CMD_PARSER_H
