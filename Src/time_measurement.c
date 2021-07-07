@@ -5,7 +5,7 @@
  *      Author: florianfrank
  */
 
-#include "time_measurement.h"
+#include "usb_time_measurement.h"
 
 #define start_timer()    *((volatile uint32_t*)0xE0001000) = 0x40000001  // Enable CYCCNT register
 #define stop_timer()   *((volatile uint32_t*)0xE0001000) = 0x40000000  // Disable CYCCNT register
@@ -16,22 +16,22 @@
 
 inline void StartTimer()
 {
-	ResetTimer();
+    USB_ResetTimer();
 	start_timer();
 }
 
 
-void ResetTimer()
+void USB_ResetTimer()
 {
 	reset_timer();
 }
 
-uint32_t StopGetTime()
+uint32_t USB_StopGetTime()
 {
 	return get_timer();
 }
 
-uint32_t TransformClockFrequencyToNs(uint32_t value)
+uint32_t USB_TransformClockFrequencyToNs(uint32_t value)
 {
 	// Eine schwingung
 	return (uint32_t)((float)value * (float)5.95238095);
