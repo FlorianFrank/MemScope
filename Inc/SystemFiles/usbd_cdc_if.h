@@ -20,8 +20,8 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_CDC_IF_H__
-#define __USBD_CDC_IF_H__
+#ifndef USBD_CDC_IF_H_
+#define USBD_CDC_IF_H_
 
 #ifdef __cplusplus
  extern "C" {
@@ -62,7 +62,7 @@
   */
 
 /* USER CODE BEGIN EXPORTED_TYPES */
-static bool host_port_open = false;
+__unused static bool host_port_open = false;
 /* USER CODE END EXPORTED_TYPES */
 
 /**
@@ -125,6 +125,6 @@ uint8_t CDC_Transmit_HS(uint8_t* Buf, uint16_t Len);
 }
 #endif
 
-#endif /* __USBD_CDC_IF_H__ */
+#endif /* USBD_CDC_IF_H_ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
