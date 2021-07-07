@@ -51,7 +51,11 @@ add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareF
 target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib/include")
 
+if($ENV{CLION_IDE})
 set(BuildFolder "${CMAKE_CURRENT_SOURCE_DIR}/cmake-build-debug")
+else() # ! CLION_IDE
+	set(BuildFolder "${CMAKE_CURRENT_SOURCE_DIR}/tmp")
+endif() # if CLION_IDE
 
 set(HEX_FILE ${BuildFolder}/${ProgramName}.hex)
 set(BIN_FILE ${BuildFolder}/${ProgramName}.bin)
