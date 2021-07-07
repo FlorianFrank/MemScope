@@ -460,14 +460,14 @@ __unused MEM_ERROR SRAM_Measure_WIP_Polling(UART_HandleTypeDef *huart){
 		SRAM_Write_8b(adr,0x55);
 
 		// Wait until the WEL latch turns reset
-        WIP_Polling(0);
+        SRAM_Measure_WIP_Polling(0);
 
 		// Write "1010101010"
 		SRAM_Write_8b(adr,0xAA);
 
 		// Measure write latency
 
-        int write_latency = WIP_Polling(0);
+        int write_latency = SRAM_Measure_WIP_Polling(0);
 
 		uint8_t ret;
 		SRAM_Read_8b(adr, &ret);
@@ -1655,7 +1655,7 @@ void USBCDCRXCallback(uint8_t *Buf, uint32_t Len)
 
                     sprintf(STRING_BUFFER, "%c", Rx_Data[0]);
                     len = strlen(STRING_BUFFER);
-                    sendUSB((uint8_t *) STRING_BUFFER, len);
+//                    sendUSB((uint8_t *) STRING_BUFFER, len);
                 }
             } else
             {
