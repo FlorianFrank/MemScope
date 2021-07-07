@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <cmd_parser.h>
 #include <time.h>
 #include <usb_handler.h>
@@ -20,19 +19,19 @@ int executeReadLatencyTestFRAMRohm()
     srand(time(NULL));
     uint8_t randomNumber = rand() % 256;
 
-    int startValue = 0x55;
+    //int startValue = 0x55;
     //printf("Set random number: 0x%x\n", randomNumber);
 
     for (int cellCtr = 0; cellCtr < MEM_SIZE_ADR; cellCtr++)
     {
         MEM_ERROR errCode = SRAM_Write_8b(0x00 + cellCtr, randomNumber);
-        /*if(errCode != MEM_NO_ERROR)
-            printf("Line: %d MEM_ERROR: %d\n", __LINE__, errCode);*/
+        if(errCode != MEM_NO_ERROR)
+            printf("Line: %d MEM_ERROR: %d\n", __LINE__, errCode);
 
         uint8_t retValue = 0x00;
         errCode = SRAM_Read_8b(0x00 + cellCtr, &retValue);
-        /* if(errCode != MEM_NO_ERROR)
-             printf("MEM_ERROR: %d\n", errCode);*/
+         if(errCode != MEM_NO_ERROR)
+             printf("MEM_ERROR: %d\n", errCode);
         if (retValue != randomNumber)
         {
                printf("Cell: %d Line: %d Incorrect value 0x%x!=0x%x\n", cellCtr, __LINE__, retValue, randomNumber);
@@ -40,25 +39,25 @@ int executeReadLatencyTestFRAMRohm()
     }
 
     USB_MS_Handle *usbHandle = malloc(sizeof(USB_MS_Handle));
-    USB_MS_Handle *usbHandleConfig = malloc(sizeof(USB_MS_Handle));
+    //USB_MS_Handle *usbHandleConfig = malloc(sizeof(USB_MS_Handle));
 
 
     USB_InitConnection(usbHandle);
-    USB_ERROR ret = { USB_TIMEOUT, 0};
+    USB_ERROR ret;
     do{
         ret = USB_ExecuteStateMachine(usbHandle, 1000);
         printf("%s", USB_ReturnErrorCodeStr(ret));
     }while(ret.m_ErrCode != USB_NO_ERROR);
     printf("DONE\n");
 
-    for(int i = 10; i < 30; i++)
+    for(uint16_t i = 10; i < 30; i++)
     {
 
-        char* fileName[10];
+        char fileName[20];
         sprintf(fileName, "Meas%d.csv", i);
         printf("Write file %s\n", fileName);
 
-        char* configFile[10];
+        char configFile[20];
         sprintf(configFile, "Meas%d.cnf", i);
 
         uint8_t initvalue = 0x00;
@@ -83,7 +82,7 @@ int executeReadLatencyTestFRAMRohm()
         char buff[512];
         memset(buff, 0x00, 512);
 //  int buffLen = 512;
-        uint32_t start = USB_StartTimer();
+        //uint32_t start = StartTimer();
         int offset = 0;
 
         for (int i0 = offset; i0 < MEM_SIZE_ADR + offset; i0++) {
@@ -108,27 +107,27 @@ int executeReadLatencyTestFRAMRohm()
 //  }
         uint8_t t;
         for (int i2 = 0; i2 < MEM_SIZE_ADR; i2++) {
-            uint32_t start = USB_StartTimer();
+            uint32_t startTS = StartTimer();
             for (int i3 = 0; i3 < readCycles; i3++) {
                 SRAM_Read_8b(0x00 + i2, &t);
             }
             uint32_t stop = StopGetTime();
             ResetTimer();
             sprintf(&buffer[strlen(buffer)], "%lu;%lu\n", (unsigned long) i2,
-                    (unsigned long) stop - start);
+                    (unsigned long) stop - startTS);
             if (i2 % 100 == 0) {
-                int size = strlen(buffer);
+                uint32_t size = strlen(buffer);
                 USB_WriteData(usbHandle, (uint8_t*) buffer, &size, true);
                 memset(buffer, 0x00, 4096);
             }
         }
-        int size = strlen(buffer);
-
+        uint32_t size = strlen(buffer);
         USB_WriteData(usbHandle, (uint8_t*) buffer, &size, true);
         printf("Writing Done\n");
         USB_CloseFile(usbHandle);
         printf("Fill Buffer\n");
     }
+    return 0;
 }
 
 #if MEM_ACCESS_IF == SPI

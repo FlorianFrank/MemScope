@@ -7,7 +7,7 @@
 
 #endif //MEMORY_TESTING_FW_TEST_CASES_H
 
-#ifdef MEM_ACCESS_IF == SPI
+#if MEM_ACCESS_IF == SPI
 int executeWIPPollingTestAdestoReRam();
 #endif // MEM_ACCESS_IF == SPI
 int executeReadLatencyTestFRAMRohm();
