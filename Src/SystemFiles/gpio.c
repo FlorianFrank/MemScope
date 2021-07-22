@@ -157,7 +157,7 @@ void MX_GPIO_Init(void)
 #if FRAM_CYPRESS_FM22L16_55_TG
   GPIO_InitStruct.Pin = G4_Pin|G5_Pin|B6_Pin|ZZ_Pin;
 #else // Not FRAM Cypress
-    GPIO_InitStruct.Pin = G4_Pin|G5_Pin|B6_Pin|ZZ_Pin;
+    GPIO_InitStruct.Pin = G4_Pin|G5_Pin|B6_Pin;
 #endif // Sleep Pin
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
