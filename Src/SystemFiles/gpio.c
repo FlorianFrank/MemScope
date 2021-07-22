@@ -88,6 +88,11 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
 
+#if FRAM_CYPRESS_FM22L16_55_TG
+  /** Sleep pin for FRAM Cypress*/
+  HAL_GPIO_WritePin(GPIOB, ZZ_Pin, GPIO_PIN_SET);
+#endif // Sleep Pin
+
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, LD3_Pin|LD4_Pin, GPIO_PIN_RESET);
 
@@ -149,11 +154,15 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(BOOT1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PBPin PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = G4_Pin|G5_Pin|B6_Pin|B7_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+#if FRAM_CYPRESS_FM22L16_55_TG
+  GPIO_InitStruct.Pin = G4_Pin|G5_Pin|B6_Pin|ZZ_Pin;
+#else // Not FRAM Cypress
+    GPIO_InitStruct.Pin = G4_Pin|G5_Pin|B6_Pin|ZZ_Pin;
+#endif // Sleep Pin
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  //GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PGPin PGPin PGPin */
