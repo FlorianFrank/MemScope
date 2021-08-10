@@ -253,10 +253,12 @@ void Error_Handler(void);
 #define SDNE1_Pin GPIO_PIN_6
 #define SDNE1_GPIO_Port GPIOB
 #define B6_Pin GPIO_PIN_8
+#define B7_Pin GPIO_PIN_9
+
 #define B6_GPIO_Port GPIOB
-#if FRAM_CYPRESS_FM22L16_55_TG
+//#if FRAM_CYPRESS_FM22L16_55_TG
 #define ZZ_Pin GPIO_PIN_9
-#endif // Sleep_Pin
+//#endif // Sleep_Pin
 #define B7_GPIO_Port GPIOB
 #define NBL0_Pin GPIO_PIN_0
 #define NBL0_GPIO_Port GPIOE

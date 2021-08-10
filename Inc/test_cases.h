@@ -11,3 +11,5 @@
 int executeWIPPollingTestAdestoReRam();
 #endif // MEM_ACCESS_IF == SPI
 int executeReadLatencyTestFRAMRohm();
+
+int executeMemoryTest();

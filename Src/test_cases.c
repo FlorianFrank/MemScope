@@ -130,6 +130,26 @@ int executeReadLatencyTestFRAMRohm()
     return 0;
 }
 
+int executeMemoryTest()
+{
+    for(int i = 0; i < 10000;i++)
+    {
+
+        SRAM_Write_16b(i, 0xAAAA);
+
+
+        uint16_t value = 0;
+        SRAM_Read_16b(i, &value);
+        printf("%d Value 0x%x\n", i, value);
+
+    }
+
+
+
+    return 0;
+
+}
+
 #if MEM_ACCESS_IF == SPI
 int executeWIPPollingTestAdestoReRam()
 {
