@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>SelectChipDropDown.qml</file>
+        <file>HeaderForm.ui.qml</file>
+        <file>Button.qml</file>
+        <file>LoggingOutput.qml</file>
+    </qresource>
+</RCC>
