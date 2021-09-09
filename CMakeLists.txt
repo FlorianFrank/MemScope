@@ -11,6 +11,7 @@ set(ProgramName "Memory_Testing_FW")
 #set(specs "rdimon.specs")
 
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
+set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
 
 project(${ProgramName} C ASM)
 
