@@ -213,7 +213,7 @@ int executeWIPPollingTestAdestoReRam()
                                                  3.3f, 255);
         uint32_t lenConfig = strlen(config);
         char configFileName[50];
-        sprintf(configFileName, "Cfg%d.csv", testCtr);
+        sprintf(configFileName, "Confmem%d.csv", testCtr);
         ret = USB_OpenWriteFile(usbHandle, configFileName, (uint8_t *) config, &lenConfig, USB_APPEND | USB_WRITE,
                                 true);
         if (ret.m_ErrCode != USB_NO_ERROR)
@@ -224,7 +224,7 @@ int executeWIPPollingTestAdestoReRam()
         usbHandle->m_Open = true; // ugly hack
 
         char measureFileName[50];
-        sprintf(measureFileName, "Msr%d.csv", testCtr);
+        sprintf(measureFileName, "Meamem%d.csv", testCtr);
 
         char *measureFile = "Cell;WIP_Polling\n";
         uint32_t lenMeasureFile = strlen(measureFile);
