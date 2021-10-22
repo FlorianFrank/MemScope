@@ -149,7 +149,7 @@ int main(void)
 #endif
 
 #ifdef USE_USB_CDC
-  //detect wether USB is connected
+  //detect whether USB is connected
   /*while(!Virtual_Com_Port_IsHostPortOpen())
   {
 	  HAL_Delay(100);

@@ -217,7 +217,7 @@ __unused MEM_ERROR SetPowerDown()
 uint32_t WIP_Polling(uint32_t timeoutCycles)
 {
     uint32_t startTS;
-    uint32_t endTS = UINT32_MAX;
+    uint32_t endTS = 0;
 
     //start timer
     start_timer();

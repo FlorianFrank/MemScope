@@ -18,8 +18,8 @@ char* CreateMetaData(uint32_t testID, TestType testType, uint32_t memID, uint8_t
                      float voltage, float temperature)
 {
     // e.g. 1;Fujitsu_FRAM;9;TEST;Row_Hammering;intValue;writeCycles
-    sprintf(buffer, "TEST_ID;MEM_NAME;MEM_ID;TEST_NAME;INIT_VALUE;VALUE_WRITTEN;START_ADDR;END_ADDR;WRITE_CYCLES;READ_CYCLES;ROW_OFFSET;COLUMN_OFFSET;PARALLEL_READ_BYTES;VOLTAGE;TEMPERATURE\n");
-    sprintf(&buffer[strlen(buffer)], "%d;%s;%x;%s;%x;%d;%d;%d;%d;%d;%d;%d;%d;%f;%f\n", (int)testID, MEM_NAME, (int)memID, testNameStr[(int)testType], (int)initValue, (int)startAddr, (int)endAddr, (int)writeCycles, (int)readCycles, (int)rowOffset, (int)columnOffset, (int)parallelReadBytes, (int)parallelWriteBytes, voltage, temperature);
+    sprintf(buffer, "TEST_ID;MEM_NAME;MEM_ID;TEST_NAME;INIT_VALUE;VALUE_WRITTEN;START_ADDR;END_ADDR;WRITE_CYCLES;READ_CYCLES;ROW_OFFSET;COLUMN_OFFSET;PARALLEL_READ_BYTES;PARALLEL_WRITE_BYTES;VOLTAGE;TEMPERATURE\n");
+    sprintf(&buffer[strlen(buffer)], "%d;%s;%x;%s;%x;%d;%d;%d;%d;%d;%d;%d;%d;%d;%f;%f\n", (int)testID, MEM_NAME, (int)memID, testNameStr[(int)testType], (int)initValue, (int)valueWritten, (int)startAddr, (int)endAddr, (int)writeCycles, (int)readCycles, (int)rowOffset, (int)columnOffset, (int)parallelReadBytes, (int)parallelWriteBytes, voltage, temperature);
     return buffer;
 }
 
