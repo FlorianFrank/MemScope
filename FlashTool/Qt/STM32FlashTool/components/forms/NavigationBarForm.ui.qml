@@ -1,8 +1,9 @@
 import QtQuick 2.4
 
 Item {
-    id: item1
+    id: header
     property alias titleStr: titleTextLable.text
+
 
     Rectangle {
         id: rectangle
@@ -26,8 +27,23 @@ Item {
             color: "white"
         }
     }
-}
 
+    Rectangle {
+        id: navbar
+        height: 30
+        color: "#cfcfcf"
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: rectangle.bottom
+        anchors.rightMargin: -1
+        anchors.leftMargin: 0
+        anchors.topMargin: 0
+
+        MenuItemForm {
+            anchors.fill: parent
+        }
+}
+}
 /*##^##
 Designer {
     D{i:0;autoSize:true;height:480;width:640}

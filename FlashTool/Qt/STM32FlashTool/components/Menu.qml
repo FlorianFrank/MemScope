@@ -1,0 +1,4 @@
+import './forms'
+
+MenuForm {
+}

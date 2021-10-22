@@ -3,6 +3,8 @@ import QtQuick 2.0
 Item {
     property alias label: textLabel.text
     property alias mouse: mouseArea
+    property alias buttonColor: button.color
+
     height: 40
 
     Rectangle {

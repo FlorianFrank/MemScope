@@ -2,8 +2,6 @@ import QtQuick 2.0
 import QtQuick.Controls 2.0
 
 Item {
-    id: comboboxItem
-
     property alias comboBoxTitle: comboboxStr.text
     property alias comboBoxItems: chipSelectCombobox.model
     property alias combobox: chipSelectCombobox
