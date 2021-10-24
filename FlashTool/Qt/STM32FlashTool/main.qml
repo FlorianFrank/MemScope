@@ -10,7 +10,17 @@ Window {
     id: window
     width: 700
     height: 480
+    minimumWidth: 400
+    minimumHeight: 550
     visible: true
+
+    onWidthChanged: () => {
+                         console.log("W: " +width)
+                     }
+
+    onHeightChanged: () => {
+                         console.log("H: " +height)
+                     }
 
     function set_current_view(idx) {
         if(idx === 0)
@@ -38,9 +48,8 @@ Window {
          test_execution_button.onClicked: set_current_view(1)
          anchors.left: parent.left;
          anchors.right: parent.right;
-         anchors.bottom: parent.bottom
-         anchors.bottomMargin: 419
          anchors.top: parent.top;
+         height: 55
          anchors.rightMargin: 0;
          anchors.leftMargin: 0;
          anchors.topMargin: 0;
@@ -49,17 +58,28 @@ Window {
 
 
     StartPage {
+
+        function getCompileFlagColor()
+        {
+            if(memoryConfig.compileStatus === "success")
+                return "green"
+            if(memoryConfig.compileStatus === "compiling")
+                return "blue"
+            if(memoryConfig.compileStatus === "error")
+                return "red"
+            if(memoryConfig.compileStatus === "warning")
+                return "yellow"
+            return "lightGrey"
+        }
+
         id: startPage
-        anchors.top: header.bottom
-        anchors.bottom: parent.bottom
-        anchors.rightMargin: 0
-        anchors.bottomMargin: 0
-        anchors.leftMargin: 0
-        anchors.topMargin: 0
         anchors.left: parent.left
         anchors.right: parent.right
+        anchors.top: header.bottom
+        width: window.width
+        height: window.height *0.8
         flashButton.mouse.onClicked: {
-                testWindow.visible = true
+            testWindow.visible = true
                 startPage.visible = false
         }
 
@@ -68,6 +88,7 @@ Window {
         memoryDropDown.onActivated: memoryConfig.actualElement(memoryDropDown.currentIndex)
         compileState.compileFlagColor: getCompileFlagColor();
         compileLoggingArea.textAreaStr: memoryConfig.compileText;
+        compileProgress: memoryConfig.percentage;
     }
 
     TestWindow {

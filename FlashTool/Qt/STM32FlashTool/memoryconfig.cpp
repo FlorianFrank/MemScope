@@ -4,6 +4,8 @@
 #include <QTextCodec>
 #include <QDir>
 #include <unistd.h>
+#include <regex>
+#include <iostream>
 
 MemoryConfig::MemoryConfig(QObject *parent) : QObject(parent), m_CompileStatus("waiting for compilation"),
     m_MemoryTypesList({"Please select the memory module",
@@ -19,7 +21,7 @@ MemoryConfig::MemoryConfig(QObject *parent) : QObject(parent), m_CompileStatus("
                       "FRAM_FUJITSU_MB85R1001ANC_GE1",
                       "RERAM_ADESTO_RM25C512C_LTAI_T",
                       "RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1",
-                      "FRAM_CYPRESS_FM22L16_55_TG"}), m_CurrentIdx(0)
+                      "FRAM_CYPRESS_FM22L16_55_TG"}), m_CurrentIdx(0), m_Percentage(0.0)
 {
 
 }
@@ -124,14 +126,20 @@ void MemoryConfig::readSubProcess()
 {
      QByteArray ret = m_Process->readAllStandardOutput();
     QString compileText = QTextCodec::codecForMib(106)->toUnicode(ret);
+    int percentage = getProgressInPercentFromComilationString(compileText);
+    if(percentage != -1) {
 
+        m_Percentage = ((float)percentage)/100;
+        emit percentageChanged();
+
+    }
     emit setCompileText(compileText);
 }
 
 void MemoryConfig::readError()
 {
     QString compileText = m_Process->readAllStandardError();
-    qDebug() << compileText;
+ //qDebug() << compileText;
     //m_CompileStatus = "error";
     //emit compileStatusChanged();
     emit setCompileText(compileText);
@@ -144,6 +152,10 @@ QString& MemoryConfig::compileText()
         m_CompileText.push_back(""); // TODO fix me
     }
     return m_CompileText[m_CompileText.size() -1];
+}
+
+float MemoryConfig::percentage(){
+    return m_Percentage;
 }
 
 
@@ -167,4 +179,34 @@ void MemoryConfig::setCompileText(QString &compileText)
 QString& MemoryConfig::compileStatus()
 {
     return m_CompileStatus;
+}
+
+QString MemoryConfig::searchForCompileProgressInPercent(QString &message)
+{
+        std::regex searchExpr( R"(\[\s?\d{1,3}%\])");
+        std::smatch regexMatch;
+        std::string messageStdString = message.toStdString();
+        std::regex_search(messageStdString, regexMatch, searchExpr);
+        QString firstRegexMatch(regexMatch[0].str().c_str());
+        return firstRegexMatch;
+}
+
+QString MemoryConfig::removeBracesandPercentageSymbolFromRegexMatch(QString &regexMatch)
+{
+    std::string match = regexMatch.toStdString();
+    std::regex replaceExpr( R"(\[|\]|%|\s)");
+    QString percentageStrCleaned(std::regex_replace(match,replaceExpr, "").c_str());
+    return percentageStrCleaned;
+}
+
+
+int MemoryConfig::getProgressInPercentFromComilationString(QString &compileString)
+{
+        QString regexMatch = searchForCompileProgressInPercent(compileString);
+        if(regexMatch.size() > 0)
+        {
+            QString percentageInString = removeBracesandPercentageSymbolFromRegexMatch(regexMatch);
+            return percentageInString.toInt();
+        }
+        return -1;
 }

@@ -5,10 +5,8 @@ Item {
     property alias mouse: mouseArea
     property alias buttonColor: button.color
 
-    height: 40
-
     Rectangle {
-        id:button
+        id: button
         anchors.fill: parent
         radius: 10
         color: "#039be5"
@@ -28,5 +26,10 @@ Item {
             anchors.fill: parent
         }
     }
-
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

@@ -3,9 +3,9 @@
         <file>main.qml</file>
     </qresource>
     <qresource prefix="/components">
-        <file alias="LoggingOutput.ui.qml">components/LoggingOutput.ui.qml</file>
+        <file alias="LoggingOutput.qml">components/LoggingOutput.qml</file>
         <file alias="NavigationBar.qml">components/NavigationBar.qml</file>
-        <file alias="SelectChipDropDown.ui.qml">components/SelectChipDropDown.ui.qml</file>
+        <file alias="SelectChipDropDown.qml">components/SelectChipDropDown.qml</file>
         <file alias="TestWindow.ui.qml">components/TestWindow.ui.qml</file>
         <file alias="Menu.qml">components/Menu.qml</file>
         <file alias="MenuItem.qml">components/MenuItem.qml</file>
@@ -22,5 +22,7 @@
     <file alias="ButtonForm.ui.qml">components/forms/ButtonForm.ui.qml</file>
     <file alias="NavigationBarForm.ui.qml">components/forms/NavigationBarForm.ui.qml</file>
     <file alias="CompilationStateForm.ui.qml">components/forms/CompilationStateForm.ui.qml</file>
+    <file alias="LoggingOutputForm.ui.qml">components/forms/LoggingOutputForm.ui.qml</file>
+    <file alias="SelectChipDropDownForm.ui.qml">components/forms/SelectChipDropDownForm.ui.qml</file>
 </qresource>
 </RCC>

@@ -18,9 +18,6 @@ Item {
 
 
         Column {
-
-            spacing: 2
-
             id: column
             anchors.fill: parent
             Text {

@@ -15,6 +15,8 @@ class MemoryConfig : public QObject
     Q_PROPERTY(int selectedIdx READ getIndex NOTIFY dropDownIndexChanged)
     Q_PROPERTY(QString compileText READ compileText WRITE setCompileText NOTIFY compileTextChanged);
     Q_PROPERTY(QString compileStatus READ compileStatus NOTIFY compileStatusChanged);
+    Q_PROPERTY(float percentage READ percentage NOTIFY percentageChanged);
+
 public:
     explicit MemoryConfig(QObject *parent = nullptr);
     QStringList getMemoryTypes();
@@ -22,12 +24,17 @@ public:
     void startCompilation(QString memory);
     QString& compileText();
     QString& compileStatus();
+    float percentage();
+    QString searchForCompileProgressInPercent(QString &message);
+    QString removeBracesandPercentageSymbolFromRegexMatch(QString &regexMatch);
+    int getProgressInPercentFromComilationString(QString &compileString);
 
 signals:
     void memoryTypesChanged();
     void dropDownIndexChanged(int i);
     void compileTextChanged();
     void compileStatusChanged();
+    void percentageChanged();
 
 
 
@@ -49,6 +56,7 @@ private:
    std::vector<QString> m_CompileText;
    std::thread *th;
    QString m_CompileStatus;
+   float m_Percentage;
 
 
 };

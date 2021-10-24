@@ -1,7 +1,7 @@
 import QtQuick 2.4
 import QtQuick.Layouts 1.0
-import '.'
-import '..'
+import "."
+import ".."
 
 Item {
     property alias titleStr: titleTextLable.text
@@ -15,9 +15,6 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        anchors.rightMargin: -1
-        anchors.leftMargin: 0
-        anchors.topMargin: 0
 
         Text {
             id: titleTextLable
@@ -33,20 +30,20 @@ Item {
 
     Menu {
         children: [
-               MenuItem {
+            MenuItem {
                 id: start_page_button
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 text: "Compilation"
+            },
 
-               },
-
-               MenuItem {
+            MenuItem {
                 id: test_execution_button
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 text: "Test Execution"
-               }]
+            }
+        ]
         anchors.top: rectangle.bottom
         anchors.bottom: parent.bottom
         anchors.right: parent.right
