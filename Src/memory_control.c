@@ -148,12 +148,12 @@ MemoryStatusRegister ParseStatusRegister(uint8_t statusRegister) {
 
 void PrintStatusRegister(MemoryStatusRegister reg)
 {
-	printf("WP_Enalbe: %d\n"
+	printf("WP_Enable: %d\n"
 			"Auto_Power_Down_Enable: %d\n"
 			"Low_Power_Standby_Enable: %d\n"
 			"Block_Protection_Bits: %d\n"
 			"Write_Enable_Bits: %d\n"
-			"Write_In_Progess_Bits: %d\n",
+			"Write_In_Progress_Bits: %d\n",
 			reg.wp_enable_Pin,
 			reg.auto_power_down_enable,
 			reg.low_power_standby_enable,

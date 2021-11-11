@@ -339,14 +339,14 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
     else
     {
       /* Baudrate prescaler not use in Motoraola Slave mode. force to default value */
-      hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+      hspi->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
     }
   }
   else
   {
     assert_param(IS_SPI_BAUDRATE_PRESCALER(hspi->Init.BaudRatePrescaler));
 
-    /* Force polarity and phase to TI protocaol requirements */
+    /* Force polarity and phase to TI protocol requirements */
     hspi->Init.CLKPolarity = SPI_POLARITY_LOW;
     hspi->Init.CLKPhase    = SPI_PHASE_1EDGE;
   }
