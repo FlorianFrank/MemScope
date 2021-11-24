@@ -230,7 +230,7 @@ uint32_t WIP_Polling(uint32_t timeoutCycles)
         if(err != MEM_NO_ERROR )
             return err;
 
-        if (statusRegister.write_enable_bit == 0) {
+        if (statusRegister.write_in_progress_bit == 0) {
         	stop_timer();
             endTS = get_timer() - startTS;
             return endTS;
