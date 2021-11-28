@@ -143,6 +143,7 @@ int main(void)
 
     executeMemoryTest();
     //executeReadLatencyTestFRAMRohm();
+    //executeWIPPollingTestAdestoReRam();
 #ifdef USE_UART
   receive(&huart4, (uint8_t *)Rx_Data, 1); // activate uart rx interrupt every time receiving 1 byte
   //showHelp(&huart4); // UART

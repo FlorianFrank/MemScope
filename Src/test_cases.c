@@ -14,7 +14,7 @@
 
 #define ADDRESSES_TO_TEST MEM_SIZE_ADR
 #define READ_ITERATIONS 10000
-#define MEM_ID 4
+#define MEM_ID 1
 
 int executeReadLatencyTestFRAMRohm()
 {
@@ -136,20 +136,25 @@ int executeMemoryTest()
 {
     for(int i = 0; i < 10000;i++)
     {
-
+#if MEM_ACCESS_WIDTH_BIT == 16
         SRAM_Write_16b(i, 0xAAAA);
+#elif MEM_ACCESS_WIDTH_BIT == 8
+        SRAM_Write_8b(i, 0xaa);
+#endif
 
+        // Some memory chips need a delay here
+        HAL_Delay(1);
 
+#if MEM_ACCESS_WIDTH_BIT == 16
         uint16_t value = 0;
         SRAM_Read_16b(i, &value);
+#elif MEM_ACCESS_WIDTH_BIT == 8
+        uint8_t value = 0;
+        SRAM_Read_8b(i, &value);
+#endif
         printf("%d Value 0x%x\n", i, value);
-
     }
-
-
-
     return 0;
-
 }
 
 #if MEM_ACCESS_IF == SPI
@@ -200,7 +205,7 @@ int executeWIPPollingTestAdestoReRam()
                     uint32_t lenPollingBuff = strlen(pollingBuffer);
                     USB_ERROR usbError = USB_WriteData(usbHandle, (uint8_t *) pollingBuffer, &lenPollingBuff, true);
                     if (usbError.m_ErrCode != USB_NO_ERROR)
-                    printf("ERROR %d, Iteration %d MSG: %s", __LINE__, addrCtr, USB_ReturnErrorCodeStr(usbError));
+                        printf("ERROR %d, Iteration %d MSG: %s", __LINE__, addrCtr, USB_ReturnErrorCodeStr(usbError));
                     memset(pollingBuffer, 0x00, 4096 * sizeof(char));
                 }
             }
