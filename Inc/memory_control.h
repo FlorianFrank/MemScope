@@ -5,8 +5,8 @@
   ******************************************************************************
 */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __TUD_SECENG_H
-#define __TUD_SECENG_H
+#ifndef __MEMORY_CONTROL_H
+#define __MEMORY_CONTROL_H
 
 #include "SystemFiles/usbd_cdc_if.h"
 #include "memory_defines.h"
@@ -143,4 +143,4 @@ __unused __unused MEM_ERROR SetPowerDown();
 
 #endif // MEM_ACCESS_IF==SPI
 
-#endif /* __TUD_SECENG_H */
+#endif /* __MEMORY_CONTROL_H */
