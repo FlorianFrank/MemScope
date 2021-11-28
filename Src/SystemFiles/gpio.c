@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "SystemFiles/gpio.h"
+#include "IOPinDefines.h"
 
 /* USER CODE BEGIN 0 */
 

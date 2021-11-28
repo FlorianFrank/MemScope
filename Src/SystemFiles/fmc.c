@@ -18,7 +18,10 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+
 #include "SystemFiles/fmc.h"
+
+#include "IOPinDefines.h"
 
 /* USER CODE BEGIN 0 */
 

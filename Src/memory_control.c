@@ -6,6 +6,7 @@
 */
 
 #include "memory_control.h"
+#include "IOPinDefines.h"
 #include "metrics.h"
 #include "SystemFiles/spi.h"
 #include "cmd_parser.h"

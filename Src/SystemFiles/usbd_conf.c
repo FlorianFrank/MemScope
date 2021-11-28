@@ -26,6 +26,7 @@
 #include "usbd_core.h"
 
 #include "usbd_cdc.h"
+#include "IOPinDefines.h"
 
 /* USER CODE BEGIN Includes */
 
