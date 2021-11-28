@@ -19,7 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "SystemFiles/spi.h"
-#include "IOPinDefines.h"
+#include "io_pin_defines.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */

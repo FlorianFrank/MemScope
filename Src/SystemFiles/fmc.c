@@ -21,7 +21,7 @@
 
 #include "SystemFiles/fmc.h"
 
-#include "IOPinDefines.h"
+#include "io_pin_defines.h"
 
 /* USER CODE BEGIN 0 */
 
