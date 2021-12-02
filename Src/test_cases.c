@@ -26,12 +26,12 @@ int executeReadLatencyTestFRAMRohm()
 
     for (int cellCtr = 0; cellCtr < MEM_SIZE_ADR; cellCtr++)
     {
-        MEM_ERROR errCode = SRAM_Write_8b(0x00 + cellCtr, randomNumber);
+        MEM_ERROR errCode = MemoryWrite8BitWord(0x00 + cellCtr, randomNumber);
         if(errCode != MEM_NO_ERROR)
             printf("Line: %d MEM_ERROR: %d\n", __LINE__, errCode);
 
         uint8_t retValue = 0x00;
-        errCode = SRAM_Read_8b(0x00 + cellCtr, &retValue);
+        errCode = MemoryRead8BitWord(0x00 + cellCtr, &retValue);
          if(errCode != MEM_NO_ERROR)
              printf("MEM_ERROR: %d\n", errCode);
         if (retValue != randomNumber)
@@ -88,7 +88,7 @@ int executeReadLatencyTestFRAMRohm()
         int offset = 0;
 
         for (int i0 = offset; i0 < MEM_SIZE_ADR + offset; i0++) {
-            SRAM_Write_8b(0x00 + i0, initvalue);
+            MemoryWrite8BitWord(0x00 + i0, initvalue);
 
         }
 
@@ -97,21 +97,21 @@ int executeReadLatencyTestFRAMRohm()
          for(int i = 0+offset; i < 64+offset; i++)
          {
          uint8_t value = 0x55;
-         SRAM_Write_8b(0x00 + i, 0xAA);
+         MemoryWrite8BitWord(0x00 + i, 0xAA);
          }
 
          }*/
 
 //  for(int i2 = offset; i2 < (128+offset); i2++)
 //  {
-//	  printf("%d. Ret %d\n", i2-offset, SRAM_Read_8b(0x00 + i2));
+//	  printf("%d. Ret %d\n", i2-offset, MemoryRead8BitWord(0x00 + i2));
 //
 //  }
         uint8_t t;
         for (int i2 = 0; i2 < MEM_SIZE_ADR; i2++) {
             uint32_t startTS = StartTimer();
             for (int i3 = 0; i3 < readCycles; i3++) {
-                SRAM_Read_8b(0x00 + i2, &t);
+                MemoryRead8BitWord(0x00 + i2, &t);
             }
             uint32_t stop = StopGetTime();
             ResetTimer();
@@ -137,9 +137,9 @@ int executeMemoryTest()
     for(int i = 0; i < 10000;i++)
     {
 #if MEM_ACCESS_WIDTH_BIT == 16
-        SRAM_Write_16b(i, 0xAAAA);
+        MemoryWrite16BitWord(i, 0xAAAA);
 #elif MEM_ACCESS_WIDTH_BIT == 8
-        SRAM_Write_8b(i, 0xaa);
+        MemoryWrite8BitWord(i, 0xaa);
 #endif
 
         // Some memory chips need a delay here
@@ -147,10 +147,10 @@ int executeMemoryTest()
 
 #if MEM_ACCESS_WIDTH_BIT == 16
         uint16_t value = 0;
-        SRAM_Read_16b(i, &value);
+        MemoryRead16BitWord(i, &value);
 #elif MEM_ACCESS_WIDTH_BIT == 8
         uint8_t value = 0;
-        SRAM_Read_8b(i, &value);
+        MemoryRead8BitWord(i, &value);
 #endif
         printf("%d Value 0x%x\n", i, value);
     }
@@ -188,13 +188,13 @@ int executeWIPPollingTestAdestoReRam()
             printf("Numbers: 0x%02x -> 0x%02x\n", num1, num2);
             for (int addrCtr = 0; addrCtr < ADDRESSES_TO_TEST; addrCtr++) {
                 // Write first value
-                SRAM_Write_8b(addrCtr, num1);
+                MemoryWrite8BitWord(addrCtr, num1);
 
                 // Wait until the WEL latch turns reset
                 WIP_Polling(0);
 
                 // Overwrite value
-                SRAM_Write_8b(addrCtr, num2);
+                MemoryWrite8BitWord(addrCtr, num2);
 
                 // Measure write latency
                 int write_latency = WIP_Polling(0);

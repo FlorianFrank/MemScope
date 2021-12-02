@@ -14,7 +14,10 @@ uint32_t arguments[3];
 
 uint8_t write_mode = 0xFF;
 
+uint16_t len;
+uint16_t old_len;
 
+char Rx_Buffer[100];
 
 // command help initialization
 const char *command_help[] = {
@@ -93,48 +96,48 @@ MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff,
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x1;
-			return SRAM_Fill_With_Zeros(outBuff, outBuffLen);
+			return MemoryFillWithZeros(outBuff, outBuffLen);
 		case FILL_WITH_ONES:
 			// write operation in mode 2 will be performed in this method
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x2;
-			return SRAM_Fill_With_Ones(outBuff, outBuffLen);
+			return MemoryFillWithOnes(outBuff, outBuffLen);
 		case WRITE_ASCENDING:
 			// write operation in mode 3 will be performed in this method
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x3;
-			return SRAM_Write_Ascending(outBuff, outBuffLen, arguments);
+			return MemoryFillMemoryWithAscendingValues(outBuff, outBuffLen, arguments);
 		case WRITE_ALTERNATE_ZERO_ONE:
 			// write operation in mode 4 will be performed in this method
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x4;
-			return SRAM_Write_Alternate_Zero_One(outBuff, outBuffLen);
+			return MemoryWriteAlternatingZeroAndOne(outBuff, outBuffLen);
 		case WRITE_ALTERNATE_ONE_ZERO:
 			// write operation in mode 5 will be performed in this method
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x5;
-			return SRAM_Write_Alternate_One_Zero(outBuff, outBuffLen);
+			return MemoryWriteAlternatingOneAndZero(outBuff, outBuffLen);
 		case WRITE_ADDRESS:
 			// write operation in mode 6 will be performed in this method
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x6;
-			return SRAM_Write_Address(outBuff, outBuffLen, arguments);
+			return MemoryWriteSingleValue(outBuff, outBuffLen, arguments);
 		case WRITE_ADDRESS_RANGE:
 			// write operation in mode 7 will be performed in this method
 			// therefore reset the counters/arguments
 			// they will be set in the function
 			write_mode = 0x7;
-			return SRAM_Write_Address_Range(outBuff, outBuffLen, arguments);
+			return MemoryWriteAddressRange(outBuff, outBuffLen, arguments);
 		case GET_PERFORMANCE_MEASURES:
 			// no write operation will be performed in this method
 			// reset the counter for statistical analysis
 			//write_mode = 0xFF;
-			return SRAM_Get_Performance_Measures(outBuff, outBuffLen);
+			return MemoryGetProbabilityOfFlippedOnesAndZeros(outBuff, outBuffLen);
 		case GET_ADDRESS:
 			// no write operation will be performed in this method
 			// reset the counter for statistical analysis
@@ -143,7 +146,7 @@ MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff,
 		case READ:
 			// no write operation will be performed in this method
 			//write_mode = 0xFF;
-			return SRAM_Read_SRAM(outBuff, outBuffLen);
+			return MemoryReadWholeMemory(outBuff, outBuffLen);
 		case WRITE:
 			// no write operation will be performed in this method
 			//write_mode = 0xFF;
@@ -157,7 +160,7 @@ MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff,
 			//write_mode = 0xFF;
 			return SRAM_Check_Address_Range(outBuff, outBuffLen, arguments);
 		case GET_VALUES:
-			return SRAM_Get_Values(outBuff, outBuffLen);
+			return MemoryReadArea(outBuff, outBuffLen);
 		default:
 			sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
 			len = strlen(STRING_BUFFER);
@@ -196,7 +199,7 @@ __unused void executeCommandUART(UART_HandleTypeDef *huart, Command cmdIdx){
 		send(huart, (uint8_t *)STRING_BUFFER, len);
 
 		// reset the counter before every write execution
-		uint32_t buffLen = BUFFER_SIZE;
+		uint32_t buffLen = STRING_BUFFER_SIZE;
 		executeCommand((uint8_t*)arguments, 0 /*TODO*/, (uint8_t*)STRING_BUFFER, &buffLen, command_mode);
 		if(buffLen > 0)
 			send(huart, (uint8_t *)STRING_BUFFER, buffLen);

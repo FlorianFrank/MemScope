@@ -69,7 +69,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+int Transfer_cplt;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -160,55 +160,7 @@ int main(void)
 #endif
 
 
-//  HAL_Delay(1000);
-//  char buff[30];
-//  for (int i = 0; i < 10; i++)
-//  {
-//	  USB_StartTimer();
-//	  for(int i2 = 0; i2 < 1000; i2++)
-//	  {
-//	  uint8_t result = SRAM_Read_8b(0x00 + i);
-//	  }
-//	  uint32_t ret =  USB_StopGetTime();
-//	  memset(buff, 0x00, 30);
-//	  sprintf(buff, "%d, %f", i, (float)(USB_TransformClockFrequencyToNs(ret)));
-//	  sendUART(&huart4, (uint8_t *)buff, strlen(buff));
-//  }
 
-  // ######## testing the memory ########
-  /*char responseBuffer[128];
-  char* responseString = responseBuffer;
-  uint32_t responseLength = 0;*/
-
-  // fill with zeros
-//  SRAM_Fill_With_Zeros((uint8_t*)responseString, &responseLength);
-//  printf(responseString);
-
-  // fill with ones
-  //SRAM_Write_Alternate_Zero_One((uint8_t*)responseString, &responseLength);
-  //printf(responseString);
-
-  // write 0xAA to address 0x00 (0xAA equals 10101010 (base 2) and 170 (base 10))
-  //uint32_t address = 0x02;
-  //uint32_t arguments[2] = { address , 0xAA };
-  //SRAM_Measure_WIP_Polling(&huart4);
-  //SRAM_Write_Address((uint8_t*)responseString, &responseLength, arguments);
-  //printf(responseString);
-
-  // reading address 0x00
-  //uint8_t result = SRAM_Read_8b(address);
-  //printf("Value: %x\n", result);
-
-  // reading address 0x00 after writing 0x01 to it
-  //SRAM_Write_8b(address, 0x01);
-  //result = SRAM_Read_8b(address);
-  //printf("Value: %x\n", result);
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  //showHelp(NULL);
   while (1)
   {
 

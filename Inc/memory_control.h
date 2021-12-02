@@ -32,14 +32,6 @@ struct
 } typedef MemoryStatusRegister;
 #endif // MEM_ACCESS_IF==SPI
 
-
-
-
-// private defines
-//#define SRAM_SIZE			((uint32_t)0x200000) 		// ‭2097152‬ bytes for MR4A08BYS35 has 2^18 address indices
-//#define SRAM_SIZE			((uint32_t)0x80000) 		// Cypress CY62157EV30 has 2^19 address indices
-
-
 /* see fmc.c
  * FMC_NORSRAM_BANK1 = 0x60000000
  * FMC_NORSRAM_BANK2 = 0x64000000
@@ -49,37 +41,16 @@ struct
  * */
 #define SRAM_BANK_ADDR		((uint32_t)0x64000000)
 
-#define BUFFER_SIZE			100							// buffer size for the global string buffer
+#define STRING_BUFFER_SIZE			100							// buffer size for the global string buffer
 #define SRAM_BUFFER_SIZE	40960						// 5x8192 buffer size for the sram buffer
 #define COMMAND_COUNT		15
 
 
 
 // global string buffer
-char STRING_BUFFER[BUFFER_SIZE];
+char STRING_BUFFER[STRING_BUFFER_SIZE];
 char SRAM_BUFFER[SRAM_BUFFER_SIZE];
 char *srambp;
-
-uint16_t len;
-uint16_t old_len;
-
-// receive buffer
-uint8_t Rx_Index;
-char Rx_Data[2];
-char Rx_Buffer[100];
-char Transfer_cplt;
-
-
-
-
-
-// probability counter
-// 1 MB RAM => 1 million 1's and 0's possible => uint32_t
-uint32_t total_one;
-uint32_t total_zero;
-uint32_t flipped_one;
-uint32_t flipped_zero;
-
 
 extern void receive(UART_HandleTypeDef *huart, uint8_t *dstBuffer, uint32_t bufferSize);
 extern void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize);
@@ -90,24 +61,24 @@ extern void showHelpUSB();
 extern void executeCommandUSB();
 
 // functions to access the SRAM
-MEM_ERROR SRAM_Write_8b(const uint32_t adr, uint8_t value);
-MEM_ERROR SRAM_Read_8b(const uint32_t adr, uint8_t *ret);
-MEM_ERROR SRAM_Write_16b(uint32_t adr, uint16_t value);
-MEM_ERROR SRAM_Read_16b(uint32_t adr, uint16_t *value);
+MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value);
+MEM_ERROR MemoryRead8BitWord(uint32_t adr, uint8_t *ret);
+MEM_ERROR MemoryWrite16BitWord(uint32_t adr, uint16_t value);
+MEM_ERROR MemoryRead16BitWord(uint32_t adr, uint16_t *value);
 
 
 // user functions
-MEM_ERROR SRAM_Fill_With_Zeros(uint8_t *buffer, uint32_t *buffLen);
-MEM_ERROR SRAM_Fill_With_Ones(uint8_t *buffer, uint32_t *bufferLen);
-MEM_ERROR SRAM_Get_Values(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR MemoryFillWithZeros(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR MemoryFillWithOnes(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR MemoryReadArea(uint8_t *buffer, uint32_t *bufferLen);
 
-MEM_ERROR SRAM_Get_Performance_Measures(uint8_t *buffer, uint32_t *buffLen);
-MEM_ERROR SRAM_Write_Ascending(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-MEM_ERROR SRAM_Write_Alternate_Zero_One(uint8_t *buffer, uint32_t *bufferLen);
-MEM_ERROR SRAM_Write_Alternate_One_Zero(uint8_t *buffer, uint32_t *bufferLen);
-MEM_ERROR SRAM_Write_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-MEM_ERROR SRAM_Write_Address_Range(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-MEM_ERROR SRAM_Read_SRAM(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR MemoryGetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen);
+MEM_ERROR MemoryFillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+MEM_ERROR MemoryWriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR MemoryWriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen);
+MEM_ERROR MemoryWriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+MEM_ERROR MemoryWriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+MEM_ERROR MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buffLen);
 MEM_ERROR SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
 MEM_ERROR SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
 MEM_ERROR SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
@@ -120,10 +91,6 @@ void init_counter(void);
 
 void init_arguments(void);
 uint8_t get_space(char *rx_buffer);
-
-#define start_timer()    *((volatile uint32_t*)0xE0001000) = 0x40000001  // Enable CYCCNT register
-#define stop_timer()   *((volatile uint32_t*)0xE0001000) = 0x40000000  // Disable CYCCNT register
-#define get_timer()   *((volatile uint32_t*)0xE0001004)               // Get value from CYCCNT register
 
 #if MEM_ACCESS_IF==SPI
 uint32_t WIP_Polling(uint32_t timeoutCycles);
