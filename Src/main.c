@@ -69,7 +69,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-int Transfer_cplt;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/

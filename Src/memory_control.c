@@ -10,6 +10,7 @@
 #include "metrics.h"
 #include "SystemFiles/spi.h"
 #include "cmd_parser.h"
+//#include "cmd_parser.h"
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -19,16 +20,21 @@ char MY_RX_BUFFER[CDC_DATA_HS_MAX_PACKET_SIZE]= {0};
 uint8_t* input;
 
 uint16_t len;
-uint16_t old_len;
 
 // receive buffer
 uint8_t Rx_Index;
 char Rx_Data[2];
-char Transfer_cplt;
+
+int Transfer_cplt;
 
 
+uint8_t write_mode = 0xFF;
 char Rx_Buffer[100];
 
+// global string buffer
+char STRING_BUFFER[STRING_BUFFER_SIZE];
+char SRAM_BUFFER[SRAM_BUFFER_SIZE];
+char *srambp;
 
 
 // probability counter

@@ -5,6 +5,8 @@
 
 #include "meta_data_handler.h"
 
+char buffer[4096];
+
 char* testNameStr[] = {"Write_Latency",
                       "Read_Latency",
                       "Row_Hammering",

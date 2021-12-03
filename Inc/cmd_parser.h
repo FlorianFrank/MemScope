@@ -9,8 +9,6 @@
 #include "stdint.h"
 #include "stm32f4xx_hal.h"
 
-uint8_t write_mode;
-
 
 typedef enum {
     SHOW_HELP = 0x0,

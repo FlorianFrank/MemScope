@@ -5,19 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "SystemFiles/spi.h"
-#include "metrics.h"
-#include "memory_control.h"
+//#include "metrics.h"
+//#include "memory_control.h"
 #include "cmd_parser.h"
 
 uint8_t command_mode = 0xFF;
 uint32_t arguments[3];
 
-uint8_t write_mode = 0xFF;
 
-uint16_t len;
-uint16_t old_len;
-
-char Rx_Buffer[100];
 
 // command help initialization
 const char *command_help[] = {

@@ -18,6 +18,16 @@ typedef enum {
 	PASSED = !FAILED
 } TestStatus; // Typedef for correct read/write tests
 
+#define STRING_BUFFER_SIZE			100							// buffer size for the global string buffer
+
+
+extern char Rx_Buffer[100];
+extern uint8_t write_mode;
+extern int Transfer_cplt;
+extern uint16_t len;
+extern char STRING_BUFFER[STRING_BUFFER_SIZE];
+
+
 
 #if MEM_ACCESS_IF==SPI
 struct
@@ -41,16 +51,10 @@ struct
  * */
 #define SRAM_BANK_ADDR		((uint32_t)0x64000000)
 
-#define STRING_BUFFER_SIZE			100							// buffer size for the global string buffer
 #define SRAM_BUFFER_SIZE	40960						// 5x8192 buffer size for the sram buffer
 #define COMMAND_COUNT		15
 
-
-
 // global string buffer
-char STRING_BUFFER[STRING_BUFFER_SIZE];
-char SRAM_BUFFER[SRAM_BUFFER_SIZE];
-char *srambp;
 
 extern void receive(UART_HandleTypeDef *huart, uint8_t *dstBuffer, uint32_t bufferSize);
 extern void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize);

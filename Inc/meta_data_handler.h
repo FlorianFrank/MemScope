@@ -21,7 +21,6 @@ enum {
 } typedef TestType;
 
 
-char buffer[4096];
 
 char* CreateMetaData(uint32_t testID, TestType testType, uint32_t memID, uint8_t initValue, uint8_t valueWritten,
                      uint32_t startAddr, uint32_t endAddr, uint32_t writeCycles, uint32_t readCycles,
