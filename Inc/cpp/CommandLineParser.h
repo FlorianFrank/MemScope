@@ -27,45 +27,12 @@ class CommandLineParser
         WRITE = 0xB,
         CHECK_ADDRESS = 0xC,
         CHECK_ADDRESS_RANGE = 0xD,
-        GET_VALUES = 0xE
+        GET_VALUES = 0xE,
+        NOPE = 0xFF
     } Command; // List of possible commands
 
     // command help initialization
-    const char *command_help[] = {
-            "'help' Shows this site\r",
-            "'0' writes 0's to the whole SRAM\r",
-            "'1' writes 1's to the whole SRAM\r",
-            "'writeValueAsc val' writes the 8/16-bit value 'val' to the first address and increments the value by 1\r",
-            "'writeAlternateZeroOne' writes alternating 01010101... to the whole SRAM\r",
-            "'writeAlternateOneZero' writes alternating 10101010... to the whole SRAM\r",
-            "'writeSRAM adr val' writes the 8/16-bit value 'val' to address 'adr'\r",
-            "'writeSRAMRange start end val' writes the 8/16-bit value 'val' to addresses 'start' to 'end'\r",
-            "'getPerformanceMeasures' returns the probabilities P(0->1), P(1->0) and total flip probability (= HammingDistance / SRAM_size)\r",
-            "'getAddress adr' returns the value at the address 'adr'\r",
-            "'readSRAM' prints the whole content of the SRAM as hexadecimal value to the console (use Putty-logging for file-saving)\r",
-            "'checkSRAM' checks, whether the expected value matches the real values of the whole SRAM\r",
-            "'checkAddress adr val' checks, whether the value 'val' is equal to the content at address 'adr'\r",
-            "'checkAddressRange start end val' checks, whether the value 'val' is equal to the content at the addresses in range 'start' to 'end'\r",
-            "'v' returns the number of zeros and ones\n\r"
-    };
 
-    char * command[] = {
-            "help",
-            "0",
-            "1",
-            "writeValueAsc",
-            "writeAlternateZeroOne",
-            "writeAlternateOneZero",
-            "writeSRAM",
-            "writeSRAMRange",
-            "getPerformanceMeasures",
-            "getAddress",
-            "readSRAM",
-            "checkSRAM",
-            "checkAddress",
-            "checkAddressRange",
-            "v"
-    };
 
 public:
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
@@ -83,7 +50,7 @@ public:
     void tokenize_arguments(char* args);
 
 private:
-    uint8_t command_mode = 0xFF;
+    Command command_mode = NOPE;
     uint32_t arguments[3];
 
     uint8_t write_mode = 0xFF;
@@ -92,7 +59,25 @@ private:
     uint16_t old_len;
 
     char Rx_Buffer[100];
+     const char *command_help[];/* = {
+            "'help' Shows this site\r",
+            "'0' writes 0's to the whole SRAM\r",
+            "'1' writes 1's to the whole SRAM\r",
+            "'writeValueAsc val' writes the 8/16-bit value 'val' to the first address and increments the value by 1\r",
+            "'writeAlternateZeroOne' writes alternating 01010101... to the whole SRAM\r",
+            "'writeAlternateOneZero' writes alternating 10101010... to the whole SRAM\r",
+            "'writeSRAM adr val' writes the 8/16-bit value 'val' to address 'adr'\r",
+            "'writeSRAMRange start end val' writes the 8/16-bit value 'val' to addresses 'start' to 'end'\r",
+            "'getPerformanceMeasures' returns the probabilities P(0->1), P(1->0) and total flip probability (= HammingDistance / SRAM_size)\r",
+            "'getAddress adr' returns the value at the address 'adr'\r",
+            "'readSRAM' prints the whole content of the SRAM as hexadecimal value to the console (use Putty-logging for file-saving)\r",
+            "'checkSRAM' checks, whether the expected value matches the real values of the whole SRAM\r",
+            "'checkAddress adr val' checks, whether the value 'val' is equal to the content at address 'adr'\r",
+            "'checkAddressRange start end val' checks, whether the value 'val' is equal to the content at the addresses in range 'start' to 'end'\r",
+            "'v' returns the number of zeros and ones\n\r"
+    };*/
 
+    static char * command[];
 
 };
 

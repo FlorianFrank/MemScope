@@ -10,6 +10,24 @@
 #include "cpp/CommandLineParser.h"
 
 
+/*static*/ char* CommandLineParser::command[] = {
+"help",
+"0",
+"1",
+"writeValueAsc",
+"writeAlternateZeroOne",
+"writeAlternateOneZero",
+"writeSRAM",
+"writeSRAMRange",
+"getPerformanceMeasures",
+"getAddress",
+"readSRAM",
+"checkSRAM",
+"checkAddress",
+"checkAddressRange",
+"v"
+};
+
 
 
 // uart transmit and receive functions
@@ -126,14 +144,14 @@ MEM_ERROR CommandLineParser::executeCommand(uint8_t *inBuff, uint32_t *inBuffLen
 }
 
 __unused void CommandLineParser::executeCommandUART(UART_HandleTypeDef *huart, Command cmdIdx){
-    command_mode = 0xFF; // invalid command
+    command_mode = NOPE; // invalid command
     // parse command
     for(uint8_t i = 0; i < COMMAND_COUNT; i++){
         // check if the command equals a command specified in the array 'command'
         // if so set command_mode different from 0xFF
         uint8_t command_end_index = get_space(Rx_Buffer);
         if((uint8_t)strlen(command[i]) == command_end_index && strncmp(command[i], Rx_Buffer, command_end_index) == 0){
-            command_mode = i;
+            command_mode = static_cast<Command>(i);
             uint16_t len_rx_buffer = strlen(Rx_Buffer);
             uint16_t len_command = strlen(command[i]);
             // if there are arguments after the command
