@@ -13,12 +13,14 @@ set(ProgramName "Memory_Testing_FW")
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
 set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
 
-project(${ProgramName} C ASM)
+project(${ProgramName} CXX C ASM)
 
 
 file(GLOB_RECURSE ProjectFiles 
 	"${CMAKE_CURRENT_SOURCE_DIR}/Inc/.h"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c")
+	"${CMAKE_CURRENT_SOURCE_DIR}/Inc/cpp/.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/*.cpp")
 
 file(GLOB_RECURSE StartupFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/startup/.s")
@@ -68,7 +70,8 @@ add_custom_command(TARGET ${ProgramName}.elf POST_BUILD
         COMMENT "Building ${HEX_FILE} \nBuilding ${BIN_FILE}")
 
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/Inc"
+target_include_directories(${PROJECT_NAME}.elf PRIVATE
+		            "${CMAKE_CURRENT_SOURCE_DIR}/Inc"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc/Legacy"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"
