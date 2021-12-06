@@ -12,6 +12,7 @@
 
 class CommandLineParser
 {
+public:
     typedef enum {
         SHOW_HELP = 0x0,
         FILL_WITH_ZEROS = 0x1,
@@ -31,10 +32,7 @@ class CommandLineParser
         NOPE = 0xFF
     } Command; // List of possible commands
 
-    // command help initialization
 
-
-public:
     CommandLineParser (MemoryController &memoryController);
 
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
