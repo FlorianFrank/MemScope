@@ -52,7 +52,6 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib")
 add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
 
 target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib/include")
 
 if($ENV{CLION_IDE})
 set(BuildFolder "${CMAKE_CURRENT_SOURCE_DIR}/cmake-build-debug")
@@ -77,6 +76,7 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
 					"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${BoardClass}xx/Include"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include")
+					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include"
+					"${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib/include")
 
 install(TARGETS ${PROJECT_NAME}.elf RUNTIME DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/bin")
