@@ -10,13 +10,13 @@
 
 class TimeMeasurement{
 public:
-        inline uint32_t StartTimer();
-        inline uint32_t GetTimer();
-        inline void ResetTimer();
-        inline uint32_t StopGetTime();
+    static uint32_t StartTimer();
+    static uint32_t GetTimer();
+    static void ResetTimer();
+    static uint32_t StopGetTime();
 
 private:
-    /*static*/ inline uint32_t TransformClockFrequencyToNs(uint32_t value);
+    static uint32_t TransformClockFrequencyToNs(uint32_t value);
 
 };
 
