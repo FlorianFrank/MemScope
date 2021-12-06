@@ -1,28 +1,21 @@
-extern "C" {
-#include "test_cases.h"
-#include "SystemFiles/spi.h"
-#include "SystemFiles/usart.h"
-#include "SystemFiles/usb_device.h"
-#include "SystemFiles/gpio.h"
-#include "SystemFiles/fmc.h"
-#include "error_handler.h"
-#include "usb_handler.h"
-}
-
-#include <ctime>
-#include <cpp/ClockConfig.h>
-
-#include "cpp/MemoryController.h"
 #include "cpp/Main.h"
+#include "cpp/ClockConfig.h"
+#include "cpp/MemoryController.h"
 
+extern "C" {
+#include "SystemFiles/spi.h" // MX_SPI4_Init()
+#include "SystemFiles/usart.h" // MX_UART4_Init()
+#include "SystemFiles/gpio.h" // MX_GPIO_Init
+#include "SystemFiles/fmc.h" // MX_FMC_Init()
 
-#define USE_USB_CDC
+#include "cpp/MemoryTest.h"
 
 #if RDMON_SPECS
-extern "C" {
 extern void initialise_monitor_handles();
-};
 #endif //RDMON_SPECS
+}
+
+#define USE_USB_CDC // TODO
 
 /**
   * @brief  The application entry point.
@@ -30,7 +23,6 @@ extern void initialise_monitor_handles();
   */
 int main()
 {
-    /* USER CODE BEGIN 1 */
 #if RDMON_SPECS
     initialise_monitor_handles();
 #endif // RDMON_SPECS
@@ -45,7 +37,7 @@ int main()
     MX_SPI4_Init();
     MX_SPI5_Init();
 
-//    executeMemoryTest(); TODO
+    //executeMemoryTest();
 
 #ifdef USE_UART
     receive(&huart4, (uint8_t *)Rx_Data, 1); // activate uart rx interrupt every time receiving 1 byte
