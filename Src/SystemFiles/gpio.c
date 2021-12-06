@@ -18,6 +18,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32f4xx_hal_gpio.h"
 #include "SystemFiles/gpio.h"
 #include "io_pin_defines.h"
 
