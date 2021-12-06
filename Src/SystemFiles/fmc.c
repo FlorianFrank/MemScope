@@ -20,8 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 
 #include "SystemFiles/fmc.h"
-
 #include "io_pin_defines.h"
+#include "error_handler.h"
 
 /* USER CODE BEGIN 0 */
 

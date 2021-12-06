@@ -20,6 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "SystemFiles/spi.h"
 #include "io_pin_defines.h"
+#include "error_handler.h"
+
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -84,7 +86,7 @@ void MX_SPI5_Init(void)
   hspi5.Init.CRCPolynomial = 10;
   if (HAL_SPI_Init(&hspi5) != HAL_OK)
   {
-    Error_Handler();
+//    Error_Handler(); TODO
   }
   /* USER CODE BEGIN SPI5_Init 2 */
 
