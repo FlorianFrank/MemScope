@@ -1,18 +1,15 @@
+#include "cpp/MemoryController.h"
 #include "cpp/ClockConfig.h"
 
 extern "C" {
-#include "test_cases.h"
-#include "SystemFiles/spi.h"
-#include "SystemFiles/usart.h"
-#include "SystemFiles/usb_device.h"
-#include "SystemFiles/gpio.h"
-#include "SystemFiles/fmc.h"
 #include "error_handler.h"
-#include "usb_handler.h"
 }
 
-
-/*static*/ void ClockConfig::SystemClock_Config()
+/**
+ * @brief This function initializes the clock configuration.
+ * @return Error Code
+ */
+MemoryErrorHandling::MEM_ERROR ClockConfig::SystemClock_Config()
 {
 #if 0 // TODO
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -84,6 +81,7 @@ extern "C" {
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
     {
-        //  Error_Handler(); TODO
+          Error_Handler();
     }
+    return MemoryErrorHandling::MEM_NO_ERROR;
 }
