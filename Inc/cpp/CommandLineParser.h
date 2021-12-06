@@ -35,6 +35,8 @@ class CommandLineParser
 
 
 public:
+    CommandLineParser (MemoryController &memoryController);
+
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 
     MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBufflen, Command cmdIdx);
@@ -59,25 +61,13 @@ private:
     uint16_t old_len;
 
     char Rx_Buffer[100];
-     const char *command_help[];/* = {
-            "'help' Shows this site\r",
-            "'0' writes 0's to the whole SRAM\r",
-            "'1' writes 1's to the whole SRAM\r",
-            "'writeValueAsc val' writes the 8/16-bit value 'val' to the first address and increments the value by 1\r",
-            "'writeAlternateZeroOne' writes alternating 01010101... to the whole SRAM\r",
-            "'writeAlternateOneZero' writes alternating 10101010... to the whole SRAM\r",
-            "'writeSRAM adr val' writes the 8/16-bit value 'val' to address 'adr'\r",
-            "'writeSRAMRange start end val' writes the 8/16-bit value 'val' to addresses 'start' to 'end'\r",
-            "'getPerformanceMeasures' returns the probabilities P(0->1), P(1->0) and total flip probability (= HammingDistance / SRAM_size)\r",
-            "'getAddress adr' returns the value at the address 'adr'\r",
-            "'readSRAM' prints the whole content of the SRAM as hexadecimal value to the console (use Putty-logging for file-saving)\r",
-            "'checkSRAM' checks, whether the expected value matches the real values of the whole SRAM\r",
-            "'checkAddress adr val' checks, whether the value 'val' is equal to the content at address 'adr'\r",
-            "'checkAddressRange start end val' checks, whether the value 'val' is equal to the content at the addresses in range 'start' to 'end'\r",
-            "'v' returns the number of zeros and ones\n\r"
-    };*/
+    static const char* command_help[];
 
-    static char * command[];
+    static const char * command[];
+
+    MemoryController &m_MemoryController;
+
+    char STRING_BUFFER[STRING_BUFFER_SIZE];
 
 };
 
