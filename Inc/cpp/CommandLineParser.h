@@ -6,7 +6,7 @@
 #define MEMORY_TESTING_FW_COMMANDLINEPARSER_H
 
 
-#include <memory_error_handling.h>
+#include "cpp/MemoryController.h"
 #include <cstdint>
 #include <stm32f4xx_hal_uart.h>
 
@@ -33,7 +33,7 @@ public:
     } Command; // List of possible commands
 
 
-    CommandLineParser (MemoryController &memoryController);
+    explicit CommandLineParser (MemoryController &memoryController);
 
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 

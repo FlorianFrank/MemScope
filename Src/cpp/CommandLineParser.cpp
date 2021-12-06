@@ -161,7 +161,7 @@ MEM_ERROR CommandLineParser::executeCommand(uint8_t *inBuff, uint32_t *inBuffLen
             sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
             len = strlen(STRING_BUFFER);
             send(huart, (uint8_t *)STRING_BUFFER, len);
-            return MEM_INVALID_COMMAND;
+            return MemoryErrorHandling::MEM_INVALID_COMMAND;
     }
 }
 
