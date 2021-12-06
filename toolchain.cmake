@@ -43,4 +43,5 @@ SET(ASM_OPTIONS "-mcpu=${CPU} -g3 -c -x assembler-with-cpp  -mfpu=${FPUSpecifica
 # Set compile flags
 string(TOUPPER "${BoardName}" BoardNameUC)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=${CPU} -std=gnu11 -g3 -DUSE_HAL_DRIVER -D${BoardNameUC}xx -Og -ffunction-sections -Wall -fstack-usage  -mfpu=${FPUSpecification} -mfloat-abi=${FPUType} -mthumb")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=${CPU} -g3 -DUSE_HAL_DRIVER -D${BoardNameUC}xx -Og -ffunction-sections -Wall -fstack-usage  -mfpu=${FPUSpecification} -mfloat-abi=${FPUType} -mthumb")
 set(CMAKE_EXE_LINKER_FLAGS "-mcpu=${CPU} -g3 -T\"${CMAKE_CURRENT_SOURCE_DIR}/${BoardNameUC}ZITx_FLASH.ld\" -Wl,-Map=\"${ProgramName}.map\" -Wl,--gc-sections -static -Wl,--start-group -lc -lrdimon -Wl,--end-group --specs=${specs} -mfpu=${FPUSpecification} -mfloat-abi=${FPUType} -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group")
