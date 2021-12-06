@@ -20,28 +20,34 @@
 
 #define CLOCK_FREQUENCY		168 // MHz
 
-/*static */ inline uint32_t TimeMeasurement::StartTimer()
+inline uint32_t TimeMeasurement::StartTimer()
 {
     ResetTimer();
     start_timer();
     return get_timer();
 }
 
+uint32_t TimeMeasurement::GetTimer()
+{
+    uint32_t ret = get_timer();
+}
 
-/*static*/ inline void TimeMeasurement::ResetTimer()
+inline void TimeMeasurement::ResetTimer()
 {
     reset_timer();
 }
 
-/*static*/ inline uint32_t TimeMeasurement::StopGetTime()
+inline uint32_t TimeMeasurement::StopGetTime()
 {
-    uint32_t ret = get_timer();
+    uint32_t ret = GetTimer();
     ResetTimer();
     return ret;
 }
 
-/*static*/ inline uint32_t TimeMeasurement::TransformClockFrequencyToNs(uint32_t value)
+inline uint32_t TimeMeasurement::TransformClockFrequencyToNs(uint32_t value)
 {
     // Eine schwingung
     return (uint32_t)((float)value * (float)5.95238095);
 }
+
+
