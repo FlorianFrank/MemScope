@@ -39,9 +39,10 @@ public:
 
     MEM_ERROR executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBufflen, Command cmdIdx);
 
-    void executeCommandUART(UART_HandleTypeDef *huart, Command idx);
 
     void send(UART_HandleTypeDef *huart, uint8_t *sendBuffer, uint32_t bufferSize);
+
+    void executeCommandUART(UART_HandleTypeDef *huart, Command idx);
 
     void sendUART(UART_HandleTypeDef *huart, uint8_t *srcBuffer, uint32_t bufferSize);
 
@@ -50,21 +51,15 @@ public:
     void tokenize_arguments(char* args);
 
 private:
-    Command command_mode = NOPE;
-    uint32_t arguments[3];
-
-    uint8_t write_mode = 0xFF;
-
+    Command m_commandMode = NOPE;
+    uint32_t m_arguments[3];
+    uint8_t m_WriteMode = 0xFF;
     uint16_t len;
     uint16_t old_len;
-
     char Rx_Buffer[100];
     static const char* command_help[];
-
     static const char * command[];
-
     MemoryController &m_MemoryController;
-
     char STRING_BUFFER[STRING_BUFFER_SIZE];
 
 };
