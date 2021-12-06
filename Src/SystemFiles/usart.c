@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "SystemFiles/usart.h"
+#include "error_handler.h"
 
 /* USER CODE BEGIN 0 */
 

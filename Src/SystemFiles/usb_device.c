@@ -21,6 +21,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 
+#include "error_handler.h"
 #include "SystemFiles/usb_device.h"
 #include "usbd_core.h"
 #include "SystemFiles/usbd_desc.h"
