@@ -1,19 +1,21 @@
-//
-// Created by florianfrank on 05.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #ifndef MEMORY_TESTING_FW_TIMEMEASUREMENT_H
 #define MEMORY_TESTING_FW_TIMEMEASUREMENT_H
+#include <cstdint>
 
-#include <stdint.h>
-
-
+/**
+ * @brief This class provides functions to measure the elapsed time using Cortex M4 registers
+ */
 class TimeMeasurement{
 public:
-    static uint32_t StartTimer();
-    static uint32_t GetTimer();
+    static uint32_t ResetAndStartTimer();
+    static uint32_t GetClockCycles();
+    static uint32_t GetElapsedTimeInNS();
     static void ResetTimer();
-    static uint32_t StopGetTime();
+    static uint32_t GetTimer();
 
 private:
     static uint32_t TransformClockFrequencyToNs(uint32_t value);
