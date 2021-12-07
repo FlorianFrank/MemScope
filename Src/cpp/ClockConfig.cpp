@@ -1,8 +1,9 @@
-#include "cpp/MemoryController.h"
 #include "cpp/ClockConfig.h"
 
 extern "C" {
 #include "error_handler.h"
+#include <stm32f4xx_hal_rcc.h>
+#include <stm32f4xx_hal_pwr_ex.h>
 }
 
 /**
