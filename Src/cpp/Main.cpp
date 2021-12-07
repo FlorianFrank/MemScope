@@ -1,3 +1,7 @@
+#include <cstdio>
+#include <cpp/CommandLineParser.h>
+#include <cpp/InterfaceWrappers/UARTWrapper.h>
+#include <cpp/MemoryControllerWrappers/MemoryControllerParallel.h>
 #include "cpp/Main.h"
 #include "cpp/ClockConfig.h"
 #include "cpp/MemoryController.h"
@@ -9,11 +13,14 @@ extern "C" {
 #include "SystemFiles/fmc.h" // MX_FMC_Init()
 
 #include "cpp/MemoryTest.h"
-
 #if RDMON_SPECS
-extern void initialise_monitor_handles();
+extern void initialise_monitor_handles(void);
 #endif //RDMON_SPECS
+
 }
+
+bool running = true;
+
 
 #define USE_USB_CDC // TODO
 
@@ -54,43 +61,40 @@ int main()
     //showHelp(NULL);
 #endif
 
-    MemoryController memoryController;
+    UARTWrapper uartWrapper;
 
-    while (1)
+
+    MemoryControllerParallel memoryController(uartWrapper);
+
+    CommandLineParser commandLineParser(&memoryController);
+
+    //TimeMeasurement timeMeasurement; // TODO resolve
+
+
+
+    //MemoryTest memoryTest(&memoryController, &timeMeasurement);
+
+    //memoryTest.executeMemoryTest();
+
+    while (running)
     {
-
-        if(memoryController.isTransferCplt())
+        if (uartWrapper.isTransferCplt())
         {
 #ifdef USE_UART
-            // executeCommandUART(&huart4);
+            executeCommandUART(&huart4);
 #endif
-
 
 
 #ifdef USE_USB_CDC
 
 
 #endif
-            memoryController.resetTransferCplt();
+            uartWrapper.resetTransferCplt();
         }
 
-
-        /* USER CODE END WHILE */
-
-        /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */
 }
-
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
 
 
 
