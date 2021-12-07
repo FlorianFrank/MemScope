@@ -20,8 +20,7 @@ extern "C" {
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 
-MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : Rx_Buffer(""), write_mode(0xFF),
-                                                                          Transfer_cplt(0), len(0), STRING_BUFFER(""),
+MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : write_mode(0xFF), len(0), STRING_BUFFER(""),
                                                                           m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
                                                                           srambp(nullptr), total_one(0), total_zero(0),
                                                                           flipped_one(0), flipped_zero(0)
@@ -40,9 +39,9 @@ MEM_ERROR MemoryController::FillWithZeros(uint8_t *buffer, uint32_t *buffLen){
 
     write_mode = 0x1;
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = PASSED;
 
@@ -109,9 +108,9 @@ MEM_ERROR MemoryController::FillWithOnes(uint8_t *buffer, uint32_t *bufferLen){
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = PASSED;
 
@@ -262,7 +261,7 @@ MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer,
     }
 
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     uint32_t start_local = 0;
     uint32_t end_local = 0;
 
@@ -445,9 +444,9 @@ MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer,
  */
 MEM_ERROR MemoryController::FillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = PASSED;
 
@@ -510,9 +509,9 @@ MEM_ERROR MemoryController::FillMemoryWithAscendingValues(uint8_t *buffer, uint3
  */
 MEM_ERROR MemoryController::WriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen){
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = PASSED;
 
@@ -574,9 +573,9 @@ MEM_ERROR MemoryController::WriteAlternatingOneAndZero(uint8_t *buffer, uint32_t
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = PASSED;
 
@@ -640,9 +639,9 @@ MEM_ERROR MemoryController::WriteSingleValue(uint8_t *buffer, uint32_t *buffLen,
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = FAILED;
 
@@ -712,9 +711,9 @@ MEM_ERROR MemoryController::WriteAddressRange(uint8_t *buffer, uint32_t *buffLen
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     // reset the counter for statistical analysis
-    init_counter();
+    InitCounter();
     // reset the m_arguments
-    init_arguments();
+    InitArguments();
 
     TestStatus state = PASSED;
 
@@ -1159,7 +1158,7 @@ MEM_ERROR MemoryController::CheckReadWriteStatus(uint8_t *buffer, uint32_t *buff
 /*
  * @brief							resets the counters for statistical analysis
  */
-void MemoryController::init_counter(){
+void MemoryController::InitCounter(){
     total_one = 0;
     total_zero = 0;
     flipped_one = 0;
@@ -1170,7 +1169,7 @@ void MemoryController::init_counter(){
  * @brief							resets the custom start/end addresses and the custom start value
  * 									these variables are set in a write method
  */
-void MemoryController::init_arguments(){
+void MemoryController::InitArguments(){
     start_adr = 0;
     end_adr = 0;
     start_value = 0;

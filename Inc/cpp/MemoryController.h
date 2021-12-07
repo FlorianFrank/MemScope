@@ -75,15 +75,12 @@ public:
 protected:
     static bool IsInvalidAddress(uint32_t address);
 
-
     // helper functions
-    void init_counter();
+    void InitCounter();
 
-    void init_arguments();
+    void InitArguments();
 
-    char Rx_Buffer[100];
     uint8_t write_mode;
-    int Transfer_cplt;
     uint16_t len;
     char STRING_BUFFER[STRING_BUFFER_SIZE];
     TimeMeasurement m_timeMeasurement;
@@ -97,7 +94,6 @@ protected:
     uint32_t end_adr = 0x0;		// end address for writeSRAMRange
 
     // global string buffer
-    //char STRING_BUFFER[STRING_BUFFER_SIZE];
     char SRAM_BUFFER[MEMORY_BUFFER_SIZE]{};
     char *srambp{};
 

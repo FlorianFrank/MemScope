@@ -72,7 +72,7 @@ MEM_ERROR MemoryControllerSPI::Read16BitWord(uint32_t adr, uint16_t *value) cons
 /*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMAdesto(uint32_t address, uint8_t value,
                                                                         uint8_t *retValue, uint16_t *retSize)
 {
-    if (isInvalidAddress(address))
+    if (IsInvalidAddress(address))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if (!retSize || *retSize < 4)

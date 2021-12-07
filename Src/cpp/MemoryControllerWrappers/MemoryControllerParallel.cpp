@@ -12,7 +12,7 @@ MemoryControllerParallel::MemoryControllerParallel(InterfaceWrappers *interfaceW
 
 MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
 {
-    if (isInvalidAddress(adr))
+    if (IsInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     *(__IO uint8_t *) (m_MMIOStartAddress + adr) = value;
@@ -21,7 +21,7 @@ MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
 
 MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret) const
 {
-    if (isInvalidAddress(adr))
+    if (IsInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if(!ret)
@@ -41,7 +41,7 @@ MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret) con
  */
 MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
 {
-    if(isInvalidAddress(adr))
+    if(IsInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
 
@@ -55,7 +55,7 @@ MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
 
 MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value) const
 {
-    if(isInvalidAddress(adr))
+    if(IsInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if(!value)
