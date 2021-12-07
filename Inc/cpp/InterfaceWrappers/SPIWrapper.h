@@ -16,7 +16,7 @@ extern "C" {
 #include "SystemFiles/spi.h"
 #include <stm32f4xx_hal_spi.h>
 };
-#endif // TODO
+#endif // STM32
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
@@ -24,8 +24,6 @@ class SPIWrapper
 {
 
 public:
-
-
     SPIWrapper();
 
     static void SetWriteProtect();
@@ -33,6 +31,9 @@ public:
 
     static void SetChipSelect();
     static void ResetChipSelect();
+
+    MEM_ERROR SendData(uint8_t *data, const uint16_t *size, uint32_t timeout);
+    MEM_ERROR ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout);
 
 private:
     SPI_HandleTypeDef hspi5;
