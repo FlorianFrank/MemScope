@@ -5,11 +5,15 @@
 #ifndef STM_MEASUREMENT_FIRMWARE_USBWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_USBWRAPPER_H
 
+#include "cpp/InterfaceWrappers.h"
+
+extern "C" {
 #include <usbd_cdc.h>
+};
 
-
-class USBWrapper
+class USBWrapper : public InterfaceWrappers
 {
+public:
     void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize);
 
 
@@ -17,7 +21,8 @@ class USBWrapper
 
     void executeCommandUSB();
 
-    void USBCDCRXCallback(uint8_t *Buf, uint32_t Len);
+    void USBCDCRXCallback(uint8_t *Buf, uint32_t len);
+
 };
 
 
