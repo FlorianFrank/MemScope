@@ -2,8 +2,13 @@
 // Created by florianfrank on 07.12.21.
 //
 
-#include "cpp/UARTWrapper.h"
+#include <io_pin_defines.h>
+#include "cpp/InterfaceWrappers/UARTWrapper.h"
 
+UARTWrapper::UARTWrapper()
+{
+
+}
 
 /*
  * @brief								rewritten function to receive with a delay of 10ms
@@ -54,3 +59,15 @@ void UARTWrapper::HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
         HAL_UART_Receive_IT(huart, (uint8_t *)Rx_Data, 1);
     }
 }
+
+MEM_ERROR UARTWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+{
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+{
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+
