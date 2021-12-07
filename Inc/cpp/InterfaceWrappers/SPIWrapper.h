@@ -6,25 +6,25 @@
 #define STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 
 #include "cpp/MemoryErrorHandling.h"
+#include "cpp/InterfaceWrappers.h"
 #include <cstdint>
-
-
-
-#define STM32 1
-#if STM32
-extern "C" {
-#include "SystemFiles/spi.h"
-#include <stm32f4xx_hal_spi.h>
-};
-#endif // STM32
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
-class SPIWrapper
+#define STM32 1
+#if STM32
+struct __SPI_HandleTypeDef;
+typedef struct __SPI_HandleTypeDef* SPIHandle;
+#endif // STM32
+
+class SPIWrapper : public InterfaceWrappers
 {
 
 public:
-    SPIWrapper();
+    explicit SPIWrapper(SPIHandle spiHandle);
+
+    MEM_ERROR SendData(uint8_t *data, const uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout) override;
 
     static void SetWriteProtect();
     static void ResetWriteProtect();
@@ -32,13 +32,8 @@ public:
     static void SetChipSelect();
     static void ResetChipSelect();
 
-    MEM_ERROR SendData(uint8_t *data, const uint16_t *size, uint32_t timeout);
-    MEM_ERROR ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout);
-
 private:
-    SPI_HandleTypeDef hspi5;
-
-
+    SPIHandle m_SPIHandle;
 };
 
 
