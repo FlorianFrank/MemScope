@@ -24,6 +24,12 @@ uint32_t TimeMeasurement::ResetAndStartTimer()
     return get_timer();
 }
 
+
+void TimeMeasurement::StopTimer()
+{
+    stop_timer();
+}
+
 /**
  * @brief Returns the current timer value.
  * @return Timer value.
@@ -69,6 +75,7 @@ uint32_t TimeMeasurement::GetElapsedTimeInNS()
 {
     return static_cast<uint32_t>((float)value * 1/CLOCK_FREQUENCY);
 }
+
 
 
 

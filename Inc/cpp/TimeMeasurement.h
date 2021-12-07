@@ -16,6 +16,7 @@ public:
     static uint32_t GetClockCycles();
     static uint32_t GetElapsedTimeInNS();
     static void ResetTimer();
+    static void StopTimer();
     static uint32_t GetTimer();
 
 private:
