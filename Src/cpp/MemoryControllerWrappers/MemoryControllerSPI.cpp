@@ -13,7 +13,7 @@ MemoryController(interfaceWrapper)
 {
 }
 
-MEM_ERROR MemoryControllerSPI::MemoryWrite8BitWord(uint32_t adr, uint8_t value)
+MEM_ERROR MemoryControllerSPI::Write8BitWord(uint32_t adr, uint8_t value)
 {
 
 MEM_ERROR err = Set_WriteEnableLatch(false);
@@ -50,17 +50,17 @@ MEM_ERROR err = Set_WriteEnableLatch(false);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerSPI::MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const
+MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t adr, uint8_t *ret) const
 {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerSPI::MemoryWrite16BitWord(uint32_t adr, uint16_t value)
+MEM_ERROR MemoryControllerSPI::Write16BitWord(uint32_t adr, uint16_t value)
 {
     return MemoryErrorHandling::MEM_INVALID_COMMAND;
 }
 
-MEM_ERROR MemoryControllerSPI::MemoryRead16BitWord(uint32_t adr, uint16_t *value) const
+MEM_ERROR MemoryControllerSPI::Read16BitWord(uint32_t adr, uint16_t *value) const
 {
     return MemoryErrorHandling::MEM_INVALID_COMMAND;
 }

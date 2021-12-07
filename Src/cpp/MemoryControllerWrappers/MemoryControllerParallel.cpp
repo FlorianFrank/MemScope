@@ -10,7 +10,7 @@ MemoryControllerParallel::MemoryControllerParallel(InterfaceWrappers *interfaceW
 
 }
 
-MEM_ERROR MemoryControllerParallel::MemoryWrite8BitWord(uint32_t adr, uint8_t value)
+MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
 {
     if (isInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
@@ -19,7 +19,7 @@ MEM_ERROR MemoryControllerParallel::MemoryWrite8BitWord(uint32_t adr, uint8_t va
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerParallel::MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const
+MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret) const
 {
     if (isInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
@@ -39,7 +39,7 @@ MEM_ERROR MemoryControllerParallel::MemoryRead8BitWord(uint32_t adr, uint8_t *re
  * @param uint16_t value	value to be written to the specified address in SRAM
  * @retval					None
  */
-MEM_ERROR MemoryControllerParallel::MemoryWrite16BitWord(uint32_t adr, uint16_t value)
+MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
 {
     if(isInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
@@ -53,7 +53,7 @@ MEM_ERROR MemoryControllerParallel::MemoryWrite16BitWord(uint32_t adr, uint16_t 
 
 }
 
-MEM_ERROR MemoryControllerParallel::MemoryRead16BitWord(uint32_t adr, uint16_t *value) const
+MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value) const
 {
     if(isInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;

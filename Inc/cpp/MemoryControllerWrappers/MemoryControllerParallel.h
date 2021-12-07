@@ -13,13 +13,13 @@ class MemoryControllerParallel : public MemoryController
 public:
     explicit MemoryControllerParallel(InterfaceWrappers *interfaceWrapper);
 
-    MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value) override;
+    MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) override;
 
-    MEM_ERROR MemoryRead8BitWord(uint32_t adr, uint8_t *retValue) const override;
+    MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *retValue) const override;
 
-    MEM_ERROR MemoryWrite16BitWord(uint32_t adr, uint16_t value) override;
+    MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) override;
 
-    MEM_ERROR MemoryRead16BitWord(uint32_t adr, uint16_t *value) const override;
+    MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) const override;
 
 };
 

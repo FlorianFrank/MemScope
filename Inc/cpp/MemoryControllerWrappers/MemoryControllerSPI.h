@@ -41,10 +41,10 @@ public:
     } typedef MemoryStatusRegister;
 
     // Basic read and write functions
-    MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value) override;
-    MEM_ERROR MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const override;
-    MEM_ERROR MemoryWrite16BitWord(uint32_t adr, uint16_t value) override;
-    MEM_ERROR MemoryRead16BitWord(uint32_t adr, uint16_t *value) const override;
+    MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) override;
+    MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret) const override;
+    MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) override;
+    MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) const override;
 
     MEM_ERROR WriteStatusRegister(MemoryStatusRegister *statusRegister, uint8_t value);
     MEM_ERROR ReadStatusRegister(MemoryStatusRegister *statusRegister);

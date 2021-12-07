@@ -29,12 +29,6 @@ MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : Rx_Buf
     m_InterfaceWrapper = interfaceWrapper;
 }
 
-MemoryController::~MemoryController()
-{
-    //delete m_InterfaceWrapper;
-}
-
-
 /*
  * @brief								fills the whole SRAM with 0's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
@@ -55,11 +49,11 @@ MEM_ERROR MemoryController::MemoryFillWithZeros(uint8_t *buffer, uint32_t *buffL
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t real_value = 0xFFFF;
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = MemoryWrite16BitWord(adr, 0x0);
+        MEM_ERROR ret = Write16BitWord(adr, 0x0);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
-        ret = MemoryRead16BitWord(adr, &real_value);
+        ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
         // test, if the written value equals the expected value
@@ -124,11 +118,11 @@ MEM_ERROR MemoryController::MemoryFillWithOnes(uint8_t *buffer, uint32_t *buffer
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t real_value = 0x0;
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = MemoryWrite16BitWord(adr, 0xFFFF);
+        MEM_ERROR ret = Write16BitWord(adr, 0xFFFF);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
-        ret = MemoryRead16BitWord(adr, &real_value);
+        ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
@@ -190,7 +184,7 @@ MEM_ERROR MemoryController::MemoryReadArea(uint8_t *buffer, uint32_t *bufferLen)
 #if MEM_ACCESS_WIDTH_BIT == 16
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
         uint16_t real_value;
-        MEM_ERROR ret = MemoryRead16BitWord(adr, &real_value);
+        MEM_ERROR ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
@@ -313,7 +307,7 @@ MEM_ERROR MemoryController::MemoryGetProbabilityOfFlippedOnesAndZeros(uint8_t *b
     //expected_value = 0x00FF;
     for(uint32_t adr = start_local; adr < end_local; adr++){
         uint16_t real_value;
-        MEM_ERROR ret = MemoryRead16BitWord(adr, &real_value);
+        MEM_ERROR ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
         flipped_one += flipped_one_16b(expected_value, real_value);
@@ -461,11 +455,11 @@ MEM_ERROR MemoryController::MemoryFillMemoryWithAscendingValues(uint8_t *buffer,
     start_value = (uint16_t)arguments[0];
     uint16_t real_value = 0x0;
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = MemoryWrite16BitWord(adr, start_value);
+        MEM_ERROR ret = Write16BitWord(adr, start_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
-        ret = MemoryRead16BitWord(adr, &real_value);
+        ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
@@ -525,11 +519,11 @@ MEM_ERROR MemoryController::MemoryWriteAlternatingZeroAndOne(uint8_t *buffer, ui
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t real_value = 0x0;
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = MemoryWrite16BitWord(adr, 0x5555);
+        MEM_ERROR ret = Write16BitWord(adr, 0x5555);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
-        ret = MemoryRead16BitWord(adr, &real_value);
+        ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
@@ -589,11 +583,11 @@ MEM_ERROR MemoryController::MemoryWriteAlternatingOneAndZero(uint8_t *buffer, ui
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t real_value = 0x0;
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = MemoryWrite16BitWord(adr, 0xAAAA);
+        MEM_ERROR ret = Write16BitWord(adr, 0xAAAA);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
-        ret = MemoryRead16BitWord(adr, &real_value);
+        ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
@@ -660,11 +654,11 @@ MEM_ERROR MemoryController::MemoryWriteSingleValue(uint8_t *buffer, uint32_t *bu
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t real_value = 0;
     start_value = (uint16_t)arguments[1];
-    MEM_ERROR ret = MemoryWrite16BitWord(start_adr, start_value);
+    MEM_ERROR ret = Write16BitWord(start_adr, start_value);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
-    ret = MemoryRead16BitWord(start_adr, &real_value);
+    ret = Read16BitWord(start_adr, &real_value);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
@@ -737,11 +731,11 @@ MEM_ERROR MemoryController::MemoryWriteAddressRange(uint8_t *buffer, uint32_t *b
         start_adr = arguments[0];
         end_adr = arguments[1] + 1;
         for(uint32_t adr = start_adr; adr < end_adr; adr++){
-            MEM_ERROR ret = MemoryWrite16BitWord(adr, start_value);
+            MEM_ERROR ret = Write16BitWord(adr, start_value);
             if(ret != MemoryErrorHandling::MEM_NO_ERROR)
                 return ret;
 
-            ret = MemoryRead16BitWord(adr, &real_value);
+            ret = Read16BitWord(adr, &real_value);
             if(ret != MemoryErrorHandling::MEM_NO_ERROR)
                 return ret;
 
@@ -807,7 +801,7 @@ MEM_ERROR MemoryController::MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buf
     uint16_t real_value;
     uint16_t counter = 0;
     for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = MemoryRead16BitWord(adr, &real_value);
+        MEM_ERROR ret = Read16BitWord(adr, &real_value);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
             return ret;
 
@@ -847,14 +841,14 @@ MEM_ERROR MemoryController::MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buf
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			the address to read from
  */
-MEM_ERROR MemoryController::SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args)
+MEM_ERROR MemoryController::MemoryGetValueAndAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args)
 {
     if (!buffer || !buffLen || !args || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t real_value = 0;
-    MEM_ERROR ret = MemoryRead16BitWord(args[0], &real_value);
+    MEM_ERROR ret = Read16BitWord(args[0], &real_value);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
     sprintf((char*)buffer, "Address: %lu\tValue: %#06X\n\n\r", (unsigned long)args[0], real_value);
@@ -880,7 +874,7 @@ MEM_ERROR MemoryController::SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen,
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			the address to read from, the value to compare with
  */
-MEM_ERROR MemoryController::SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
+MEM_ERROR MemoryController::MemoryCheckExpectedValueAtAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
     if(!buffer || !buffLen || !args || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
@@ -889,7 +883,7 @@ MEM_ERROR MemoryController::SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLe
 #if MEM_ACCESS_WIDTH_BIT == 16
     uint16_t expected_value = (uint16_t)args[1];
     uint16_t real_value = 0;
-    MEM_ERROR ret = MemoryRead16BitWord(args[0], &real_value);
+    MEM_ERROR ret = Read16BitWord(args[0], &real_value);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
@@ -937,7 +931,7 @@ MEM_ERROR MemoryController::SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLe
  * @param uint32_t *m_arguments			the start address to read from, the end address to read from
  * 										the value to compare with
  */
-MEM_ERROR MemoryController::SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
+MEM_ERROR MemoryController::MemoryCheckExpectedValueAtAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
     uint32_t start_local = args[0];
     uint32_t end_local = args[1];
     TestStatus state = PASSED;
@@ -948,7 +942,7 @@ MEM_ERROR MemoryController::SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *
     if(start_local <= end_local){
         if(start_local < MEM_SIZE_ADR && end_local <= MEM_SIZE_ADR){
             for(uint32_t adr = start_local; adr < end_local; adr++){
-                MEM_ERROR ret = MemoryRead16BitWord(adr, &real_value_local);
+                MEM_ERROR ret = Read16BitWord(adr, &real_value_local);
                 if(ret != MemoryErrorHandling::MEM_NO_ERROR)
                     return ret;
 
@@ -1012,7 +1006,7 @@ MEM_ERROR MemoryController::SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *
  * @param uint32_t *m_arguments			the start address to read from, the end address to read from
  * 										the value to compare with
  */
-MEM_ERROR MemoryController::SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen){
+MEM_ERROR MemoryController::CheckReadWriteStatus(uint8_t *buffer, uint32_t *buffLen){
     if(!buffer || !buffLen || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
@@ -1070,7 +1064,7 @@ MEM_ERROR MemoryController::SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32
     len = 0;
     if(start_local <= MEM_SIZE_ADR && end_local <= MEM_SIZE_ADR){
         for(uint32_t adr = start_local; adr < end_local; adr++){
-            MEM_ERROR ret = MemoryRead16BitWord(adr, &real_value);
+            MEM_ERROR ret = Read16BitWord(adr, &real_value);
             if(ret != MemoryErrorHandling::MEM_NO_ERROR)
                 return ret;
             if(real_value != expected_value){
@@ -1161,272 +1155,6 @@ MEM_ERROR MemoryController::SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32
     *buffLen = len;
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
-
-
-/*
- * @brief								rewritten function to receive with a delay of 10ms
- * @param uint8_t *dstBuffer			the destination buffer
- * @param uint32_t bufferSize			the buffer size
- */
-/*
-void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize)
-{
-	//CDC_Receive_HS(dstBuffer, bufferSize);
-	my_HAL_Delay(10);
-}
-*/
-
-
-//HAL_UART_Receive_IT(huart, (uint8_t*) Rx_Data, 1);
-
-
-/*
-		while (Len--)
-		{
-			if (RX_FIFO.head==RX_FIFO.tail);// return count;
-			count++;
-			*Buf++=RX_FIFO.data[RX_FIFO.tail];
-			RX_FIFO.tail=FIFO_INCR(RX_FIFO.tail);
-		}
-*/
-
-
-
-//	// clear Rx_Buffer before receiving new data
-//	if (huart->Instance == UART4)
-//	{
-//		if (Rx_Index == 0)
-//		{
-//			clearBuffer(0);
-//		}
-//
-//		// if received data different from ascii 13 (Enter)
-//		if (Rx_Data[0] != 13)
-//		{
-//			// only allow 0-9, A-Z, a-z, SP (32), DEL (127)
-//			if (Rx_Data[0] == 32 || Rx_Data[0] == 127
-//					|| (Rx_Data[0] > 47 && Rx_Data[0] < 58)
-//					|| (Rx_Data[0] > 64 && Rx_Data[0] < 91)
-//					|| (Rx_Data[0] > 96 && Rx_Data[0] < 123))
-//			{
-//				if (Rx_Data[0] == 127)
-//				{
-//					if (Rx_Index > 0)
-//					{
-//						Rx_Index--;
-//					}
-//					// correct extended ascii chars which uses two bytes when press 'Delete'
-//					if (Rx_Buffer[Rx_Index] > 127 && Rx_Index > 0)
-//					{
-//						Rx_Index--;
-//					}
-//					//clearBuffer(Rx_Index);
-//				}
-//				else
-//				{
-//					Rx_Buffer[Rx_Index++] = Rx_Data[0];
-//				}
-//				// print input char by char
-//				HAL_UART_Transmit_IT(huart, (uint8_t*) Rx_Data, 1);
-//			}
-//		}
-//		else
-//		{
-//			// if received data = 13
-//			Rx_Index = 0;
-//			Transfer_cplt = 1; // transfer complete, data is ready to read
-//		}
-//
-//		HAL_UART_Receive_IT(huart, (uint8_t*) Rx_Data, 1);
-//	}
-
-
-
-
-
-
-
-
-
-
-
-/*
-* @brief								rewritten function to receive with a delay of 10ms
-* @param uint8_t *dstBuffer			the destination buffer
-* @param uint32_t bufferSize			the buffer size
-*/
-//void USBCDCReceiveCallback(uint8_t *dstBuffer, uint32_t bufferSize)
-//{
-//	// clear Rx_Buffer before receiving new data
-//
-//	//if(huart->Instance == UART4){
-//
-//		memcpy(dstBuffer, Rx_Buffer, bufferSize);
-//
-//		/*if(Rx_Index == 0){
-//			clearBuffer(0);
-//		}*/
-//
-//		// if received data different from ascii 13 (Enter)
-//		if(Rx_Data[0] != 13){
-//			// only allow 0-9, A-Z, a-z, SP (32), DEL (127)
-//			if(Rx_Data[0] == 32 || Rx_Data[0] == 127 || (Rx_Data[0] > 47 && Rx_Data[0] < 58) || (Rx_Data[0] > 64 && Rx_Data[0] < 91) ||
-//					(Rx_Data[0] > 96 && Rx_Data[0] < 123)){
-//				if(Rx_Data[0] == 127){
-//					if(Rx_Index > 0){
-//						Rx_Index--;
-//					}
-//					// correct extended ascii chars which uses two bytes when press 'Delete'
-//					if(Rx_Buffer[Rx_Index] > 127 && Rx_Index > 0){
-//						Rx_Index--;
-//					}
-//					//clearBuffer(Rx_Index);
-//				}else{
-//					Rx_Buffer[Rx_Index++] = Rx_Data[0];
-//				}
-//				// print input char by char
-//				//CDC_Transmit_HS((uint8_t *)Rx_Data, 1);
-//			}
-//		}else{
-//			// if received data = 13
-//			Rx_Index = 0;
-//			Transfer_cplt = 1; // transfer complete, data is ready to read
-//		}
-//
-//	//}
-//}
-
-
-
-
-/*
- * @brief								parse the command, set the required variables, parse the m_arguments
- * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
- */
-//void executeCommandUSB(){
-//	m_commandMode = 0xFF; // invalid command
-//	// parse command
-//	for(uint8_t i = 0; i < COMMAND_COUNT; i++)
-//	{
-//		// check if the command equals a command specified in the array 'command'
-//		// if so set m_commandMode different from 0xFF
-//		uint8_t command_end_index = get_space(Rx_Buffer);
-//		if((uint8_t)strlen(command[i]) == command_end_index && strncmp(command[i], Rx_Buffer, command_end_index) == 0)
-//		{
-//			m_commandMode = i;
-//			char tmp[30];
-//			uint16_t len_rx_buffer = strlen(Rx_Buffer);
-//			uint16_t len_command = strlen(command[i]);
-//			// if there are m_arguments after the command
-//			if(len_rx_buffer - len_command > 0)
-//			{
-//				// extract the m_arguments from the string
-//				strncpy(tmp, Rx_Buffer + len_command, len_rx_buffer - len_command);
-//				// tokenize the m_arguments and fill the array 'm_arguments'
-//				tokenize_arguments(tmp);
-//			}
-//			break;
-//		}
-//	}
-//
-//	//sprintf(STRING_BUFFER, "Length: %d, String: %d %d %d %d\r\n", (uint16_t)strlen(Rx_Buffer), Rx_Buffer[0], Rx_Buffer[1], Rx_Buffer[2], Rx_Buffer[3]);
-//	// prints the command
-//	sprintf(STRING_BUFFER, ">\r\n");
-//	len = strlen(STRING_BUFFER);
-//	//flushRead();
-//	//HAL_Delay(3500);
-//	sendUSB((uint8_t *)STRING_BUFFER, len);
-//	//CDC_Transmit_HS((uint8_t *)STRING_BUFFER, len);
-//
-//	// reset the counter before every write execution
-//	//
-//	switch(m_commandMode){
-//	case 0x0:
-//		// no write operation will be performed in this method
-//		//m_WriteMode = 0xFF;
-//		return showHelp(NULL);
-//	case 0x1:
-//		// write operation in mode 1 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x1;
-//		return MemoryFillWithZeros(NULL);
-//	case 0x2:
-//		// write operation in mode 2 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x2;
-//		return MemoryFillWithOnes(NULL);
-//	case 0x3:
-//		// write operation in mode 3 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x3;
-//		return MemoryFillMemoryWithAscendingValues(NULL, m_arguments);
-//	case 0x4:
-//		// write operation in mode 4 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x4;
-//		return SRAM_Write_Alternate_Zero_One(NULL);
-//	case 0x5:
-//		// write operation in mode 5 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x5;
-//		return MemoryWriteAlternatingOneAndZero(NULL);
-//	case 0x6:
-//		// write operation in mode 6 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x6;
-//		return MemoryWriteSingleValue(NULL, m_arguments);
-//	case 0x7:
-//		// write operation in mode 7 will be performed in this method
-//		// therefore reset the counters/m_arguments
-//		// they will be set in the function
-//		m_WriteMode = 0x7;
-//		return MemoryWriteAddressRange(NULL, m_arguments);
-//	case 0x8:
-//		// no write operation will be performed in this method
-//		// reset the counter for statistical analysis
-//		//m_WriteMode = 0xFF;
-//		return MemoryGetProbabilityOfFlippedOnesAndZeros(NULL);
-//	case 0x9:
-//		// no write operation will be performed in this method
-//		// reset the counter for statistical analysis
-//		//m_WriteMode = 0xFF;
-//		return SRAM_Get_Address(NULL, m_arguments);
-//	case 0xA:
-//		// no write operation will be performed in this method
-//		//m_WriteMode = 0xFF;
-//		return MemoryReadWholeMemory(NULL);
-//		break;
-//	case 0xB:
-//		// no write operation will be performed in this method
-//		//m_WriteMode = 0xFF;
-//		return SRAM_Check_Read_Write_Status(NULL);
-//	case 0xC:
-//		// no write operation will be performed in this method
-//		//m_WriteMode = 0xFF;
-//		return SRAM_Check_Address(NULL, m_arguments);
-//	case 0xD:
-//		// no write operation will be performed in this method
-//		//m_WriteMode = 0xFF;
-//		return SRAM_Check_Address_Range(NULL, m_arguments);
-//	case 0xE:
-//		return MemoryReadArea(NULL);
-//	default:
-//		sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
-//		len = strlen(STRING_BUFFER);
-//		sendUSB((uint8_t *)STRING_BUFFER, len);
-//	}
-//}
-
-
-
-
-
 
 /*
  * @brief							resets the counters for statistical analysis

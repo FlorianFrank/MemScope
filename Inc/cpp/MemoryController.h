@@ -32,7 +32,7 @@
 
 class SPIWrapper;
 
-#define SRAM_BUFFER_SIZE	40960						// 5x8192 buffer size for the sram buffer
+#define MEMORY_BUFFER_SIZE	40960						// 5x8192 buffer size for the sram buffer
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
@@ -40,23 +40,18 @@ class MemoryController
 {
 public:
 
-    explicit MemoryController(InterfaceWrappers *interfaceWrapper);
-    ~MemoryController();
-
     typedef enum {
         FAILED = 0,
         PASSED = !FAILED
-    } TestStatus; // Typedef for correct read/write Tests
+    } TestStatus;
 
+    explicit MemoryController(InterfaceWrappers *interfaceWrapper);
 
-//#if MEM_ACCESS_IF==SPI
-
-
-// functions to access the SRAM
-    virtual MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value) = 0;
-    virtual MEM_ERROR MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const = 0;
-    virtual MEM_ERROR MemoryWrite16BitWord(uint32_t adr, uint16_t value) = 0;
-    virtual MEM_ERROR MemoryRead16BitWord(uint32_t adr, uint16_t *value) const = 0;
+    // Basic Read and write functions which must be implemented by the deriving classes
+    virtual MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) = 0;
+    virtual MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret) const = 0;
+    virtual MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) = 0;
+    virtual MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) const = 0;
 
 
 // user functions
@@ -71,11 +66,11 @@ public:
     MEM_ERROR MemoryWriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
     MEM_ERROR MemoryWriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
     MEM_ERROR MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buffLen);
-    MEM_ERROR SRAM_Get_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
-    MEM_ERROR SRAM_Check_Address(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
-    MEM_ERROR SRAM_Check_Address_Range(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
-    MEM_ERROR SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen);
-    MEM_ERROR SRAM_Measure_WIP_Polling();
+
+    MEM_ERROR MemoryGetValueAndAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
+    MEM_ERROR MemoryCheckExpectedValueAtAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
+    MEM_ERROR MemoryCheckExpectedValueAtAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
+    MEM_ERROR CheckReadWriteStatus(uint8_t *buffer, uint32_t *buffLen);
 
 protected:
     static bool isInvalidAddress(uint32_t address);
@@ -103,7 +98,7 @@ protected:
 
     // global string buffer
     //char STRING_BUFFER[STRING_BUFFER_SIZE];
-    char SRAM_BUFFER[SRAM_BUFFER_SIZE]{};
+    char SRAM_BUFFER[MEMORY_BUFFER_SIZE]{};
     char *srambp{};
 
     // probability counter
