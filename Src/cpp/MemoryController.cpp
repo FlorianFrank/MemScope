@@ -33,7 +33,7 @@ MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : Rx_Buf
  * @brief								fills the whole SRAM with 0's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::MemoryFillWithZeros(uint8_t *buffer, uint32_t *buffLen){
+MEM_ERROR MemoryController::FillWithZeros(uint8_t *buffer, uint32_t *buffLen){
 
     if(!buffer || !buffLen || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -103,7 +103,7 @@ MEM_ERROR MemoryController::MemoryFillWithZeros(uint8_t *buffer, uint32_t *buffL
  * @brief								fills the whole SRAM with 1's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::MemoryFillWithOnes(uint8_t *buffer, uint32_t *bufferLen){
+MEM_ERROR MemoryController::FillWithOnes(uint8_t *buffer, uint32_t *bufferLen){
 
     if(!buffer || !bufferLen || *bufferLen)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -173,7 +173,7 @@ MEM_ERROR MemoryController::MemoryFillWithOnes(uint8_t *buffer, uint32_t *buffer
     return retCode;
 }
 
-MEM_ERROR MemoryController::MemoryReadArea(uint8_t *buffer, uint32_t *bufferLen){
+MEM_ERROR MemoryController::ReadArea(uint8_t *buffer, uint32_t *bufferLen){
 
     if(!buffer || !bufferLen || *bufferLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -248,7 +248,7 @@ MEM_ERROR MemoryController::MemoryReadArea(uint8_t *buffer, uint32_t *bufferLen)
  * 										displays an error message and exits, if no write operation was performed
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::MemoryGetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen){
+MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen){
 
     if(!buffer || !buffLen || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -443,7 +443,7 @@ MEM_ERROR MemoryController::MemoryGetProbabilityOfFlippedOnesAndZeros(uint8_t *b
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			the start value to count up
  */
-MEM_ERROR MemoryController::MemoryFillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
+MEM_ERROR MemoryController::FillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
     // reset the counter for statistical analysis
     init_counter();
     // reset the m_arguments
@@ -508,7 +508,7 @@ MEM_ERROR MemoryController::MemoryFillMemoryWithAscendingValues(uint8_t *buffer,
  * @brief								fills the whole SRAM with alternating 010101010....
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::MemoryWriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen){
+MEM_ERROR MemoryController::WriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen){
     // reset the counter for statistical analysis
     init_counter();
     // reset the m_arguments
@@ -569,7 +569,7 @@ MEM_ERROR MemoryController::MemoryWriteAlternatingZeroAndOne(uint8_t *buffer, ui
  * @brief								fills the whole SRAM with alternating 101010101....
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::MemoryWriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen){
+MEM_ERROR MemoryController::WriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen){
     if(!buffer || !bufferLen || *bufferLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
@@ -635,7 +635,7 @@ MEM_ERROR MemoryController::MemoryWriteAlternatingOneAndZero(uint8_t *buffer, ui
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			first element is the address, second element is the value
  */
-MEM_ERROR MemoryController::MemoryWriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
+MEM_ERROR MemoryController::WriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
     if(!buffer || !buffLen || !arguments || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
@@ -706,7 +706,7 @@ MEM_ERROR MemoryController::MemoryWriteSingleValue(uint8_t *buffer, uint32_t *bu
  * @param uint32_t *m_arguments			first element is the start address, second element is the end address
  * 										third element is the value
  */
-MEM_ERROR MemoryController::MemoryWriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
+MEM_ERROR MemoryController::WriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
 
     if(!buffer || !buffLen || !arguments || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -793,7 +793,7 @@ MEM_ERROR MemoryController::MemoryWriteAddressRange(uint8_t *buffer, uint32_t *b
  * @brief								reads the whole SRAM and print it as hexadecimal values
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buffLen){
+MEM_ERROR MemoryController::ReadWholeMemory(uint8_t *buffer, uint32_t *buffLen){
 
     srambp = SRAM_BUFFER;
 
@@ -841,7 +841,7 @@ MEM_ERROR MemoryController::MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buf
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			the address to read from
  */
-MEM_ERROR MemoryController::MemoryGetValueAndAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args)
+MEM_ERROR MemoryController::GetValueAndAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args)
 {
     if (!buffer || !buffLen || !args || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -874,7 +874,7 @@ MEM_ERROR MemoryController::MemoryGetValueAndAddress(uint8_t *buffer, uint32_t *
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			the address to read from, the value to compare with
  */
-MEM_ERROR MemoryController::MemoryCheckExpectedValueAtAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
+MEM_ERROR MemoryController::CheckExpectedValueAtAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
     if(!buffer || !buffLen || !args || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
@@ -931,7 +931,7 @@ MEM_ERROR MemoryController::MemoryCheckExpectedValueAtAddress(uint8_t *buffer, u
  * @param uint32_t *m_arguments			the start address to read from, the end address to read from
  * 										the value to compare with
  */
-MEM_ERROR MemoryController::MemoryCheckExpectedValueAtAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
+MEM_ERROR MemoryController::CheckExpectedValueAtAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args){
     uint32_t start_local = args[0];
     uint32_t end_local = args[1];
     TestStatus state = PASSED;
@@ -1176,7 +1176,7 @@ void MemoryController::init_arguments(){
     start_value = 0;
 }
 
-/*static*/ bool MemoryController::isInvalidAddress(uint32_t address)
+/*static*/ bool MemoryController::IsInvalidAddress(uint32_t address)
 {
     return (address >= MEM_SIZE_ADR) ?  true : false;
 }

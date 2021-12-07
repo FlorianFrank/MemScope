@@ -55,25 +55,25 @@ public:
 
 
 // user functions
-    MEM_ERROR MemoryFillWithZeros(uint8_t *buffer, uint32_t *buffLen);
-    MEM_ERROR MemoryFillWithOnes(uint8_t *buffer, uint32_t *bufferLen);
-    MEM_ERROR MemoryReadArea(uint8_t *buffer, uint32_t *bufferLen);
+    MEM_ERROR FillWithZeros(uint8_t *buffer, uint32_t *buffLen);
+    MEM_ERROR FillWithOnes(uint8_t *buffer, uint32_t *bufferLen);
+    MEM_ERROR ReadArea(uint8_t *buffer, uint32_t *bufferLen);
 
-    MEM_ERROR MemoryGetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen);
-    MEM_ERROR MemoryFillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-    MEM_ERROR MemoryWriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen);
-    MEM_ERROR MemoryWriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen);
-    MEM_ERROR MemoryWriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-    MEM_ERROR MemoryWriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-    MEM_ERROR MemoryReadWholeMemory(uint8_t *buffer, uint32_t *buffLen);
+    MEM_ERROR GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen);
+    MEM_ERROR FillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+    MEM_ERROR WriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen);
+    MEM_ERROR WriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen);
+    MEM_ERROR WriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+    MEM_ERROR WriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+    MEM_ERROR ReadWholeMemory(uint8_t *buffer, uint32_t *buffLen);
 
-    MEM_ERROR MemoryGetValueAndAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
-    MEM_ERROR MemoryCheckExpectedValueAtAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
-    MEM_ERROR MemoryCheckExpectedValueAtAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
+    MEM_ERROR GetValueAndAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
+    MEM_ERROR CheckExpectedValueAtAddress(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
+    MEM_ERROR CheckExpectedValueAtAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *args);
     MEM_ERROR CheckReadWriteStatus(uint8_t *buffer, uint32_t *buffLen);
 
 protected:
-    static bool isInvalidAddress(uint32_t address);
+    static bool IsInvalidAddress(uint32_t address);
 
 
     // helper functions
