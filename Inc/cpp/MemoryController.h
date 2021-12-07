@@ -25,26 +25,14 @@
 
 #define COMMAND_COUNT		15
 
+// Define IO to empty when not using STM32
+#ifndef __IO
+#define __IO volatile
+#endif // !__IO
+
 class SPIWrapper;
 
 #define SRAM_BUFFER_SIZE	40960						// 5x8192 buffer size for the sram buffer
-
-
-enum
-{
-    ReRAM_WREN      = (uint8_t) 0x06,       // Set Write Enable Latch
-    ReRAM_WRDI      = (uint8_t) 0x04,       // Reset Write Enable Latch
-    ReRAM_RDSR      = (uint8_t) 0x05,       // Read Status Register
-    ReRAM_WRSR      = (uint8_t) 0x01,       // Write Status Register
-    ReRAM_READ      = (uint8_t) 0x03,       // Read Memory Code
-    ReRAM_WRITE     = (uint8_t) 0x02,       // Write Memory Code
-    ReRAM_PD        = (uint8_t) 0x09,       // Chip Erase
-    ReRAM_UDPD      = (uint8_t) 0x79,       // Ultra Deep Power Down
-    ReRAM_RES       = (uint8_t) 0xAB,       // Resume from Power Down
-    ReRAM_RDID      = (uint8_t) 0b10011111, // Read Device ID
-    ReRAM_SLEEP     = (uint8_t) 0b10111001, // Sleep Mode
-    ReRam_PowerDown = (uint8_t) 0xB9        //
-} typedef SPI_Commands;
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
@@ -52,7 +40,7 @@ class MemoryController
 {
 public:
 
-    MemoryController(InterfaceWrappers &interfaceWrapper);
+    explicit MemoryController(InterfaceWrappers &interfaceWrapper);
     ~MemoryController();
 
     typedef enum {
@@ -62,23 +50,13 @@ public:
 
 
 //#if MEM_ACCESS_IF==SPI
-    struct
-    {
-        uint8_t wp_enable_Pin;
-        uint8_t auto_power_down_enable;
-        uint8_t low_power_standby_enable;
-        uint8_t block_protection_bits;
-        uint8_t write_enable_bit;
-        uint8_t write_in_progress_bit;
-
-    } typedef MemoryStatusRegister;
 
 
 // functions to access the SRAM
-    MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value);
-    MEM_ERROR MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const;
-    MEM_ERROR MemoryWrite16BitWord(uint32_t adr, uint16_t value);
-    MEM_ERROR MemoryRead16BitWord(uint32_t adr, uint16_t *value) const;
+    virtual MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value) = 0;
+    virtual MEM_ERROR MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const = 0;
+    virtual MEM_ERROR MemoryWrite16BitWord(uint32_t adr, uint16_t value) = 0;
+    virtual MEM_ERROR MemoryRead16BitWord(uint32_t adr, uint16_t *value) const = 0;
 
 
 // user functions
@@ -99,41 +77,14 @@ public:
     MEM_ERROR SRAM_Check_Read_Write_Status(uint8_t *buffer, uint32_t *buffLen);
     MEM_ERROR SRAM_Measure_WIP_Polling();
 
-    uint8_t get_space(char *rx_buffer);
+protected:
+    static bool isInvalidAddress(uint32_t address);
 
 
-private:
     // helper functions
-    void init_counter(void);
+    void init_counter();
 
-    void init_arguments(void);
-
-    void USBCDCRXCallback(uint8_t *Buf, uint32_t Len);
-
-
-#if MEM_ACCESS_IF==SPI
-    uint32_t WIP_Polling(uint32_t timeoutCycles);
-    MEM_ERROR Set_WriteEnable();
-    MEM_ERROR Reset_WriteEnable();
-    MEM_ERROR Set_WriteEnableLatch(bool checkRegister);
-
-    MEM_ERROR Reset_WriteEnableLatch();
-    MEM_ERROR ReadStatusRegister(MemoryStatusRegister *statusRegister);
-    MEM_ERROR WriteStatusRegister(MemoryStatusRegister *statusRegister, uint8_t value);
-    MEM_ERROR EraseChip();
-    MEM_ERROR ResumeFromPowerDown();
-    MEM_ERROR SetUltraDeepPowerDown();
-    MEM_ERROR SetSleepMode();
-
-    MEM_ERROR SetPowerDown();
-
-    MEM_ERROR SendSPICommand(SPI_Commands spiCMD, uint8_t *retValue, bool response);
-    MemoryStatusRegister ParseStatusRegister(uint8_t statusRegister);
-    void PrintStatusRegister(MemoryStatusRegister reg);
-#endif // SPI
-
-    static inline bool isInvalidAddress(uint32_t address);
-
+    void init_arguments();
 
     char Rx_Buffer[100];
     uint8_t write_mode;
@@ -144,7 +95,7 @@ private:
 
     uint32_t m_MMIOStartAddress;
     SPIWrapper* m_SPIWrapper;
-    InterfaceWrappers m_InterfaceWrapper;
+    InterfaceWrappers m_InterfaceWrapper{};
 
     // commands
     uint16_t start_value = 0x0; // start value for ascending writing
@@ -153,8 +104,8 @@ private:
 
     // global string buffer
     //char STRING_BUFFER[STRING_BUFFER_SIZE];
-    char SRAM_BUFFER[SRAM_BUFFER_SIZE];
-    char *srambp;
+    char SRAM_BUFFER[SRAM_BUFFER_SIZE]{};
+    char *srambp{};
 
     // probability counter
 // 1 MB RAM => 1 million 1's and 0's possible => uint32_t
@@ -165,46 +116,4 @@ private:
 
 };
 
-
-
 #endif /* __MEMORY_CONTROL_H */
-
-
-/**
-  ******************************************************************************
-  * File Name          : tud_seceng.h
-  * Description        : This file contains the common defines of the methods
-  ******************************************************************************
-*/
-/* Define to prevent recursive inclusion -------------------------------------*/
-/*#ifndef __MEMORY_CONTROL_H
-
-#include "SystemFiles/usbd_cdc_if.h"
-#include "memory_defines.h"
-#include "memory_error_handling.h"
-
-
-
-
-
-
-#if MEM_ACCESS_IF==SPI
-struct
-{
-    uint8_t wp_enable_Pin;
-    uint8_t auto_power_down_enable;
-    uint8_t low_power_standby_enable;
-    uint8_t block_protection_bits;
-    uint8_t write_enable_bit;
-    uint8_t write_in_progress_bit;
-
-} typedef MemoryStatusRegister;
-#endif // MEM_ACCESS_IF==SPI
-
-
-// global string buffer
-
-
-
-*/
-

@@ -1,54 +1,30 @@
 /**
-  ******************************************************************************
-  * File Name          : memory_control.c
-  * Description        : Methods for experiments
-  ******************************************************************************
-*/
-
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include "cpp/MemoryController.h"
 #include <CommandDefines.h>
 
 #include "io_pin_defines.h"
 #include <memory_defines.h>
 extern "C" {
-#include "metrics.h" // TODO
+#include "metrics.h"
 }
 #include <cstring> // strstr, memset
 #include <cstdio> // sprintf
 
 
-#include "cpp/SPIWrapper.h"
+#include "cpp/InterfaceWrappers/SPIWrapper.h"
 
-
-
-
-#ifndef __IO
-#define __IO
-#endif // !__IO
-
-
-
-// commands initialization
-/*
- * @brief: 	to add new commands, add the command to the array 'command'
- * 			increase the variable 'COMMAND_COUNT' in 'memory_control.h'
- * 			add a brief description for the command at the corresponding array index in the array 'command_help'
- *
- * 			Note that the value 0xFF is reserved in the arrays 'm_commandMode' and 'm_WriteMode'
- *
- * 			If you need more than 3 m_arguments, increase the array size of 'm_arguments' to the required value
- */
-
-
-// FIXME remove?
-/*void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
-void USBCDCRXCallback(uint8_t *dstBuffer, uint32_t bufferSize);*/
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 
-MemoryController::MemoryController(InterfaceWrappers &interfaceWrapper): Rx_Buffer(""), write_mode(0xFF), Transfer_cplt(0), len(0), STRING_BUFFER(""),
-                                       m_MMIOStartAddress(MEMORY_BANK_ADDRESS)
+MemoryController::MemoryController(InterfaceWrappers &interfaceWrapper) : Rx_Buffer(""), write_mode(0xFF),
+                                                                          Transfer_cplt(0), len(0), STRING_BUFFER(""),
+                                                                          m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
+                                                                          srambp(nullptr), total_one(0), total_zero(0),
+                                                                          flipped_one(0), flipped_zero(0)
 {
     m_SPIWrapper = new SPIWrapper();
     m_InterfaceWrapper = interfaceWrapper;
@@ -184,7 +160,6 @@ MEM_ERROR MemoryController::WriteStatusRegister(MemoryStatusRegister *statusRegi
 
 MEM_ERROR MemoryController::EraseChip()
 {
-    return SendSPICommand(ReRAM_PD, NULL, false);
 }
 
 MEM_ERROR MemoryController::ResumeFromPowerDown()
@@ -246,41 +221,6 @@ uint32_t MemoryController::WIP_Polling(uint32_t timeoutCycles)
 */
 MEM_ERROR MemoryController::MemoryWrite8BitWord(const uint32_t adr, uint8_t value)
 {
-    if(isInvalidAddress(adr))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-#if MEM_ACCESS_IF==SPI
-
-    MEM_ERROR err = Set_WriteEnableLatch(false);
-	if(err != MEM_NO_ERROR)
-		return err;
-
-// TODO
-#define RERAM_ADESTO_RM25C512C_LTAI_T 1
-	// Write Execution
-#if RERAM_ADESTO_RM25C512C_LTAI_T
-	// Use 2 address bytes
-	uint8_t initialize_write_data[] = {ReRAM_WRITE, static_cast<uint8_t>(((adr >> 8) & 0xFF)), static_cast<uint8_t>(((adr >>  0) & 0xFF)), value};
-#elif RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
-	// Use 3 address bytes
-	uint8_t initialize_write_data[] = {ReRAM_WRITE,((adr >> 16) & 0xFF), ((adr >> 8) & 0xFF), ((adr >>  0) & 0xFF), value};
-#else
-	return MEM_INTERFACE_NOT_SUPPORTED;
-#endif // if RERAM_ADESTO_RM25C512C_LTAI_T else if FRAM_FUJITSU_MB85R1001ANC_GE1
-
-	Set_WriteEnable();
-	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
-	err = HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, initialize_write_data, sizeof(initialize_write_data), 1000));
-	HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
-	Reset_WriteEnable();
-
-	if(err != MEM_NO_ERROR)
-		return err;
-#endif // MEM_ACCESS_IF == SPI
-
-#if MEM_ACCESS_IF == PARALLEL
-    *(__IO uint8_t *) (m_MMIOStartAddress + adr) = value;
-#endif //MEM_ACCESS_IF == PARALLEL
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
@@ -320,51 +260,10 @@ MEM_ERROR MemoryController::MemoryRead8BitWord(uint32_t adr, uint8_t *ret) const
 
 #if MEM_ACCESS_IF==PARALLEL
     //read 8-bit data from memory
-    *ret = *(__IO uint8_t *) (m_MMIOStartAddress + adr);
 #endif // MEM_ACCESS_IF==PARALLEL
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-/*
- * @brief					writes a 16-Bit(2-byte-word) value to the specified address to SRAM
- * @param uint32_t adr		relative address to the base address (specified as macro 'MEMORY_BANK_ADDRESS') of SRAM
- * 							to be written to
- * @param uint16_t value	value to be written to the specified address in SRAM
- * @retval					None
- */
-MEM_ERROR MemoryController::MemoryWrite16BitWord(uint32_t adr, uint16_t value)
-{
-    if(isInvalidAddress(adr))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-    // multiply address by 2 due to 2-byte-access (address is given as one byte)
-    adr = adr << 1;
-
-    *(__IO uint16_t *) (MEMORY_BANK_ADDRESS + adr) = value;
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
-
-/*
- * @brief					reads a 16-Bit(2-byte-word) value from the specified address from SRAM
- * @param uint32_t adr		relative address to the base address (specified as macro 'MEMORY_BANK_ADDRESS') of SRAM
- * 							to be read from
- * @retval uint16_t			value at address in SRAM
- */
-MEM_ERROR MemoryController::MemoryRead16BitWord(uint32_t adr, uint16_t *value) const
-{
-    if(isInvalidAddress(adr))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-    if(!value)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
-    // multiply address by 2 due to 2-byte-access (address is given as one byte)
-    adr = adr << 1;
-
-    *value = *(__IO uint16_t *) (m_MMIOStartAddress + adr);
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
 
 /*
  * @brief								fills the whole SRAM with 0's
@@ -374,7 +273,6 @@ MEM_ERROR MemoryController::MemoryFillWithZeros(uint8_t *buffer, uint32_t *buffL
 
     if(!buffer || !buffLen || *buffLen == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
 
     write_mode = 0x1;
     // reset the counter for statistical analysis
