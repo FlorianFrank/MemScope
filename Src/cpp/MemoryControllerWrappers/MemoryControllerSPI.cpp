@@ -41,9 +41,9 @@ MEM_ERROR err = Set_WriteEnableLatch(false);
 #endif // if RERAM_ADESTO_RM25C512C_LTAI_T else if FRAM_FUJITSU_MB85R1001ANC_GE1
 
     SPIWrapper::SetWriteProtect();
-    HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
-    err = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, initialize_write_data, sizeof(buffer_len), 1000));
-    HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
+    SPIWrapper::SetChipSelect();
+    err = m_SPIWrapper->SendData(initialize_write_data, &buffer_len, 10000);
+    SPIWrapper::ResetChipSelect();
     SPIWrapper::ResetWriteProtect();
 
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
@@ -127,9 +127,11 @@ MEM_ERROR MemoryControllerSPI::SendSPICommand(SPI_Commands spiCMD, uint8_t *retV
 
     auto cmd = (uint8_t)spiCMD;
     SPIWrapper::SetChipSelect();
-    MEM_ERROR err = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, &cmd, 1, 10));
+    uint16_t size = 1;
+    MEM_ERROR err = m_SPIWrapper->SendData(&cmd, &size, 10);
+    size = 1;
     if(response || err != MemoryErrorHandling::MEM_NO_ERROR)
-        err = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&hspi5, retValue, 1, 10));
+        m_SPIWrapper->SendData(retValue, &size, 10);
     SPIWrapper::ResetChipSelect();
     return err;
 
