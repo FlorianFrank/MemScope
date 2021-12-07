@@ -20,7 +20,9 @@ file(GLOB_RECURSE ProjectFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/Inc/.h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Inc/cpp/.h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/*.cpp")
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/MemoryControllerWrappers/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/InterfaceWrappers/*.cpp")
 
 file(GLOB_RECURSE StartupFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/startup/.s")
@@ -41,17 +43,19 @@ file(GLOB_RECURSE DriverFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc/*h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Src/*c")
 
+add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+
+
 if("${specs}" STREQUAL "rdimon.specs")
 	message("Enable rdimon.specs")
 	add_definitions(-DRDMON_SPECS=1)
+	target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib c rdimon)
+else()
+	target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
 endif() # disable syscalls.c
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib")
 
-
-add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
-
-target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
 
 if($ENV{CLION_IDE})
 set(BuildFolder "${CMAKE_CURRENT_SOURCE_DIR}/cmake-build-debug")
