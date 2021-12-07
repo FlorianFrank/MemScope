@@ -43,3 +43,18 @@ SPIWrapper::SPIWrapper()
     HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
 }
 
+MEM_ERROR SPIWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+{
+    if(!size || *size == 0)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, data, *size, timeout));
+}
+
+MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+{
+    if(!size || *size == 0)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&hspi5, data, *size, timeout));
+}
