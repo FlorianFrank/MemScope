@@ -4,6 +4,7 @@
  */
 #ifndef MEMORY_TESTING_FW_TIMEMEASUREMENT_H
 #define MEMORY_TESTING_FW_TIMEMEASUREMENT_H
+
 #include <cstdint>
 
 /**
@@ -19,7 +20,6 @@ public:
 
 private:
     static uint32_t TransformClockFrequencyToNs(uint32_t value);
-
 };
 
 

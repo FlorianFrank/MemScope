@@ -13,27 +13,8 @@
 class CommandLineParser
 {
 public:
-    typedef enum {
-        SHOW_HELP = 0x0,
-        FILL_WITH_ZEROS = 0x1,
-        FILL_WITH_ONES = 0x2,
-        WRITE_ASCENDING = 0x3,
-        WRITE_ALTERNATE_ZERO_ONE = 0x4,
-        WRITE_ALTERNATE_ONE_ZERO = 0x5,
-        WRITE_ADDRESS = 0x6,
-        WRITE_ADDRESS_RANGE = 0x7,
-        GET_PERFORMANCE_MEASURES = 0x8,
-        GET_ADDRESS = 0x9,
-        READ = 0xA,
-        WRITE = 0xB,
-        CHECK_ADDRESS = 0xC,
-        CHECK_ADDRESS_RANGE = 0xD,
-        GET_VALUES = 0xE,
-        NOPE = 0xFF
-    } Command; // List of possible commands
 
-
-    explicit CommandLineParser (MemoryController &memoryController);
+    explicit CommandLineParser (MemoryController *memoryController);
 
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 
@@ -51,6 +32,7 @@ public:
     void tokenize_arguments(char* args);
 
 private:
+    CommandLineParser()= default;
     Command m_commandMode = NOPE;
     uint32_t m_arguments[3];
     uint8_t m_WriteMode = 0xFF;
@@ -59,7 +41,7 @@ private:
     char Rx_Buffer[100];
     static const char* command_help[];
     static const char * command[];
-    MemoryController &m_MemoryController;
+    MemoryController *m_MemoryController;
     char STRING_BUFFER[STRING_BUFFER_SIZE];
 
 };

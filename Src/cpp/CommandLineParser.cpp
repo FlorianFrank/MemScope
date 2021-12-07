@@ -49,7 +49,7 @@
 };
 
 
-CommandLineParser::CommandLineParser(MemoryController &memoryController): m_MemoryController(memoryController)
+CommandLineParser::CommandLineParser(MemoryController *memoryController): m_MemoryController(memoryController)
 {}
 
 // uart transmit and receive functions
@@ -92,71 +92,71 @@ MEM_ERROR CommandLineParser::executeCommand(uint8_t *inBuff, uint32_t *inBuffLen
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x1;
-            return m_MemoryController.MemoryFillWithZeros(outBuff, outBuffLen);
+            return m_MemoryController->MemoryFillWithZeros(outBuff, outBuffLen);
         case FILL_WITH_ONES:
             // write operation in mode 2 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x2;
-            return m_MemoryController.MemoryFillWithOnes(outBuff, outBuffLen);
+            return m_MemoryController->MemoryFillWithOnes(outBuff, outBuffLen);
         case WRITE_ASCENDING:
             // write operation in mode 3 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x3;
-            return m_MemoryController.MemoryFillMemoryWithAscendingValues(outBuff, outBuffLen, m_arguments);
+            return m_MemoryController->MemoryFillMemoryWithAscendingValues(outBuff, outBuffLen, m_arguments);
         case WRITE_ALTERNATE_ZERO_ONE:
             // write operation in mode 4 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x4;
-            return m_MemoryController.MemoryWriteAlternatingZeroAndOne(outBuff, outBuffLen);
+            return m_MemoryController->MemoryWriteAlternatingZeroAndOne(outBuff, outBuffLen);
         case WRITE_ALTERNATE_ONE_ZERO:
             // write operation in mode 5 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x5;
-            return m_MemoryController.MemoryWriteAlternatingOneAndZero(outBuff, outBuffLen);
+            return m_MemoryController->MemoryWriteAlternatingOneAndZero(outBuff, outBuffLen);
         case WRITE_ADDRESS:
             // write operation in mode 6 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x6;
-            return m_MemoryController.MemoryWriteSingleValue(outBuff, outBuffLen, m_arguments);
+            return m_MemoryController->MemoryWriteSingleValue(outBuff, outBuffLen, m_arguments);
         case WRITE_ADDRESS_RANGE:
             // write operation in mode 7 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x7;
-            return m_MemoryController.MemoryWriteAddressRange(outBuff, outBuffLen, m_arguments);
+            return m_MemoryController->MemoryWriteAddressRange(outBuff, outBuffLen, m_arguments);
         case GET_PERFORMANCE_MEASURES:
             // no write operation will be performed in this method
             // reset the counter for statistical analysis
             //m_WriteMode = 0xFF;
-            return m_MemoryController.MemoryGetProbabilityOfFlippedOnesAndZeros(outBuff, outBuffLen);
+            return m_MemoryController->MemoryGetProbabilityOfFlippedOnesAndZeros(outBuff, outBuffLen);
         case GET_ADDRESS:
             // no write operation will be performed in this method
             // reset the counter for statistical analysis
             //m_WriteMode = 0xFF;
-            return m_MemoryController.SRAM_Get_Address(outBuff, outBuffLen, m_arguments);
+            return m_MemoryController->SRAM_Get_Address(outBuff, outBuffLen, m_arguments);
         case READ:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController.MemoryReadWholeMemory(outBuff, outBuffLen);
+            return m_MemoryController->MemoryReadWholeMemory(outBuff, outBuffLen);
         case WRITE:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController.SRAM_Check_Read_Write_Status(outBuff, outBuffLen);
+            return m_MemoryController->SRAM_Check_Read_Write_Status(outBuff, outBuffLen);
         case CHECK_ADDRESS:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController.SRAM_Check_Address(outBuff, outBuffLen, m_arguments);
+            return m_MemoryController->SRAM_Check_Address(outBuff, outBuffLen, m_arguments);
         case CHECK_ADDRESS_RANGE:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController.SRAM_Check_Address_Range(outBuff, outBuffLen, m_arguments);
+            return m_MemoryController->SRAM_Check_Address_Range(outBuff, outBuffLen, m_arguments);
         case GET_VALUES:
-            return m_MemoryController.MemoryReadArea(outBuff, outBuffLen);
+            return m_MemoryController->MemoryReadArea(outBuff, outBuffLen);
         default:
             sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
             len = strlen(STRING_BUFFER);
@@ -171,7 +171,7 @@ __unused void CommandLineParser::executeCommandUART(UART_HandleTypeDef *huart, C
     for(uint8_t i = 0; i < COMMAND_COUNT; i++){
         // check if the command equals a command specified in the array 'command'
         // if so set m_commandMode different from 0xFF
-        uint8_t command_end_index = m_MemoryController.get_space(Rx_Buffer);
+        uint8_t command_end_index = m_MemoryController->get_space(Rx_Buffer);
         if((uint8_t)strlen(command[i]) == command_end_index && strncmp(command[i], Rx_Buffer, command_end_index) == 0){
             m_commandMode = static_cast<Command>(i);
             uint16_t len_rx_buffer = strlen(Rx_Buffer);
