@@ -53,17 +53,31 @@ public:
     virtual MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) = 0;
     virtual MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) const = 0;
 
+    MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t value);
+    MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t value);
+
+    MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t address));
+    MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t address));
+
+    MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t expectedValue) const;
+    MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t expectedValue) const;
+
+    MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t address)) const;
+    MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t address)) const;
+
 
 // user functions
-    MEM_ERROR FillWithZeros(uint8_t *buffer, uint32_t *buffLen);
-    MEM_ERROR FillWithOnes(uint8_t *buffer, uint32_t *bufferLen);
-    MEM_ERROR ReadArea(uint8_t *buffer, uint32_t *bufferLen);
+    MEM_ERROR FillWithZeros();
+    MEM_ERROR FillWithZerosAndVerifyRead();
+    MEM_ERROR FillWithOnes();
+    MEM_ERROR FillMemoryWithAscendingValues();
+    MEM_ERROR FillMemoryWithAscendingValuesAndVerifyRead(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+    MEM_ERROR FillMemoryWithAlternatingZeroAndOne();
+    MEM_ERROR FillMemoryWithAlternatingOneAndZero();
+
 
     MEM_ERROR GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen);
-    MEM_ERROR FillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
-    MEM_ERROR WriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen);
-    MEM_ERROR WriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen);
-    MEM_ERROR WriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+
     MEM_ERROR WriteAddressRange(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
     MEM_ERROR ReadWholeMemory(uint8_t *buffer, uint32_t *buffLen);
 

@@ -28,219 +28,170 @@ MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : write_
     m_InterfaceWrapper = interfaceWrapper;
 }
 
+
+
+MEM_ERROR MemoryController::FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t value)
+{
+    for(uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        MEM_ERROR ret = Write8BitWord(adr, value);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+// TODO überladung
+MEM_ERROR MemoryController::FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t value)
+{
+    for (uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        MEM_ERROR ret = Write16BitWord(adr, value);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+MEM_ERROR
+MemoryController::FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t))
+{
+    for(uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        MEM_ERROR ret = Write8BitWord(adr, dataFunction(adr));
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+
+MEM_ERROR
+MemoryController::FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t))
+{
+    for(uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        MEM_ERROR ret = Write16BitWord(adr, dataFunction(adr));
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t expectedValue) const
+{
+    for (uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        uint8_t trueValue = 0;
+        MEM_ERROR ret = Read8BitWord(adr, &trueValue);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+        if(trueValue != expectedValue)
+            return MemoryErrorHandling::MEM_NOT_WRITTEN;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t expectedValue) const
+{
+    for (uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        uint16_t trueValue = 0;
+        MEM_ERROR ret = Read16BitWord(adr, &trueValue);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+        if(trueValue != expectedValue)
+            return MemoryErrorHandling::MEM_NOT_WRITTEN;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t)) const
+{
+    for (uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        uint8_t trueValue = 0;
+        MEM_ERROR ret = Read8BitWord(adr, &trueValue);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+        if(trueValue != dataFunction(adr))
+            return MemoryErrorHandling::MEM_NOT_WRITTEN;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t)) const
+{
+    for (uint32_t adr = startAddress; adr < endAddress; adr++)
+    {
+        uint16_t trueValue = 0;
+        MEM_ERROR ret = Read16BitWord(adr, &trueValue);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+        if(trueValue != dataFunction(adr))
+            return MemoryErrorHandling::MEM_NOT_WRITTEN;
+    }
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+
 /*
  * @brief								fills the whole SRAM with 0's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::FillWithZeros(uint8_t *buffer, uint32_t *buffLen){
-
-    if(!buffer || !buffLen || *buffLen == 0)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
-    write_mode = 0x1;
-    // reset the counter for statistical analysis
+MEM_ERROR MemoryController::FillWithZeros(){
+        // reset the counter for statistical analysis // TODO was hat es mit den counter auf sich?
     InitCounter();
     // reset the m_arguments
     InitArguments();
 
-    TestStatus state = PASSED;
-
 #if MEM_ACCESS_WIDTH_BIT == 16
-    uint16_t real_value = 0xFFFF;
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = Write16BitWord(adr, 0x0);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
+    uint16_t value = 0x0000;
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    uint8_t value = 0x00;
+#endif // MEM_ACCESS_WIDTH_BIT == 16
 
-        ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-        // test, if the written value equals the expected value
-        // if something went wrong, break here and display an error message
-        if(real_value != 0x0){
-            state = FAILED;
-            break;
-        }
-    }
-#endif //
-
-#if MEM_ACCESS_WIDTH_BIT == 8
-    uint8_t real_value = 0xFF;
-		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-			MEM_ERROR ret  = SRAM_Write_8b(adr, 0x0);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			ret = MemoryRead8BitWord(adr, &real_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			// test, if the written value equals the expected value
-			// if something went wrong, break here and display an error message
-			if(real_value != 0x0){
-				state = FAILED;
-				break;
-			}
-		}
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-
-    MEM_ERROR retCode = MemoryErrorHandling::MEM_NO_ERROR;
-    // display return message
-    if(state == PASSED){
-        sprintf((char*)buffer, "'writeZeroAll' was successful\r\n\n");
-    }else{
-        sprintf((char*)buffer, "'writeZeroAll' failed\r\n\n");
-        retCode = MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-    sprintf((char*)buffer, "\n\r~~~~~~~~~~~~~~~\n\r"); // FIXME
-    *buffLen = strlen((char*)buffer);
-
-    return retCode;
+    return FillMemoryArea(0, MEM_SIZE_ADR, value);
 }
+
+
+MEM_ERROR MemoryController::FillWithZerosAndVerifyRead()
+{
+#if MEM_ACCESS_WIDTH_BIT == 16
+    uint16_t value = 0x0000;
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    uint8_t value = 0x00;
+#endif // MEM_ACCESS_WIDTH_BIT == 16
+    auto ret = FillMemoryArea(0, MEM_SIZE_ADR, value);
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    return VerifyMemoryArea(0, MEM_SIZE_ADR, value);
+}
+
 
 /*
  * @brief								fills the whole SRAM with 1's
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::FillWithOnes(uint8_t *buffer, uint32_t *bufferLen){
-
-    if(!buffer || !bufferLen || *bufferLen)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
-    // reset the counter for statistical analysis
+MEM_ERROR MemoryController::FillWithOnes()
+{
+    // reset the counter for statistical analysis // TODO was hat es mit den counter auf sich?
     InitCounter();
     // reset the m_arguments
     InitArguments();
 
-    TestStatus state = PASSED;
-
 #if MEM_ACCESS_WIDTH_BIT == 16
-    uint16_t real_value = 0x0;
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = Write16BitWord(adr, 0xFFFF);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        // test, if the written value equals the expected value
-        // if something went wrong, break here and display an error message
-        if(real_value != 0xFFFF){
-            state = FAILED;
-            break;
-        }
-    }
+    uint16_t value = 0xFFFF;
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    uint8_t value = 0xFF;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-#if MEM_ACCESS_WIDTH_BIT == 8
-    uint8_t real_value = 0x0;
-		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-			MEM_ERROR ret = SRAM_Write_8b(adr, 0xFF);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			ret = MemoryRead8BitWord(adr, &real_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			//real_value = *(__IO uint8_t *) (MEMORY_BANK_ADDRESS + adr);
-			// test, if the written value equals the expected value
-			// if something went wrong, break here and display an error message
-			if(real_value != 0xFF){
-				state = FAILED;
-				break;
-			}
-		}
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-
-    MEM_ERROR retCode = MemoryErrorHandling::MEM_NO_ERROR;
-
-    // display return message
-    if(state == PASSED){
-        sprintf((char*)buffer, "'writeOneAll' was successful\r\n\n");
-    }else{
-        sprintf((char*)buffer, "'writeOneAll' failed\r\n\n");
-        retCode = MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-
-    sprintf((char*)buffer, "\n\r~~~~~~~~~~~~~~~\n\r");
-    len = strlen((char*)buffer);
-    *bufferLen = len;
-
-    return retCode;
+    return FillMemoryArea(0, MEM_SIZE_ADR, value);
 }
 
-MEM_ERROR MemoryController::ReadArea(uint8_t *buffer, uint32_t *bufferLen){
-
-    if(!buffer || !bufferLen || *bufferLen == 0)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
-    total_one = 0;
-    total_zero = 0;
-
-#if MEM_ACCESS_WIDTH_BIT == 16
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        uint16_t real_value;
-        MEM_ERROR ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        total_one += get_num_one_16b(real_value);
-        total_zero += get_num_zero_16b(real_value);
-    }
-#endif // MEM_ACCESS_WIDTH_BIT == 16
-
-#if MEM_ACCESS_WIDTH_BIT == 8
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-				uint8_t real_value;
-				MEM_ERROR ret = MemoryRead8BitWord(adr, &real_value);
-				if(ret != MEM_NO_ERROR)
-					return ret;
-
-				total_one += get_num_one_8b(real_value);
-				total_zero += get_num_zero_8b(real_value);
-		}
-#endif //MEM_ACCESS_WIDTH_BIT == 8
-
-    // displays the total 1's
-    sprintf((char*)buffer, "Total number of ones in SRAM:  %lu\r\n", (unsigned long)total_one);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)STRING_BUFFER, len);
-
-    // displays the total 0's
-    sprintf((char*)&buffer[len], "Total number of zeros in SRAM:  %lu\r\n", (unsigned long)total_zero);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)buffer, len);
-
-#if MEM_ACCESS_WIDTH_BIT == 16
-    // displays the total 0's
-    sprintf((char*)&buffer[len], "Percent zeros:  %.16f%%\r\n", (float)total_zero / (MEM_SIZE_ADR * 16) * 100);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)buffer, len);
-
-    // displays the total 0's
-    sprintf((char*)&buffer[len], "Percent ones:  %.16f%%\r\n", (float)total_one / (MEM_SIZE_ADR * 16) * 100);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)buffer, len);
-#endif // MEM_ACCESS_WIDTH_BIT == 16
-
-#if MEM_ACCESS_WIDTH_BIT == 8
-    // displays the total 0's - (float)total_zero / (SRAM_SIZE * 8) * 100);
-		sprintf((char*)&buffer[len], "Percent zeros:  %.8f%%\r\n", (float)total_zero / (MEM_SIZE_ADR * 8) * 100);
-		len = strlen((char*)buffer);
-		//send(huart, (uint8_t *)STRING_BUFFER, len);
-
-		// displays the total 0's - (float)total_one / (SRAM_SIZE * 8) * 100);
-		sprintf((char*)&buffer[len], "Percent ones:  %.8f%%\r\n", (float)total_one / (MEM_SIZE_ADR * 8) * 100);
-		len = strlen((char*)buffer);
-		//send(huart, (uint8_t *)STRING_BUFFER, len);
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-    *bufferLen = len;
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
 
 /*
  * @brief								gets the probability of flipped 0's and 1's for the written values
@@ -442,259 +393,105 @@ MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer,
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  * @param uint32_t *m_arguments			the start value to count up
  */
-MEM_ERROR MemoryController::FillMemoryWithAscendingValues(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
+MEM_ERROR MemoryController::FillMemoryWithAscendingValues()
+{
     // reset the counter for statistical analysis
     InitCounter();
     // reset the m_arguments
     InitArguments();
 
-    TestStatus state = PASSED;
+#if MEM_ACCESS_WIDTH_BIT == 16
+    auto countFunction = [](uint32_t address)
+    {
+        return static_cast<uint16_t>(address % 0xFFFF);
+    };
+
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    auto countFunction = [](uint32_t address)
+    {
+        return static_cast<uint8_t>(address % 0xFF);
+    };
+#endif // MEM_ACCESS_WIDTH_BIT == 16
+    auto ret = FillMemoryArea(0, MEM_SIZE_ADR, countFunction);
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+MEM_ERROR
+MemoryController::FillMemoryWithAscendingValuesAndVerifyRead(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments)
+{
+    // reset the counter for statistical analysis
+    InitCounter();
+    // reset the m_arguments
+    InitArguments();
 
 #if MEM_ACCESS_WIDTH_BIT == 16
-    start_value = (uint16_t)arguments[0];
-    uint16_t real_value = 0x0;
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = Write16BitWord(adr, start_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
+    auto countFunction = [](uint32_t address)
+    {
+        return static_cast<uint16_t>(address % 0xFFFF);
+    };
 
-        ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        if(real_value != start_value){
-            state = FAILED;
-            break;
-        }
-        start_value++;
-    }
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    auto countFunction = [](uint32_t address)
+    {
+        return static_cast<uint8_t>(address % 0xFF);
+    };
 #endif // MEM_ACCESS_WIDTH_BIT == 16
-
-#if MEM_ACCESS_WIDTH_BIT == 8
-    start_value = (uint8_t)args[0];
-		uint8_t real_value = 0x0;
-		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-			MEM_ERROR ret = SRAM_Write_8b(adr, start_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			ret = MemoryRead8BitWord(adr, &real_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			if(real_value != start_value){
-				state = FAILED;
-				break;
-			}
-			start_value++;
-		}
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-
-    MEM_ERROR retCode = MemoryErrorHandling::MEM_NO_ERROR;
-
-    if(state == PASSED){
-        sprintf((char*)buffer, "'writeValueAsc' was successful\r\n\n");
-    }else{
-        sprintf((char*)buffer, "'writeValueAsc' failed\r\n\n");
-        retCode = MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-    len = strlen((char*)buffer);
-    *buffLen = len;
-    return retCode;
+    auto ret = FillMemoryArea(0, MEM_SIZE_ADR, countFunction);
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+    return VerifyMemoryArea(0, MEM_SIZE_ADR, countFunction);
 }
 
 /*
  * @brief								fills the whole SRAM with alternating 010101010....
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::WriteAlternatingZeroAndOne(uint8_t *buffer, uint32_t *bufferLen){
+MEM_ERROR MemoryController::FillMemoryWithAlternatingZeroAndOne()
+{
     // reset the counter for statistical analysis
     InitCounter();
     // reset the m_arguments
     InitArguments();
 
-    TestStatus state = PASSED;
+    // reset the counter for statistical analysis // TODO was hat es mit den counter auf sich?
+    InitCounter();
+    // reset the m_arguments
+    InitArguments();
 
 #if MEM_ACCESS_WIDTH_BIT == 16
-    uint16_t real_value = 0x0;
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = Write16BitWord(adr, 0x5555);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        if(real_value != 0x5555){
-            state = FAILED;
-            break;
-        }
-    }
+    uint16_t value = 0x5555;
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    uint8_t value = 0x55;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-#if MEM_ACCESS_WIDTH_BIT == 8
-    uint8_t real_value = 0x0;
-		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-			MEM_ERROR ret = SRAM_Write_8b(adr, 0x55);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			ret = MemoryRead8BitWord(adr, &real_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			if(real_value != 0x55){
-				state = FAILED;
-				break;
-			}
-		}
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-
-    MEM_ERROR retCode = MemoryErrorHandling::MEM_NO_ERROR;
-
-    if(state == PASSED){
-        sprintf((char*)buffer, "'writeAlternateZeroOne' was successful\r\n\n");
-    }else{
-        sprintf((char*)buffer, "'writeAlternateZeroOne' failed\r\n\n");
-        retCode = MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-    len = strlen((char*)buffer);
-
-    return retCode;
+    return FillMemoryArea(0, MEM_SIZE_ADR, value);
 }
 
 /*
  * @brief								fills the whole SRAM with alternating 101010101....
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
  */
-MEM_ERROR MemoryController::WriteAlternatingOneAndZero(uint8_t *buffer, uint32_t *bufferLen){
-    if(!buffer || !bufferLen || *bufferLen == 0)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
+MEM_ERROR MemoryController::FillMemoryWithAlternatingOneAndZero()
+{
     // reset the counter for statistical analysis
     InitCounter();
     // reset the m_arguments
     InitArguments();
 
-    TestStatus state = PASSED;
-
-#if MEM_ACCESS_WIDTH_BIT == 16
-    uint16_t real_value = 0x0;
-    for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-        MEM_ERROR ret = Write16BitWord(adr, 0xAAAA);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-
-        if(real_value != 0xAAAA){
-            state = FAILED;
-            break;
-        }
-    }
-#endif // MEM_ACCESS_WIDTH_BIT == 16
-
-#if MEM_ACCESS_WIDTH_BIT == 8
-    uint8_t real_value = 0x0;
-		for(uint32_t adr = 0; adr < MEM_SIZE_ADR; adr++){
-			MEM_ERROR ret = SRAM_Write_8b(adr, 0xAA);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			ret = MemoryRead8BitWord(adr, &real_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			if(real_value != 0xAA){
-				state = FAILED;
-				break;
-			}
-		}
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-
-    MEM_ERROR retCode = MemoryErrorHandling::MEM_NO_ERROR;
-    if(state == PASSED){
-        sprintf((char*)buffer, "'writeAlternateOneZero' was successful\r\n\n");
-    }else{
-        sprintf((char*)buffer, "'writeAlternateOneZero' failed\r\n\n");
-        retCode = MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-    len = strlen((char*)buffer);
-    *bufferLen = len;
-
-    return retCode;
-}
-
-/*
- * @brief								writes the value (second entry in parameter m_arguments) to the
- * 										specified address (first entry in parameter m_arguments)
- * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
- * @param uint32_t *m_arguments			first element is the address, second element is the value
- */
-MEM_ERROR MemoryController::WriteSingleValue(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments){
-    if(!buffer || !buffLen || !arguments || *buffLen == 0)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
-    // reset the counter for statistical analysis
+    // reset the counter for statistical analysis // TODO was hat es mit den counter auf sich?
     InitCounter();
     // reset the m_arguments
     InitArguments();
 
-    TestStatus state = FAILED;
-
-    // set the variables for checking and determining the statistical values
-    start_adr = arguments[0];
-    end_adr = start_adr + 1;
-
-
 #if MEM_ACCESS_WIDTH_BIT == 16
-    uint16_t real_value = 0;
-    start_value = (uint16_t)arguments[1];
-    MEM_ERROR ret = Write16BitWord(start_adr, start_value);
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-        return ret;
-
-    ret = Read16BitWord(start_adr, &real_value);
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-        return ret;
-
-    if(real_value == start_value){
-        state = PASSED;
-    }
+    uint16_t value = 0xAAAA;
+#elif MEM_ACCESS_WIDTH_BIT == 8
+    uint8_t value = 0xAA;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-#if MEM_ACCESS_WIDTH_BIT == 8
-    uint8_t real_value = 0;
-		start_value = (uint8_t)args[1];
-
-		MEM_ERROR ret = SRAM_Write_8b(start_adr, start_value);
-		if(ret != MEM_NO_ERROR)
-			return ret;
-
-		ret = MemoryRead8BitWord(start_adr, &real_value);
-		if(ret != MEM_NO_ERROR)
-			return ret;
-
-		if(real_value == start_value){
-			state = PASSED;
-		}
-#endif // MEM_ACCESS_WIDTH_BIT == 8
-
-    MEM_ERROR retCode = MemoryErrorHandling::MEM_NO_ERROR;
-
-    if(state == PASSED){
-        sprintf((char*)buffer, "'writeSRAM' was successful\r\n\n");
-    }else{
-        sprintf((char*)buffer, "'writeSRAM' failed\r\n\n");
-        retCode = MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-    len = strlen((char*)buffer);
-    *buffLen = len;
-
-    return retCode;
+    return FillMemoryArea(0, MEM_SIZE_ADR, value);
 }
 
 /*
@@ -1179,4 +976,5 @@ void MemoryController::InitArguments(){
 {
     return (address >= MEM_SIZE_ADR) ?  true : false;
 }
+
 
