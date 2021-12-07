@@ -7,14 +7,18 @@
 
 
 #include "cpp/MemoryController.h"
+#include "CommandDefines.h"
 #include <cstdint>
+
+extern "C" {
 #include <stm32f4xx_hal_uart.h>
+};
 
 class CommandLineParser
 {
 public:
 
-    explicit CommandLineParser (MemoryController *memoryController);
+    explicit CommandLineParser (MemoryController *memoryController, InterfaceWrappers *interface);
 
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 
@@ -43,6 +47,8 @@ private:
     static const char * command[];
     MemoryController *m_MemoryController;
     char STRING_BUFFER[STRING_BUFFER_SIZE];
+
+    InterfaceWrappers *m_InterfaceWrapper;
 
 };
 

@@ -49,8 +49,10 @@
 };
 
 
-CommandLineParser::CommandLineParser(MemoryController *memoryController): m_MemoryController(memoryController)
-{}
+CommandLineParser::CommandLineParser (MemoryController *memoryController, InterfaceWrappers *interface)
+{
+    m_InterfaceWrapper = interface;
+}
 
 // uart transmit and receive functions
 extern void send(UART_HandleTypeDef *huart, uint8_t *srcBuffer, uint32_t bufferSize);
@@ -171,7 +173,7 @@ __unused void CommandLineParser::executeCommandUART(UART_HandleTypeDef *huart, C
     for(uint8_t i = 0; i < COMMAND_COUNT; i++){
         // check if the command equals a command specified in the array 'command'
         // if so set m_commandMode different from 0xFF
-        uint8_t command_end_index = m_MemoryController->get_space(Rx_Buffer);
+        uint8_t command_end_index = m_InterfaceWrapper->get_space(Rx_Buffer);
         if((uint8_t)strlen(command[i]) == command_end_index && strncmp(command[i], Rx_Buffer, command_end_index) == 0){
             m_commandMode = static_cast<Command>(i);
             uint16_t len_rx_buffer = strlen(Rx_Buffer);
@@ -203,7 +205,7 @@ __unused void CommandLineParser::executeCommandUART(UART_HandleTypeDef *huart, C
 
 void CommandLineParser::send(UART_HandleTypeDef *huart, uint8_t *sendBuffer, uint32_t bufferSize)
 {
-    if(huart == NULL)
+    if(huart == nullptr)
     {
         sendUSB(sendBuffer, bufferSize);
     }
