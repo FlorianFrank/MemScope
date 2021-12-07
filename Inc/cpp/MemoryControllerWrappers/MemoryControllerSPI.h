@@ -5,12 +5,13 @@
 #ifndef MEMORY_TESTING_FW_MEMORYCONTROLLERSPI_H
 #define MEMORY_TESTING_FW_MEMORYCONTROLLERSPI_H
 
+#include <cpp/InterfaceWrappers/SPIWrapper.h>
 #include "cpp/MemoryController.h"
 
 class MemoryControllerSPI: public MemoryController
 {
 public:
-    explicit MemoryControllerSPI(InterfaceWrappers &interfaceWrapper);
+    explicit MemoryControllerSPI(SPIWrapper *interfaceWrapper);
 
     enum
     {

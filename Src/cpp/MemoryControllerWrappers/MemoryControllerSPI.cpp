@@ -8,10 +8,9 @@
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
 
-MemoryControllerSPI::MemoryControllerSPI(InterfaceWrappers &interfaceWrapper)
-        : MemoryController(interfaceWrapper)
+MemoryControllerSPI::MemoryControllerSPI(SPIWrapper *interfaceWrapper):
+MemoryController(interfaceWrapper)
 {
-    m_SPIWrapper = new SPIWrapper;
 }
 
 MEM_ERROR MemoryControllerSPI::MemoryWrite8BitWord(uint32_t adr, uint8_t value)
@@ -224,15 +223,15 @@ MEM_ERROR MemoryControllerSPI::Reset_WriteEnableLatch()
 
 MEM_ERROR MemoryControllerSPI::ResumeFromPowerDown()
 {
-    return SendSPICommand(ReRAM_RES, NULL, false);
+    return SendSPICommand(ReRAM_RES, nullptr, false);
 }
 
 MEM_ERROR MemoryControllerSPI::SetUltraDeepPowerDown()
 {
-    return SendSPICommand(ReRAM_UDPD, NULL, false);
+    return SendSPICommand(ReRAM_UDPD, nullptr, false);
 }
 
 MEM_ERROR MemoryControllerSPI::SetSleepMode()
 {
-    return SendSPICommand(ReRAM_SLEEP, NULL, false);
+    return SendSPICommand(ReRAM_SLEEP, nullptr, false);
 }
