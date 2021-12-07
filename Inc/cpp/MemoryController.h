@@ -40,7 +40,7 @@ class MemoryController
 {
 public:
 
-    explicit MemoryController(InterfaceWrappers &interfaceWrapper);
+    explicit MemoryController(InterfaceWrappers *interfaceWrapper);
     ~MemoryController();
 
     typedef enum {
@@ -94,8 +94,7 @@ protected:
     TimeMeasurement m_timeMeasurement;
 
     uint32_t m_MMIOStartAddress;
-    SPIWrapper* m_SPIWrapper;
-    InterfaceWrappers m_InterfaceWrapper{};
+    InterfaceWrappers *m_InterfaceWrapper;
 
     // commands
     uint16_t start_value = 0x0; // start value for ascending writing

@@ -20,19 +20,18 @@ extern "C" {
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 
-MemoryController::MemoryController(InterfaceWrappers &interfaceWrapper) : Rx_Buffer(""), write_mode(0xFF),
+MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : Rx_Buffer(""), write_mode(0xFF),
                                                                           Transfer_cplt(0), len(0), STRING_BUFFER(""),
                                                                           m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
                                                                           srambp(nullptr), total_one(0), total_zero(0),
                                                                           flipped_one(0), flipped_zero(0)
 {
-    m_SPIWrapper = new SPIWrapper();
     m_InterfaceWrapper = interfaceWrapper;
 }
 
 MemoryController::~MemoryController()
 {
-    delete m_SPIWrapper;
+    //delete m_InterfaceWrapper;
 }
 
 
@@ -45,17 +44,6 @@ MemoryController::~MemoryController()
 uint8_t ReRAM_CERS[] = {0x60, 0xC7};  // Chip Erase
 
 
-MEM_ERROR MemoryController::Set_WriteEnable()
-{
-	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
-	return MEM_NO_ERROR;
-}
-
-MEM_ERROR MemoryController::Reset_WriteEnable()
-{
-	HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
-	return MEM_NO_ERROR;
-}
 
 MEM_ERROR MemoryController::SendSPICommand(SPI_Commands spiCMD, uint8_t *retValue, bool response)
 {
@@ -354,7 +342,7 @@ MEM_ERROR MemoryController::SRAM_Measure_WIP_Polling()
 
     uint32_t adr = 0; // TODO remove
     //for(uint32_t adr = 0x00; adr < 524288; adr++)
-    m_SPIWrapper->ResetWriteProtect();
+    reinterpret_cast<SPIWrapper*>(m_InterfaceWrapper)->ResetWriteProtect();
 
     // Set Write Enable Latch
 
@@ -411,7 +399,7 @@ MEM_ERROR MemoryController::SRAM_Measure_WIP_Polling()
         }
         adr++;
     }
-    m_SPIWrapper->SetWriteProtect();
+    reinterpret_cast<SPIWrapper*>(m_InterfaceWrapper)->SetWriteProtect();
 
     /*	if(ctr > 1)
             sendUART(huart, (uint8_t *)sendBuffer, strlen(sendBuffer));*/
