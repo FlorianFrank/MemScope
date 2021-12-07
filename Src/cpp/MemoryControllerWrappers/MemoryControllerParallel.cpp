@@ -4,7 +4,7 @@
 
 #include "cpp/MemoryControllerWrappers/MemoryControllerParallel.h"
 
-MemoryControllerParallel::MemoryControllerParallel(InterfaceWrappers &interfaceWrapper) : MemoryController(
+MemoryControllerParallel::MemoryControllerParallel(InterfaceWrappers *interfaceWrapper) : MemoryController(
         interfaceWrapper)
 {
 

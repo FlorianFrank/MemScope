@@ -11,7 +11,7 @@
 class MemoryControllerParallel : public MemoryController
 {
 public:
-    explicit MemoryControllerParallel(InterfaceWrappers &interfaceWrapper);
+    explicit MemoryControllerParallel(InterfaceWrappers *interfaceWrapper);
 
     MEM_ERROR MemoryWrite8BitWord(uint32_t adr, uint8_t value) override;
 
