@@ -5,6 +5,10 @@
 #ifndef MEMORY_TESTING_FW_IOPINDEFINES_H
 #define MEMORY_TESTING_FW_IOPINDEFINES_H
 
+#define MEMORY_BANK_ADDRESS		((uint32_t)0x64000000)
+#define STRING_BUFFER_SIZE			100							// buffer size for the global string buffer
+
+
 #define SPI4_WP_Pin GPIO_PIN_13
 #define SPI4_WP_GPIO_Port GPIOC
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
