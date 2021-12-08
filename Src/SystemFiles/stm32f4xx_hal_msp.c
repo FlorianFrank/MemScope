@@ -50,7 +50,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -88,6 +87,9 @@
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
+
+#include "stm32f4xx_hal.h"
+
 /**
   * Initializes the Global MSP.
   */
