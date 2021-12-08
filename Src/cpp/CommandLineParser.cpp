@@ -1,8 +1,8 @@
 //
 // Created by florianfrank on 01.07.21.
 //
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include <string.h>
 #include <cstdio>
 #include <SystemFiles/usbd_cdc_if.h>
@@ -49,17 +49,10 @@
 };
 
 
-CommandLineParser::CommandLineParser (MemoryController *memoryController, InterfaceWrappers *interface)
+CommandLineParser::CommandLineParser (MemoryController *memoryController, InterfaceWrappers *inputInterface)
 {
-    m_InterfaceWrapper = interface;
+    m_InterfaceWrapper = inputInterface;
 }
-
-// uart transmit and receive functions
-extern void send(UART_HandleTypeDef *huart, uint8_t *srcBuffer, uint32_t bufferSize);
-
-extern void sendUART(UART_HandleTypeDef *huart, uint8_t *srcBuffer, uint32_t bufferSize);
-
-extern void sendUSB(uint8_t *srcBuffer, uint16_t bufferSize);
 
 void tokenize_arguments(char *args);
 
@@ -71,102 +64,80 @@ void CommandLineParser::showHelp(uint8_t *buffer, uint32_t *bufferLen){
     uint32_t buffLen;
     sprintf((char*)buffer, "\rThis program provides the following commands:\n\n\r");
     buffLen = strlen((char*)buffer);
-//	send(huart, (uint8_t *)STRING_BUFFER, buffLen);
+//	send(huart, (uint8_t *)m_SendBuffer, buffLen);
     for(uint8_t i = 0; i < COMMAND_COUNT; i++){
         sprintf((char*)&(buffer[buffLen]), "%s\r\n", command_help[i]);
         buffLen = strlen((char*)buffer);
         *bufferLen = buffLen;
         // TODO check bufferLen
-        //send(huart, (uint8_t *)STRING_BUFFER, buffLen);
+        //send(huart, (uint8_t *)m_SendBuffer, buffLen);
     }
 }
 
+
 MEM_ERROR CommandLineParser::executeCommand(uint8_t *inBuff, uint32_t *inBuffLen, uint8_t *outBuff, uint32_t *outBuffLen, Command cmdIdx)
 {
-    UART_HandleTypeDef *huart = NULL;
+    MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
     switch(cmdIdx){
         case SHOW_HELP:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
             showHelp(outBuff, outBuffLen);
         case FILL_WITH_ZEROS:
-            // write operation in mode 1 will be performed in this method
-            // therefore reset the counters/m_arguments
-            // they will be set in the function
-            m_WriteMode = 0x1;
-            return m_MemoryController->MemoryFillWithZeros(outBuff, outBuffLen);
+            ret = m_MemoryController->FillWithZeros();
         case FILL_WITH_ONES:
-            // write operation in mode 2 will be performed in this method
-            // therefore reset the counters/m_arguments
-            // they will be set in the function
-            m_WriteMode = 0x2;
-            return m_MemoryController->MemoryFillWithOnes(outBuff, outBuffLen);
+            ret = m_MemoryController->FillWithOnes();
         case WRITE_ASCENDING:
-            // write operation in mode 3 will be performed in this method
-            // therefore reset the counters/m_arguments
-            // they will be set in the function
-            m_WriteMode = 0x3;
-            return m_MemoryController->MemoryFillMemoryWithAscendingValues(outBuff, outBuffLen, m_arguments);
+            ret = m_MemoryController->FillMemoryWithAscendingValues();
         case WRITE_ALTERNATE_ZERO_ONE:
-            // write operation in mode 4 will be performed in this method
-            // therefore reset the counters/m_arguments
-            // they will be set in the function
-            m_WriteMode = 0x4;
-            return m_MemoryController->MemoryWriteAlternatingZeroAndOne(outBuff, outBuffLen);
+            ret = m_MemoryController->FillMemoryWithAlternatingZeroAndOne();
         case WRITE_ALTERNATE_ONE_ZERO:
-            // write operation in mode 5 will be performed in this method
-            // therefore reset the counters/m_arguments
-            // they will be set in the function
-            m_WriteMode = 0x5;
-            return m_MemoryController->MemoryWriteAlternatingOneAndZero(outBuff, outBuffLen);
+            ret = m_MemoryController->FillMemoryWithAlternatingOneAndZero();
         case WRITE_ADDRESS:
-            // write operation in mode 6 will be performed in this method
-            // therefore reset the counters/m_arguments
-            // they will be set in the function
-            m_WriteMode = 0x6;
-            return m_MemoryController->MemoryWriteSingleValue(outBuff, outBuffLen, m_arguments);
+            //ret = m_MemoryController->Write(outBuff, outBuffLen, m_arguments); TODO
         case WRITE_ADDRESS_RANGE:
             // write operation in mode 7 will be performed in this method
             // therefore reset the counters/m_arguments
             // they will be set in the function
             m_WriteMode = 0x7;
-            return m_MemoryController->MemoryWriteAddressRange(outBuff, outBuffLen, m_arguments);
+          //  return m_MemoryController->WriteAddressRange();TODO
         case GET_PERFORMANCE_MEASURES:
             // no write operation will be performed in this method
             // reset the counter for statistical analysis
             //m_WriteMode = 0xFF;
-            return m_MemoryController->MemoryGetProbabilityOfFlippedOnesAndZeros(outBuff, outBuffLen);
+            return m_MemoryController->GetProbabilityOfFlippedOnesAndZeros(outBuff, outBuffLen);
         case GET_ADDRESS:
             // no write operation will be performed in this method
             // reset the counter for statistical analysis
             //m_WriteMode = 0xFF;
-            return m_MemoryController->SRAM_Get_Address(outBuff, outBuffLen, m_arguments);
+      //      return m_MemoryController->GetValueAndAddress(outBuff, outBuffLen, m_arguments);TODO
         case READ:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController->MemoryReadWholeMemory(outBuff, outBuffLen);
+            //return m_MemoryController->ReadWholeMemory(outBuff, outBuffLen);TODO
         case WRITE:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController->SRAM_Check_Read_Write_Status(outBuff, outBuffLen);
+            //return m_MemoryController->CheckReadWriteStatus(outBuff, outBuffLen); TODO
         case CHECK_ADDRESS:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController->SRAM_Check_Address(outBuff, outBuffLen, m_arguments);
+            //return m_MemoryController->CheckExpectedValueAtAddress(outBuff, outBuffLen, m_arguments);TODO
         case CHECK_ADDRESS_RANGE:
             // no write operation will be performed in this method
             //m_WriteMode = 0xFF;
-            return m_MemoryController->SRAM_Check_Address_Range(outBuff, outBuffLen, m_arguments);
+            //return m_MemoryController->CheckExpectedValueAtAddressRange(outBuff, outBuffLen, m_arguments);TODO
         case GET_VALUES:
-            return m_MemoryController->MemoryReadArea(outBuff, outBuffLen);
+            //return m_MemoryController->ReadArea(outBuff, outBuffLen);TODO
         default:
-            sprintf(STRING_BUFFER, "Command not found. Type 'help' to show all valid commands.\n\n\r");
-            len = strlen(STRING_BUFFER);
-            send(huart, (uint8_t *)STRING_BUFFER, len);
+            sprintf(m_SendBuffer, "Command not found. Type 'help' to show all valid commands.\n\n\r");
+            len = strlen(m_SendBuffer);
+            m_InterfaceWrapper->SendData(reinterpret_cast<uint8_t*>(m_SendBuffer), &len, 100);
             return MemoryErrorHandling::MEM_INVALID_COMMAND;
     }
 }
 
+/*
 __unused void CommandLineParser::executeCommandUART(UART_HandleTypeDef *huart, Command cmdIdx){
     m_commandMode = NOPE; // invalid command
     // parse command
@@ -189,18 +160,22 @@ __unused void CommandLineParser::executeCommandUART(UART_HandleTypeDef *huart, C
             break;
         }
     }
+*/
 
-    //sprintf(STRING_BUFFER, "Length: %d, String: %d %d %d %d\r\n", (uint16_t)strlen(Rx_Buffer), Rx_Buffer[0], Rx_Buffer[1], Rx_Buffer[2], Rx_Buffer[3]);
+/*
+    //sprintf(m_SendBuffer, "Length: %d, String: %d %d %d %d\r\n", (uint16_t)strlen(Rx_Buffer), Rx_Buffer[0], Rx_Buffer[1], Rx_Buffer[2], Rx_Buffer[3]);
     // prints the command
-    sprintf(STRING_BUFFER, ">\r\n");
-    len = strlen(STRING_BUFFER);
-    send(huart, (uint8_t *)STRING_BUFFER, len);
+    sprintf(m_SendBuffer, ">\r\n");
+    len = strlen(m_SendBuffer);
+    send(huart, (uint8_t *)m_SendBuffer, len);
 
     // reset the counter before every write execution
     uint32_t buffLen = STRING_BUFFER_SIZE;
-    executeCommand((uint8_t*)m_arguments, 0 /*TODO*/, (uint8_t*)STRING_BUFFER, &buffLen, m_commandMode);
+    executeCommand((uint8_t*)m_arguments, 0 */
+/*TODO*//*
+, (uint8_t*)m_SendBuffer, &buffLen, m_commandMode);
     if(buffLen > 0)
-        send(huart, (uint8_t *)STRING_BUFFER, buffLen);
+        send(huart, (uint8_t *)m_SendBuffer, buffLen);
 }
 
 void CommandLineParser::send(UART_HandleTypeDef *huart, uint8_t *sendBuffer, uint32_t bufferSize)
@@ -216,12 +191,14 @@ void CommandLineParser::send(UART_HandleTypeDef *huart, uint8_t *sendBuffer, uin
 
 }
 
+*/
 /*
  * @brief								rewritten function to transmit with a delay of 10ms
  * @param UART_HandleTypeDef *huart		the UART handler to communicate with the user
  * @param uint8_t *dstBuffer			the source buffer
  * @param uint32_t bufferSize			the buffer size
- */
+ *//*
+
 void CommandLineParser::sendUART(UART_HandleTypeDef *huart, uint8_t *srcBuffer, uint32_t bufferSize){
     HAL_UART_Transmit_IT(huart, srcBuffer, bufferSize);
     if(m_commandMode == 0xA){
@@ -231,11 +208,13 @@ void CommandLineParser::sendUART(UART_HandleTypeDef *huart, uint8_t *srcBuffer, 
     }
 }
 
+*/
 /*
  * @brief								rewritten function to transmit with a delay of 10ms
  * @param uint8_t *dstBuffer			the source buffer
  * @param uint32_t bufferSize			the buffer size
- */
+ *//*
+
 void CommandLineParser::sendUSB(uint8_t *srcBuffer, uint16_t bufferSize){
     //CDC_Receive_HS(input,1);
     //USBD_CDC_ReceivePacket(&hUsbDeviceHS);
@@ -250,10 +229,12 @@ void CommandLineParser::sendUSB(uint8_t *srcBuffer, uint16_t bufferSize){
     while(result != USBD_OK);
 }
 
+*/
 /*
  * @brief					tokenizes the m_arguments from the commands and fills the array 'm_arguments'
  * @param					the string with the m_arguments
- */
+ *//*
+
 void CommandLineParser::tokenize_arguments(char* args){
     char* token = strtok(args, " ");
     uint8_t i = 0;
@@ -265,3 +246,4 @@ void CommandLineParser::tokenize_arguments(char* args){
 }
 
 
+*/
