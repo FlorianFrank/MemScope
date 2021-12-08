@@ -15,11 +15,11 @@ public:
 
     MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) override;
 
-    MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *retValue) const override;
+    MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *retValue) override;
 
     MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) override;
 
-    MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) const override;
+    MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) override;
 
 };
 
