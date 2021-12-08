@@ -49,12 +49,15 @@ add_executable(${PROJECT_NAME}.elf ${ProjectFiles} ${StartupFiles} ${MiddlewareF
 if("${specs}" STREQUAL "rdimon.specs")
 	message("Enable rdimon.specs")
 	add_definitions(-DRDMON_SPECS=1)
-	target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib c rdimon)
+	target_link_libraries(${PROJECT_NAME}.elf  c rdimon) # STM32_USB_Lib TODO
 else()
-	target_link_libraries(${PROJECT_NAME}.elf STM32_USB_Lib)
+	target_link_libraries(${PROJECT_NAME}.elf)  #STM32_USB_Lib) TODO
 endif() # disable syscalls.c
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib")
+if (USB_LIB)
+	#add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib")
+endif ()
+
 
 
 if($ENV{CLION_IDE})
@@ -81,6 +84,7 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
 					"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${BoardClass}xx/Include"
 					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include"
-					"${CMAKE_CURRENT_SOURCE_DIR}/stm32_usb_lib/include")
+					"${CMAKE_CURRENT_SOURCE_DIR}")
 
 install(TARGETS ${PROJECT_NAME}.elf RUNTIME DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+add_definitions(-DSTM32=1)

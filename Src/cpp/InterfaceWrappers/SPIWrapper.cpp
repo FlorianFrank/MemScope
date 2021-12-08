@@ -5,15 +5,16 @@
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 #include "io_pin_defines.h"
 
-#define STM32 1
+#if UNITTEST
+#include <cstring>
+#endif // TEST
+
 #if STM32
 extern "C" {
 #include "SystemFiles/spi.h"
 #include <stm32f4xx_hal_spi.h>
 };
 #endif // STM32
-
-#include <cstdio>
 
 SPIWrapper::SPIWrapper(SPIHandle spiHandle): m_SPIHandle(spiHandle) {}
 
@@ -33,13 +34,16 @@ SPIWrapper::SPIWrapper(SPIHandle spiHandle): m_SPIHandle(spiHandle) {}
 
 /*static*/ void SPIWrapper::SetChipSelect()
 {
+#if STM32 // TODO
     HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
-
+#endif // STM32
 }
 
 /*static*/ void SPIWrapper::ResetChipSelect()
 {
+#if STM32 // TODO
     HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
+#endif // STM32
 }
 
 MEM_ERROR SPIWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t timeout)
@@ -47,7 +51,12 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t tim
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
+#if STM32 // TODO
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(m_SPIHandle, data, *size, timeout));
+#else
+    memcpy(buffer, data, *size);
+    return MemoryErrorHandling::MEM_NO_ERROR;
+#endif // STM32
 }
 
 MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout)
@@ -55,5 +64,9 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t 
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
+#if STM32 // TODO
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(m_SPIHandle, data, *size, timeout));
+#else
+    return MemoryErrorHandling::MEM_NO_ERROR;
+#endif // STM32
 }

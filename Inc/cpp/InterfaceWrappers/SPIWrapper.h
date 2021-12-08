@@ -11,10 +11,11 @@
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
-#define STM32 1
 #if STM32
 struct __SPI_HandleTypeDef;
 typedef struct __SPI_HandleTypeDef* SPIHandle;
+#else
+typedef int SPIHandle;
 #endif // STM32
 
 class SPIWrapper : public InterfaceWrappers
@@ -31,6 +32,12 @@ public:
 
     static void SetChipSelect();
     static void ResetChipSelect();
+
+    // TODO
+#define UNITTEST 1
+#if UNITTEST
+    uint8_t buffer[512];
+#endif // TEST
 
 private:
     SPIHandle m_SPIHandle;
