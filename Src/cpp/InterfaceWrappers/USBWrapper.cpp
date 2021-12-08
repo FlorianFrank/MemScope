@@ -77,13 +77,13 @@ void USBWrapper::USBCDCRXCallback(uint8_t *Buf, uint32_t len)
 
                     sprintf(STRING_BUFFER, "%c", Rx_Data[0]);
                     len = strlen(STRING_BUFFER);
-//                    sendUSB((uint8_t *) STRING_BUFFER, len);
+//                    sendUSB((uint8_t *) m_SendBuffer, len);
                 }
             } else
             {
-//				sprintf(STRING_BUFFER, "Detected carriage Return\r\n");
-//				len = strlen(STRING_BUFFER);
-//				sendUSB((uint8_t *)STRING_BUFFER, len);
+//				sprintf(m_SendBuffer, "Detected carriage Return\r\n");
+//				len = strlen(m_SendBuffer);
+//				sendUSB((uint8_t *)m_SendBuffer, len);
 
 // if received data = 13
                 Rx_Index = 0;
@@ -93,4 +93,16 @@ void USBWrapper::USBCDCRXCallback(uint8_t *Buf, uint32_t len)
         }
 
     }
+}
+
+MEM_ERROR USBWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+{
+    // TODO
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+MEM_ERROR USBWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+{
+    // TODO
+    return MemoryErrorHandling::MEM_NO_ERROR;
 }
