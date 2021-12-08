@@ -2,6 +2,7 @@
 #include <cpp/CommandLineParser.h>
 #include <cpp/InterfaceWrappers/UARTWrapper.h>
 #include <cpp/MemoryControllerWrappers/MemoryControllerParallel.h>
+#include <cpp/MemoryControllerWrappers/MemoryControllerSPI.h>
 #include "cpp/Main.h"
 #include "cpp/ClockConfig.h"
 #include "cpp/MemoryController.h"
@@ -61,12 +62,10 @@ int main()
     //showHelp(NULL);
 #endif
 
-    UARTWrapper uartWrapper;
+    SPIHandle handle = &hspi5;
+    SPIWrapper uartWrapper(handle);
+    MemoryControllerSPI memoryController(&uartWrapper);
 
-
-    MemoryControllerParallel memoryController(uartWrapper);
-
-    CommandLineParser commandLineParser(&memoryController);
 
     //TimeMeasurement timeMeasurement; // TODO resolve
 
