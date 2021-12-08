@@ -18,6 +18,68 @@ TEST(MemoryControllerTestSPI, TestWriteAdesto)
     EXPECT_EQ(retValue[3], 0xFB);
 }
 
+TEST(MemoryControllerTestSPI, TestWriteFujitsu)
+{
+
+    uint8_t retValue[5];
+    uint16_t retSize = 5;
+
+    MEM_ERROR ret = MemoryControllerSPI::CreateWriteMessageReRAMFujitsu(0x002233, 0xFB, retValue, &retSize);
+
+    EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(retSize, 5);
+    EXPECT_EQ(retValue[0], 0x02);
+    EXPECT_EQ(retValue[1], 0x00);
+    EXPECT_EQ(retValue[2], 0x22);
+    EXPECT_EQ(retValue[3], 0x33);
+    EXPECT_EQ(retValue[4], 0xFB);
+}
+
+TEST(MemoryControllerTestSPI, TestReadAdesto)
+{
+
+    uint8_t retValue[5];
+    uint16_t retSize = 5;
+
+    MEM_ERROR ret = MemoryControllerSPI::CreateReadMessageReRAMAdesto(0x55AA, retValue, &retSize);
+
+    EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(retSize, 3);
+    EXPECT_EQ(retValue[0], 0x03);
+    EXPECT_EQ(retValue[1], 0x55);
+    EXPECT_EQ(retValue[2], 0xAA);
+}
+
+TEST(MemoryControllerTestSPI, TestReadFujitsu)
+{
+
+    uint8_t retValue[5];
+    uint16_t retSize = 5;
+
+    MEM_ERROR ret = MemoryControllerSPI::CreateReadMessageReRAMFujitsu(0x00AABB, retValue, &retSize);
+
+    EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(retSize, 4);
+    EXPECT_EQ(retValue[0], 0x03);
+    EXPECT_EQ(retValue[1], 0x00);
+    EXPECT_EQ(retValue[2], 0xAA);
+    EXPECT_EQ(retValue[3], 0xBB);
+}
+
+
+
+TEST(MemoryControllerTestSPI, TestWrite8BitWord)
+{
+    SPIWrapper spiWrapper(0);
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    MEM_ERROR err = memoryControllerSpi.Write16BitWord(0, 0);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
+
+    err = memoryControllerSpi.Read16BitWord(0, 0);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
+
+}
+
 TEST(MemoryControllerTestSPI, TestInvalidArgument)
 {
     uint8_t retValue[3];
@@ -28,6 +90,18 @@ TEST(MemoryControllerTestSPI, TestInvalidArgument)
     ret = MemoryControllerSPI::CreateWriteMessageReRAMAdesto(0xAAAAAAAA, 0xFB, retValue, &retSize);
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_INVALID_ADDRESS);
 }
+
+TEST(MemoryControllerTestSPI, TestInvalidWriteReadCommands)
+{
+    SPIWrapper spiWrapper(0);
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    MEM_ERROR err = memoryControllerSpi.Write16BitWord(0, 0);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
+
+    err = memoryControllerSpi.Read16BitWord(0, 0);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
+}
+
 
 TEST(MemoryControllerTestSPI, ParseStatusRegister)
 {
@@ -82,6 +156,16 @@ TEST(MemoryControllerTestSPI, SetWriteEnableLatch)
     EXPECT_EQ(spiWrapper.buffer[0], 0x06);
 }
 
+TEST(MemoryControllerTestSPI, TestResetWriteEnableLatch)
+{
+    SPIWrapper spiWrapper(0);
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    MEM_ERROR err = memoryControllerSpi.Reset_WriteEnableLatch();
+
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(spiWrapper.buffer[0], 0x04);
+}
+
 TEST(MemoryControllerTestSPI, ReadStatusRegister)
 {
     SPIWrapper spiWrapper(0);
@@ -91,5 +175,36 @@ TEST(MemoryControllerTestSPI, ReadStatusRegister)
 
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 }
+
+TEST(MemoryControllerTestSPI, TestResumeFromPowerDown)
+{
+    SPIWrapper spiWrapper(0);
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    MEM_ERROR err = memoryControllerSpi.ResumeFromPowerDown();
+
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(spiWrapper.buffer[0], 0xAB);
+}
+
+TEST(MemoryControllerTestSPI, TestSetUltraDeepPowerDown)
+{
+    SPIWrapper spiWrapper(0);
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    MEM_ERROR err = memoryControllerSpi.SetUltraDeepPowerDown();
+
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(spiWrapper.buffer[0], 0x79);
+}
+
+TEST(MemoryControllerTestSPI, TestSleepMode)
+{
+    SPIWrapper spiWrapper(0);
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    MEM_ERROR err = memoryControllerSpi.SetSleepMode();
+
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(spiWrapper.buffer[0], 0b10111001);
+}
+
 
 
