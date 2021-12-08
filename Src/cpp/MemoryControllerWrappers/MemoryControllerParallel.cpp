@@ -19,7 +19,7 @@ MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret) const
+MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
 {
     if (IsInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
@@ -53,7 +53,7 @@ MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
 
 }
 
-MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value) const
+MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value)
 {
     if(IsInvalidAddress(adr))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
