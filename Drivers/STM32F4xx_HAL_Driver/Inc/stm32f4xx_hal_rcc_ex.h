@@ -24,9 +24,9 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
+#include "SystemFiles/basic_defines.h"
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal_def.h"
 
 /** @addtogroup STM32F4xx_HAL_Driver
   * @{
@@ -6723,7 +6723,6 @@ typedef struct
 /** @addtogroup RCCEx_Exported_Functions
   *  @{
   */
-
 /** @addtogroup RCCEx_Exported_Functions_Group1
   *  @{
   */
