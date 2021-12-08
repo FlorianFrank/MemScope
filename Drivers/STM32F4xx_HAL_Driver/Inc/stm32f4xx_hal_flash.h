@@ -52,7 +52,7 @@ typedef enum
   FLASH_PROC_PROGRAM
 } FLASH_ProcedureTypeDef;
 
-/** 
+/**
   * @brief  FLASH handle Structure definition  
   */
 typedef struct
