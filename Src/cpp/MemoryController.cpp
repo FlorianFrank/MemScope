@@ -28,7 +28,15 @@ MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : write_
     m_InterfaceWrapper = interfaceWrapper;
 }
 
+MEM_ERROR MemoryController::WriteSingleValue(uint32_t address, uint8_t value)
+{
+    return Write8BitWord(address, value);
+}
 
+MEM_ERROR MemoryController::WriteSingleValue(uint32_t address, uint16_t value)
+{
+    return Write16BitWord(address, value);
+}
 
 MEM_ERROR MemoryController::FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t value)
 {
@@ -79,7 +87,7 @@ MemoryController::FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uin
 }
 
 
-MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t expectedValue) const
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t expectedValue)
 {
     for (uint32_t adr = startAddress; adr < endAddress; adr++)
     {
@@ -94,7 +102,7 @@ MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t end
 }
 
 
-MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t expectedValue) const
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t expectedValue)
 {
     for (uint32_t adr = startAddress; adr < endAddress; adr++)
     {
@@ -108,7 +116,7 @@ MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t end
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t)) const
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t))
 {
     for (uint32_t adr = startAddress; adr < endAddress; adr++)
     {
@@ -122,7 +130,7 @@ MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t end
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t)) const
+MEM_ERROR MemoryController::VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t))
 {
     for (uint32_t adr = startAddress; adr < endAddress; adr++)
     {
@@ -333,32 +341,32 @@ MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer,
     if(total_one == 0){
         sprintf((char*)buffer, "P(1->0) = NaN\r\n");
         len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)STRING_BUFFER, len);
+        //send(huart, (uint8_t *)m_SendBuffer, len);
     }else{
         // displays the probability that a 1 changes to a 0
         float p_one_to_zero = ((float)flipped_one / (float)total_one) * 100;
         sprintf((char*)buffer, "P(1->0) = %.16f%%\r\n", p_one_to_zero);
         len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)STRING_BUFFER, len);
+        //send(huart, (uint8_t *)m_SendBuffer, len);
     }
 
     if(total_zero == 0){
         sprintf((char*)&buffer[len], "P(0->1) = NaN\r\n");
         len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)STRING_BUFFER, len);
+        //send(huart, (uint8_t *)m_SendBuffer, len);
     }else{
         // displays the probability that a 0 changes to a 1
         float p_zero_to_one = ((float)flipped_zero / (float)total_zero) * 100;
         sprintf((char*)&buffer[len], "P(0->1) = %.16f%%\r\n", p_zero_to_one);
         len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)STRING_BUFFER, len);
+        //send(huart, (uint8_t *)m_SendBuffer, len);
     }
     float p_total_flip_probability = ((float)(flipped_one + flipped_zero) / (float)(total_one + total_zero)) * 100;
 
     // displays the total flip probability
     sprintf((char*)&buffer[len], "P(flip) = %.16f%%\r\n", p_total_flip_probability);
     len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)STRING_BUFFER, len);
+    //send(huart, (uint8_t *)m_SendBuffer, len);
 
     // displays the total flip 1's
     sprintf((char*)&buffer[len], "Total number of flipped 1->0:  %lu\r\n", (unsigned long)flipped_one);
@@ -367,22 +375,22 @@ MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer,
     // displays the total 1's
     sprintf((char*)&buffer[len], "Total number of ones in expected value:  %lu\r\n", (unsigned long)total_one);
     len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)STRING_BUFFER, len);
+    //send(huart, (uint8_t *)m_SendBuffer, len);
 
     // displays the total flip 0's
     sprintf((char*)&buffer[len], "Total number of flipped 0->1:  %lu\r\n", (unsigned long)flipped_zero);
     len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)STRING_BUFFER, len);
+    //send(huart, (uint8_t *)m_SendBuffer, len);
 
     // displays the total 0's
     sprintf((char*)&buffer[len], "Total number of zeros in expected value:  %lu\r\n", (unsigned long)total_zero);
     len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)STRING_BUFFER, len);
+    //send(huart, (uint8_t *)m_SendBuffer, len);
 
     // displays the total flipped bits
     sprintf((char*)&buffer[len], "Total number of flipped bits:  %lu\r\n\n", (unsigned long)(flipped_one + flipped_zero));
     len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)STRING_BUFFER, len);
+    //send(huart, (uint8_t *)m_SendBuffer, len);
     *buffLen = len;
 
     return MemoryErrorHandling::MEM_NO_ERROR;
@@ -519,5 +527,4 @@ void MemoryController::InitArguments(){
 {
     return (address >= MEM_SIZE_ADR) ?  true : false;
 }
-
 
