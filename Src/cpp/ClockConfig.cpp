@@ -2,8 +2,8 @@
 
 extern "C" {
 #include "error_handler.h"
-#include <stm32f4xx_hal_rcc.h>
-#include <stm32f4xx_hal_pwr_ex.h>
+#include "stm32f4xx_hal_rcc.h"
+#include "stm32f4xx_hal_pwr_ex.h"
 }
 
 /**
@@ -13,7 +13,7 @@ extern "C" {
 MemoryErrorHandling::MEM_ERROR ClockConfig::SystemClock_Config()
 {
 #if 0 // TODO
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
