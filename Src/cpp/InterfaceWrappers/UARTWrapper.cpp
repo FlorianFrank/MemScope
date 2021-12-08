@@ -5,10 +5,10 @@
 #include <io_pin_defines.h>
 #include "cpp/InterfaceWrappers/UARTWrapper.h"
 
-UARTWrapper::UARTWrapper()
+UARTWrapper::UARTWrapper(UARTHandle *uartHandle): InterfaceWrappers()
 {
-
 }
+
 
 /*
  * @brief								rewritten function to receive with a delay of 10ms
@@ -69,5 +69,6 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t
 {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+
 
 
