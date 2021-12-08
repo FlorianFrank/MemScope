@@ -2,6 +2,6 @@
 
 mkdir -p build
 pushd build
-cmake .. 
+cmake .. -DUNITTEST=1
 make
 popd
