@@ -11,7 +11,7 @@
 class MemoryControllerSPI: public MemoryController
 {
 public:
-    explicit MemoryControllerSPI(SPIWrapper *interfaceWrapper);
+    MemoryControllerSPI(SPIWrapper *interfaceWrapper);
 
     enum
     {
@@ -42,9 +42,9 @@ public:
 
     // Basic read and write functions
     MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) override;
-    MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret) const override;
+    MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret) override;
     MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) override;
-    MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) const override;
+    MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) override;
 
     MEM_ERROR WriteStatusRegister(MemoryStatusRegister *statusRegister, uint8_t value);
     MEM_ERROR ReadStatusRegister(MemoryStatusRegister *statusRegister);
@@ -65,6 +65,12 @@ public:
     MEM_ERROR SendSPICommand(SPI_Commands spiCMD, uint8_t *retValue, bool response);
     // Memory specific functions
     static MEM_ERROR CreateWriteMessageReRAMAdesto(uint32_t address, uint8_t value, uint8_t *retValue, uint16_t *retSize);
+    static MEM_ERROR CreateWriteMessageReRAMFujitsu(uint32_t address, uint8_t value, uint8_t *retValue, uint16_t *retSize);
+
+
+    static MEM_ERROR CreateReadMessageReRAMAdesto(uint32_t address, uint8_t *retMessage, uint16_t *inputOuputSize);
+
+    static MEM_ERROR CreateReadMessageReRAMFujitsu(uint32_t address, uint8_t *retMessage, uint16_t *inputOuputSize);
 
 
 private:

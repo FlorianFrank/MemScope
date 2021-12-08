@@ -9,7 +9,7 @@
 
 
 MemoryControllerSPI::MemoryControllerSPI(SPIWrapper *interfaceWrapper):
-MemoryController(interfaceWrapper)
+MemoryController(interfaceWrapper), m_SPIWrapper(interfaceWrapper)
 {
 }
 
@@ -50,8 +50,45 @@ MEM_ERROR err = Set_WriteEnableLatch(false);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t adr, uint8_t *ret) const
+MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t adr, uint8_t *ret)
 {
+    MEM_ERROR err = Set_WriteEnableLatch(false);
+    if(err != MemoryErrorHandling::MEM_NO_ERROR)
+        return err;
+
+    // Write Execution
+#if RERAM_ADESTO_RM25C512C_LTAI_T
+  //  uint8_t readData[3];
+   // uint16_t lenReadData = 3;
+    uint8_t readData[3];
+    uint16_t lenReadData = 3;
+    err = CreateReadMessageReRAMAdesto(adr, readData, &lenReadData);
+#elif RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
+    // Use 3 address bytes
+    uint8_t readData[4];
+    uint16_t lenReadData = 4;
+    err =  CreateReadMessageReRAMFujitsu(adr, readData, &lenReadData);
+#else // if RERAM_ADESTO_RM25C512C_LTAI_T
+	return MEM_INTERFACE_NOT_SUPPORTED;
+#endif // if RERAM_ADESTO_RM25C512C_LTAI_T else if FRAM_FUJITSU_MB85R1001ANC_GE1
+    if(err != MemoryErrorHandling::MEM_NO_ERROR)
+        return err;
+
+    SPIWrapper::SetChipSelect();
+    SPIWrapper::SetWriteProtect();
+    err = m_SPIWrapper->SendData(readData, &lenReadData, 1000); //HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&hspi5, initialize_write_data, sizeof(initialize_write_data), 1000));
+    SPIWrapper::ResetWriteProtect();
+    if(err != MemoryErrorHandling::MEM_NO_ERROR)
+        return err;
+
+
+    uint8_t retData[2];
+    uint16_t retDataSize = 2;
+    err = m_SPIWrapper->ReceiveData(retData, &retDataSize, 1000);
+    SPIWrapper::ResetChipSelect();
+    if(err != MemoryErrorHandling::MEM_NO_ERROR)
+        return err;
+
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
@@ -60,14 +97,10 @@ MEM_ERROR MemoryControllerSPI::Write16BitWord(uint32_t adr, uint16_t value)
     return MemoryErrorHandling::MEM_INVALID_COMMAND;
 }
 
-MEM_ERROR MemoryControllerSPI::Read16BitWord(uint32_t adr, uint16_t *value) const
+MEM_ERROR MemoryControllerSPI::Read16BitWord(uint32_t adr, uint16_t *value)
 {
     return MemoryErrorHandling::MEM_INVALID_COMMAND;
 }
-
-// TODO remove
-#define ReRAM_WRITE     (uint8_t) 0x02       // Write Memory Code
-
 
 /*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMAdesto(uint32_t address, uint8_t value,
                                                                         uint8_t *retValue, uint16_t *retSize)
@@ -86,6 +119,63 @@ MEM_ERROR MemoryControllerSPI::Read16BitWord(uint32_t adr, uint16_t *value) cons
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+
+/*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMFujitsu(uint32_t address, uint8_t value,
+                                                                         uint8_t *retValue, uint16_t *retSize)
+
+{
+    if (IsInvalidAddress(address))
+        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
+
+    if (!retSize || *retSize < 5)
+        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
+
+    uint8_t initialize_write_data[] = {ReRAM_WRITE,static_cast<uint8_t>(((address >> 16) & 0xFF)),
+                                       static_cast<uint8_t>(((address >> 8) & 0xFF)),
+                                       static_cast<uint8_t>(((address >>  0) & 0xFF)), value};
+
+    memcpy(retValue, initialize_write_data, sizeof initialize_write_data);
+    *retSize = 5;
+
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+/*static*/ MEM_ERROR
+MemoryControllerSPI::CreateReadMessageReRAMFujitsu(uint32_t address, uint8_t *retMessage, uint16_t *inputOuputSize)
+{
+    if (IsInvalidAddress(address))
+        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
+
+    if (!inputOuputSize || *inputOuputSize < 4)
+        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
+
+    uint8_t initialize_write_data[] = {ReRAM_READ, static_cast<uint8_t>(((address >> 16) & 0xFF)),
+                                       static_cast<uint8_t>(((address >> 8) & 0xFF)),
+                                       static_cast<uint8_t>(((address >> 0) & 0xFF))};
+
+    memcpy(retMessage, initialize_write_data, sizeof initialize_write_data);
+    *inputOuputSize = 4;
+
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+/*static*/ MEM_ERROR
+MemoryControllerSPI::CreateReadMessageReRAMAdesto(uint32_t address, uint8_t *retMessage, uint16_t *inputOuputSize)
+{
+    if (IsInvalidAddress(address))
+        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
+
+    if (!inputOuputSize || *inputOuputSize < 3)
+        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
+
+    uint8_t initialize_write_data[] = {ReRAM_READ, static_cast<uint8_t>(((address >> 8) & 0xFF)),
+                                       static_cast<uint8_t>(((address >> 0) & 0xFF))};
+    memcpy(retMessage, initialize_write_data, sizeof initialize_write_data);
+    *inputOuputSize = 3;
+
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
 
 uint32_t MemoryControllerSPI::WIP_Polling(uint32_t timeoutCycles)
 {
@@ -141,7 +231,7 @@ MEM_ERROR MemoryControllerSPI::SendSPICommand(SPI_Commands spiCMD, uint8_t *retV
     return (MemoryStatusRegister) {static_cast<uint8_t>((statusRegister & 128) >> 7),
                                    static_cast<uint8_t>((statusRegister & 64) >> 6),
                                    static_cast<uint8_t>((statusRegister & 32) >> 5),
-                                   static_cast<uint8_t>((statusRegister & 12) >> 3),
+                                   static_cast<uint8_t>((statusRegister & 12) >> 2),
                                    static_cast<uint8_t>((statusRegister & 2) >> 1),
                                    static_cast<uint8_t>((statusRegister & 1))};
 }
@@ -192,6 +282,7 @@ MEM_ERROR MemoryControllerSPI::Set_WriteEnableLatch(bool checkRegister)
             MEM_ERROR err = ReadStatusRegister(&statusRegister);
             if (err != MemoryErrorHandling::MEM_NO_ERROR)
                 return err;
+                // TODO timeout
         }while(statusRegister.write_enable_bit != 1);
         //return MEM_REGISTER_NOT_SET;
     }
@@ -235,3 +326,6 @@ MEM_ERROR MemoryControllerSPI::SetSleepMode()
 {
     return SendSPICommand(ReRAM_SLEEP, nullptr, false);
 }
+
+
+
