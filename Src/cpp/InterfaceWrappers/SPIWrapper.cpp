@@ -20,7 +20,7 @@ SPIWrapper::SPIWrapper(SPIHandle spiHandle): m_SPIHandle(spiHandle) {}
 /*static*/ void SPIWrapper::SetWriteProtect()
 {
 #if STM32
-    HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
 #endif // STM32
 }
 
@@ -30,7 +30,7 @@ SPIWrapper::SPIWrapper(SPIHandle spiHandle): m_SPIHandle(spiHandle) {}
 /*static*/ void SPIWrapper::ResetWriteProtect()
 {
 #if STM32
-    HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
 #endif // STM32
 }
 
