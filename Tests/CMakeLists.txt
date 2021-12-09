@@ -22,10 +22,15 @@ set(PROJECT_FILES "../Inc/cpp/MemoryController.h"
                     )
 
 add_executable(MemoryControllerTest ${PROJECT_FILES}
-            "SPIMemoryControllerTest.cpp")
+            "SPIMemoryControllerTest.cpp"
+            "TestInterfaceWrapper.cpp")
 
     target_link_libraries(MemoryControllerTest gtest_main gtest pthread)
-    target_include_directories(MemoryControllerTest PRIVATE "../Inc")
+    target_include_directories(MemoryControllerTest PRIVATE
+                                "${CMAKE_CURRENT_SOURCE_DIR}/../Inc"
+                                "${CMAKE_CURRENT_SOURCE_DIR}")
     enable_testing()
     include(GoogleTest)
     gtest_discover_tests("MemoryControllerTest")
+
+add_definitions(-DUNIT_TEST=1)
