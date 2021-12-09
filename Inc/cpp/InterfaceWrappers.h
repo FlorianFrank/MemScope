@@ -15,8 +15,8 @@ class InterfaceWrappers
 {
 public:
 
-    virtual MEM_ERROR SendData(uint8_t *data, const uint16_t *size, uint32_t timeout) = 0;
-    virtual MEM_ERROR ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout) = 0;
+    virtual MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
+    virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
 
     // Helper functions
     bool isTransferCplt() const;

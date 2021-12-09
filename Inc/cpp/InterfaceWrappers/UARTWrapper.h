@@ -24,9 +24,9 @@ public:
 
     void receive(UART_HandleTypeDef *huart, uint8_t *dstBuffer, uint32_t bufferSize);
 
-    MEM_ERROR SendData(uint8_t *data, const uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
-    MEM_ERROR ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
     void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 

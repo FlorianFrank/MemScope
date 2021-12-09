@@ -60,12 +60,12 @@ void UARTWrapper::HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     }
 }
 
-MEM_ERROR UARTWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }

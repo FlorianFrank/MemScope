@@ -46,7 +46,7 @@ SPIWrapper::SPIWrapper(SPIHandle spiHandle): m_SPIHandle(spiHandle) {}
 #endif // STM32
 }
 
-MEM_ERROR SPIWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -54,12 +54,12 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, const uint16_t *size, uint32_t tim
 #if STM32 // TODO
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(m_SPIHandle, data, *size, timeout));
 #else
-    memcpy(buffer, data, *size);
+    m_SPIHandle.StoreBuffer(data, size);
     return MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
 }
 
-MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t timeout)
+MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -67,6 +67,7 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, const uint16_t *size, uint32_t 
 #if STM32 // TODO
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(m_SPIHandle, data, *size, timeout));
 #else
+    m_SPIHandle.ReadBuffer(data, size);
     return MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
 }
