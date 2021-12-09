@@ -1,10 +1,7 @@
-/*
- * memory_error_handling.c
- *
- *  Created on: Jun 30, 2021
- *      Author: florianfrank
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
  */
-
 #ifndef SRC_MEMORY_ERROR_HANDLING_C_
 #define SRC_MEMORY_ERROR_HANDLING_C_
 

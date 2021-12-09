@@ -1,12 +1,7 @@
-//
-// Created by florianfrank on 03.12.21.
-//
-
-//#include <stm32f4xx_hal_uart.h>
-//#include "cpp/UARTWrapper.h"
-//#include "cpp/USBWrapper.h"
-
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #ifndef MEMORY_TESTING_FW_MEMORYCONTROLLER_H
 #define MEMORY_TESTING_FW_MEMORYCONTROLLER_H
 

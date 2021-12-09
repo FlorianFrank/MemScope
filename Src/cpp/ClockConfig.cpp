@@ -1,3 +1,7 @@
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include "cpp/ClockConfig.h"
 
 extern "C" {

@@ -1,13 +1,9 @@
-//
-// Created by florianfrank on 01.07.21.
-//
-#include <cmath>
-#include <cstdlib>
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include <string.h>
 #include <cstdio>
-#include <SystemFiles/usbd_cdc_if.h>
-#include "SystemFiles/spi.h"
-#include "metrics.h"
 #include "cpp/MemoryController.h"
 #include "cpp/CommandLineParser.h"
 

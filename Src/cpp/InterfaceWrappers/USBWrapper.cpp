@@ -1,7 +1,7 @@
-//
-// Created by florianfrank on 07.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include "cpp/InterfaceWrappers/USBWrapper.h"
 
 char MY_RX_BUFFER[CDC_DATA_HS_MAX_PACKET_SIZE]= {0};

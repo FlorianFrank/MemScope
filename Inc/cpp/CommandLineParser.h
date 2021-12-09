@@ -1,7 +1,7 @@
-//
-// Created by florianfrank on 03.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #ifndef MEMORY_TESTING_FW_COMMANDLINEPARSER_H
 #define MEMORY_TESTING_FW_COMMANDLINEPARSER_H
 

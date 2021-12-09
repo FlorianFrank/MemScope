@@ -1,7 +1,7 @@
-#include <cstdio>
-#include <cpp/CommandLineParser.h>
-#include <cpp/InterfaceWrappers/UARTWrapper.h>
-#include <cpp/MemoryControllerWrappers/MemoryControllerParallel.h>
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include <cpp/MemoryControllerWrappers/MemoryControllerSPI.h>
 #include "cpp/Main.h"
 #include "cpp/ClockConfig.h"

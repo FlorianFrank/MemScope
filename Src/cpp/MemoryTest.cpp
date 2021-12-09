@@ -1,7 +1,7 @@
-//
-// Created by florianfrank on 06.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include "cpp/MemoryTest.h"
 //
 // Created by florianfrank on 02.07.21.

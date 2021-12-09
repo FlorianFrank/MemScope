@@ -1,7 +1,7 @@
-//
-// Created by florianfrank on 07.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include "cpp/STMHelperFunctions.h"
 
 #if STM32 // TODO

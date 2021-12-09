@@ -1,8 +1,7 @@
-//
-// Created by florianfrank on 07.12.21.
-//
-
-#include <io_pin_defines.h>
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of computer engineering
+ */
 #include "cpp/InterfaceWrappers/UARTWrapper.h"
 
 UARTWrapper::UARTWrapper(UARTHandle *uartHandle): InterfaceWrappers()
