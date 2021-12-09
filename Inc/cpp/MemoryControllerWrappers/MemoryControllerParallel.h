@@ -7,7 +7,10 @@
 
 #include "cpp/MemoryController.h"
 
-
+/**
+ * @brief This class is used to read and write to memory modules with a parallel connection.
+ * Currently this class supports writing to memory modules using a STM32F429DISC1 board using memory mapped IO.
+ */
 class MemoryControllerParallel : public MemoryController
 {
 public:
