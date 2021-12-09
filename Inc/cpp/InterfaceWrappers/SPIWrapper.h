@@ -20,6 +20,10 @@
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
+/**
+ * @brief This class serves as wrapper for SPI communication.
+ * Currently this wrapper only supports an STM32F429DISC1 board.
+ */
 class SPIWrapper : public InterfaceWrappers
 {
 
