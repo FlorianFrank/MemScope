@@ -9,16 +9,16 @@
 #include "cpp/InterfaceWrappers.h"
 #include <cstdint>
 
-using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
-
 
 #if STM32
-struct __SPI_HandleTypeDef;
-typedef struct __SPI_HandleTypeDef* SPIHandle;
+    struct __SPI_HandleTypeDef;
+    typedef struct __SPI_HandleTypeDef* SPIHandle;
 #elif UNIT_TEST
-#include "TestInterfaceWrapper.h"
-typedef TestInterfaceWrapper& SPIHandle;
+    #include "TestInterfaceWrapper.h"
+    typedef TestInterfaceWrapper& SPIHandle;
 #endif // STM32
+
+using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 class SPIWrapper : public InterfaceWrappers
 {
