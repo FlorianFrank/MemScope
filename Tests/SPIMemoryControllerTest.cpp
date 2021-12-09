@@ -70,12 +70,14 @@ TEST(MemoryControllerTestSPI, TestReadFujitsu)
 
 TEST(MemoryControllerTestSPI, TestWrite8BitWord)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper;
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.Write16BitWord(0, 0);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
 
-    err = memoryControllerSpi.Read16BitWord(0, 0);
+    uint16_t value;
+    err = memoryControllerSpi.Read16BitWord(0, &value);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
 
 }
@@ -93,12 +95,14 @@ TEST(MemoryControllerTestSPI, TestInvalidArgument)
 
 TEST(MemoryControllerTestSPI, TestInvalidWriteReadCommands)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper;
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.Write16BitWord(0, 0);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
 
-    err = memoryControllerSpi.Read16BitWord(0, 0);
+    uint16_t value;
+    err = memoryControllerSpi.Read16BitWord(0, &value);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
 }
 
@@ -119,17 +123,23 @@ TEST(MemoryControllerTestSPI, SendSPIWriteTest)
 {
     uint32_t address = 0xAABB;
 
-
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
 
     MEM_ERROR ret = memoryControllerSpi.Write8BitWord(address, 0xFF);
-
     EXPECT_EQ(ret, MemoryErrorHandling::MEM_NO_ERROR);
-    EXPECT_EQ(spiWrapper.buffer[0], 0x02);
-    EXPECT_EQ(spiWrapper.buffer[1], 0XAA);
-    EXPECT_EQ(spiWrapper.buffer[2], 0xbB);
-    EXPECT_EQ(spiWrapper.buffer[3], 0xFF);
+
+    uint8_t buffer[5];
+    uint16_t bufferLen = 5;
+    ret = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
+    EXPECT_EQ(ret, MemoryErrorHandling::MEM_NO_ERROR);
+
+    EXPECT_EQ(bufferLen, 4);
+    EXPECT_EQ(buffer[0], 0x02);
+    EXPECT_EQ(buffer[1], 0XAA);
+    EXPECT_EQ(buffer[2], 0xbB);
+    EXPECT_EQ(buffer[3], 0xFF);
 }
 
 
@@ -137,8 +147,8 @@ TEST(MemoryControllerTestSPI, Write8BitWordError)
 {
     uint32_t address = 0xAAAAAAAA;
 
-
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
 
 
@@ -148,62 +158,100 @@ TEST(MemoryControllerTestSPI, Write8BitWordError)
 
 TEST(MemoryControllerTestSPI, SetWriteEnableLatch)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
+
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.Set_WriteEnableLatch(false);
-
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
-    EXPECT_EQ(spiWrapper.buffer[0], 0x06);
+
+    uint8_t buffer[2];
+    uint16_t bufferLen = 2;
+    err = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(bufferLen, 1);
+
+    EXPECT_EQ(buffer[0], 0x06);
 }
 
 TEST(MemoryControllerTestSPI, TestResetWriteEnableLatch)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.Reset_WriteEnableLatch();
-
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
-    EXPECT_EQ(spiWrapper.buffer[0], 0x04);
+
+    uint8_t buffer[2];
+    uint16_t bufferLen = 2;
+    err = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(bufferLen, 1);
+
+    EXPECT_EQ(buffer[0], 0x04);
 }
 
 TEST(MemoryControllerTestSPI, ReadStatusRegister)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MemoryControllerSPI::MemoryStatusRegister statusRegister;
     MEM_ERROR err = memoryControllerSpi.ReadStatusRegister(&statusRegister);
-
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+
+    uint8_t buffer[2];
+    uint16_t bufferLen = 2;
+    err = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(bufferLen, 1);
+
+//    EXPECT_EQ(buffer[0], 0x05); TODO
 }
 
 TEST(MemoryControllerTestSPI, TestResumeFromPowerDown)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.ResumeFromPowerDown();
-
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
-    EXPECT_EQ(spiWrapper.buffer[0], 0xAB);
+
+    uint8_t buffer[2];
+    uint16_t bufferLen = 2;
+    err = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
+    EXPECT_EQ(bufferLen, 1);
+    EXPECT_EQ(buffer[0], 0xAB);
 }
 
 TEST(MemoryControllerTestSPI, TestSetUltraDeepPowerDown)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.SetUltraDeepPowerDown();
 
+    uint8_t buffer[2];
+    uint16_t bufferLen = 2;
+    err = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
-    EXPECT_EQ(spiWrapper.buffer[0], 0x79);
+    EXPECT_EQ(bufferLen, 1);
+    EXPECT_EQ(buffer[0], 0x79);
 }
 
 TEST(MemoryControllerTestSPI, TestSleepMode)
 {
-    SPIWrapper spiWrapper(0);
+    TestInterfaceWrapper testInterfaceWrapper{};
+    SPIWrapper spiWrapper(testInterfaceWrapper);
     MemoryControllerSPI memoryControllerSpi(&spiWrapper);
     MEM_ERROR err = memoryControllerSpi.SetSleepMode();
 
+    uint8_t buffer[2];
+    uint16_t bufferLen = 2;
+    err = testInterfaceWrapper.ReadBuffer(buffer, &bufferLen);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
-    EXPECT_EQ(spiWrapper.buffer[0], 0b10111001);
+    EXPECT_EQ(buffer[0], 0b10111001);
 }
 
 
