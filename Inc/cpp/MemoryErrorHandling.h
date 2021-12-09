@@ -24,7 +24,8 @@ public:
         MEM_NOT_WRITTEN,
         MEM_UNEXPECTED_VALUE,
         MEM_INVALID_COMMAND,
-        MEM_BUFFER_TO_SMALL
+        MEM_BUFFER_TO_SMALL,
+        MEM_MEMORY_NOT_SUPPORTED
 
     } typedef MEM_ERROR;
 
