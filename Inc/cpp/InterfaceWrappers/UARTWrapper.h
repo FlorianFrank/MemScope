@@ -5,24 +5,16 @@
 #ifndef STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H
 
-#include "cpp/InterfaceWrappers.h"
-
-extern "C" {
-#include <stm32f4xx_hal_uart.h>
-};
-
-#define STM32 1
-#if STM32
-struct __UART_HandleTypeDef;
-typedef struct __UART_HandleTypeDef UARTHandle;
-#endif // STM32
+#include "InterfaceWrappers.h"
+#include "UARTProperties.h"
 
 class UARTWrapper : public InterfaceWrappers
 {
 public:
-    explicit UARTWrapper(UARTHandle *uartHandle);
+    explicit UARTWrapper(const char* interfaceName, uint32_t baudrate = 9600, UART_Mode mode = UARTWrapper_TRANSMIT_RECEIVE, UART_WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
+                         UART_Partiy parity = UARTWrapper_NO_PARITY, UART_StopBits stopBits = UARTWrapper_STOP_BITS_1);
 
-    void receive(UART_HandleTypeDef *huart, uint8_t *dstBuffer, uint32_t bufferSize);
+    MEM_ERROR Initialize() override;
 
     MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
@@ -31,7 +23,12 @@ public:
     void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 private:
-    UARTHandle *m_UARTHandle;
+    UARTProperties m_UARTHandle{};
+    static AvailableUARTProperties availableUARTPorts[];
+
+    // Device specific functions
+    static MEM_ERROR InitializeUARTDeviceSpecific(UARTProperties uartProperties);
+
 };
 
 
