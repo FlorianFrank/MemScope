@@ -6,7 +6,7 @@
 #define STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 
 #include "cpp/MemoryErrorHandling.h"
-#include "cpp/InterfaceWrappers.h"
+#include "InterfaceWrappers.h"
 #include <cstdint>
 
 
