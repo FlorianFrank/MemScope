@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <cstring>
-#include "cpp/InterfaceWrappers.h"
+#include "cpp/InterfaceWrappers/InterfaceWrappers.h"
 
 /*
 * @brief					clears the rx_buffer starting from address specified in param index
