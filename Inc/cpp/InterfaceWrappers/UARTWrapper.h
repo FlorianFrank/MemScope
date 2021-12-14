@@ -23,11 +23,11 @@ public:
     void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 private:
-    UARTProperties m_UARTHandle{};
+    UARTProperties *m_UARTHandle;
     static AvailableUARTProperties availableUARTPorts[];
 
     // Device specific functions
-    static MEM_ERROR InitializeUARTDeviceSpecific(UARTProperties uartProperties);
+    static MEM_ERROR InitializeUARTDeviceSpecific(UARTProperties *uartProperties);
 
 };
 
