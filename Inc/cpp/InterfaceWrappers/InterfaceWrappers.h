@@ -7,13 +7,14 @@
 
 #include <cstdint>
 #include "io_pin_defines.h"
-#include "MemoryErrorHandling.h"
+#include "cpp/MemoryErrorHandling.h"
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 class InterfaceWrappers
 {
 public:
+    virtual MEM_ERROR Initialize() = 0;
 
     virtual MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;

@@ -4,10 +4,25 @@
  */
 #include "cpp/MemoryControllerWrappers/MemoryControllerParallel.h"
 
+#ifdef STM32
+extern "C" {
+#include <SystemFiles/fmc.h>
+};
+#endif // STM32
+
 MemoryControllerParallel::MemoryControllerParallel(InterfaceWrappers *interfaceWrapper) : MemoryController(
         interfaceWrapper)
 {
 }
+
+MEM_ERROR MemoryControllerParallel::Initialize()
+{
+#if STM32
+    MX_FMC_Init();
+#endif // STM32
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
 
 /**
  * @brief This function writes a 8 bit value to the passed address.
@@ -97,5 +112,4 @@ MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value)
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
-
 
