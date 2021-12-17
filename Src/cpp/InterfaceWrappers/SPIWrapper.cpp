@@ -16,11 +16,11 @@ extern "C" {
 /*static*/ AvailableSPIProperties SPIWrapper::availableSPIPorts[]
 {
         {SPI1, "SPI1", "PF0", "PF0", "PF0", "PF0"},
-        {SPI2, "SPI1", "PF0", "PF0", "PF0", "PF0"},
-        {SPI3, "SPI1", "PF0", "PF0", "PF0", "PF0"},
-        {SPI4, "SPI1", "PF0", "PF0", "PF0", "PF0"},
-        {SPI5, "SPI1", "PF0", "PF0", "PF0", "PF0"},
-        {SPI6, "SPI1", "PF0", "PF0", "PF0", "PF0"},
+        {SPI2, "SPI2", "PF0", "PF0", "PF0", "PF0"},
+        {SPI3, "SPI3", "PF0", "PF0", "PF0", "PF0"},
+        {SPI4, "SPI4", "PF0", "PF0", "PF0", "PF0"},
+        {SPI5, "SPI5", "PF0", "PF0", "PF0", "PF0"},
+        {SPI6, "SPI6", "PF0", "PF0", "PF0", "PF0"},
 };
 
 SPIWrapper::SPIWrapper(const char *interfaceName, SPI_Mode spiMode, SPI_Baudrate_Prescaler prescaler,
@@ -72,9 +72,9 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
     spiProperties->m_SPIHandle.Init.BaudRatePrescaler = spiProperties->m_Prescaler; // TODO
 
     if(m_SPIHandle->m_Mode == SPI_MASTER)
-        hspi4.Init.Mode = SPI_MODE_MASTER;
+        spiProperties->m_SPIHandle.Init.Mode = SPI_MODE_MASTER;
     else if(m_SPIHandle->m_Mode == SPI_SLAVE)
-        hspi4.Init.Mode = SPI_MODE_SLAVE;
+        spiProperties->m_SPIHandle.Init.Mode = SPI_MODE_SLAVE;
 
     if(m_SPIHandle->m_ClockPolarity == SPIWrapper_CPOL_LOW)
         spiProperties->m_SPIHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
@@ -82,21 +82,21 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
         spiProperties->m_SPIHandle.Init.CLKPolarity = SPI_POLARITY_HIGH;
 
     if(m_SPIHandle->m_ClockPhase == SPIWrapper_CP_1_EDGE)
-        hspi4.Init.CLKPhase = SPI_PHASE_1EDGE;
+        spiProperties->m_SPIHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
     else if(m_SPIHandle->m_ClockPhase == SPIWrapper_CP_2_EDGE)
-        hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
+        spiProperties->m_SPIHandle.Init.CLKPhase = SPI_PHASE_2EDGE;
     /* USER CODE END SPI4_Init 1 */
 
     // TODO set remaining parameters
-    hspi4.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi4.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi4.Init.NSS = SPI_NSS_SOFT;
-    hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi4.Init.CRCPolynomial = 10;
+    spiProperties->m_SPIHandle.Init.Direction = SPI_DIRECTION_2LINES;
+    spiProperties->m_SPIHandle.Init.DataSize = SPI_DATASIZE_8BIT;
+    spiProperties->m_SPIHandle.Init.NSS = SPI_NSS_SOFT;
+    spiProperties->m_SPIHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    spiProperties->m_SPIHandle.Init.TIMode = SPI_TIMODE_DISABLE;
+    spiProperties->m_SPIHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    spiProperties->m_SPIHandle.Init.CRCPolynomial = 10;
     ResetChipSelect();
-    return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Init(&hspi4));
+    return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Init(&spiProperties->m_SPIHandle));
 }
 #else
 MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)

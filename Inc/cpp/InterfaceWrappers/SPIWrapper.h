@@ -22,7 +22,7 @@ class SPIWrapper : public InterfaceWrappers
 {
 public:
     explicit SPIWrapper(const char *interfaceName, SPI_Mode spiMode = SPI_MASTER,
-                        SPI_Baudrate_Prescaler prescaler = SPI_Prescaler_16,
+                        SPI_Baudrate_Prescaler prescaler = SPI_Prescaler_2,
                         SPI_Clock_Phase clockPhase = SPIWrapper_CP_1_EDGE,
                         SPI_Clock_Polarity clockPolarity = SPIWrapper_CPOL_LOW);
 
