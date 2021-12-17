@@ -23,8 +23,8 @@ extern "C" {
         {SPI6, "SPI1", "PF0", "PF0", "PF0", "PF0"},
 };
 
-SPIWrapper::SPIWrapper(const char *interfaceName, SPI_Baudrate_Prescaler prescaler, SPI_Clock_Phase clockPhase,
-                       SPI_Clock_Polarity clockPolarity, SPI_Mode spiMode)
+SPIWrapper::SPIWrapper(const char *interfaceName, SPI_Mode spiMode, SPI_Baudrate_Prescaler prescaler,
+                       SPI_Clock_Phase clockPhase, SPI_Clock_Polarity clockPolarity)
 {
     m_SPIHandle = new SPIProperties();
     m_SPIHandle->m_InterfaceName = interfaceName;
@@ -46,6 +46,11 @@ MEM_ERROR SPIWrapper::Initialize()
 }
 
 #if STM32
+/**
+ * @brief This function initializes the handle to read and write the SPI interface using a STM32 board.
+ * @param spiProperties properties like the clock polarity, clock phase or prescaler to set.
+ * @return MEM_NO_ERROR if no error occurs.
+ */
 MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 {
     int elemCtr = 0;
