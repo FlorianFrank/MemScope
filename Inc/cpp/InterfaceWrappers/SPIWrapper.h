@@ -5,18 +5,12 @@
 #ifndef STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 
-#include "cpp/MemoryErrorHandling.h"
+
 #include "InterfaceWrappers.h"
+#include "SPIProperties.h"
+#include "cpp/MemoryErrorHandling.h"
+
 #include <cstdint>
-
-
-#if STM32
-    struct __SPI_HandleTypeDef;
-    typedef struct __SPI_HandleTypeDef* SPIHandle;
-#elif UNIT_TEST
-    #include "TestInterfaceWrapper.h"
-    typedef TestInterfaceWrapper& SPIHandle;
-#endif // STM32
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
@@ -26,9 +20,11 @@ using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
  */
 class SPIWrapper : public InterfaceWrappers
 {
-
 public:
-    explicit SPIWrapper(SPIHandle spiHandle);
+    explicit SPIWrapper(const char *interfaceName, SPI_Baudrate_Prescaler prescaler, SPI_Clock_Phase clockPhase,
+                        SPI_Clock_Polarity clockPolarity, SPI_Mode spiMode);
+
+    MEM_ERROR Initialize() override;
 
     MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
@@ -39,8 +35,12 @@ public:
     static void SetChipSelect();
     static void ResetChipSelect();
 
+    virtual ~SPIWrapper();
+
 private:
-    SPIHandle m_SPIHandle;
+    SPIProperties* m_SPIHandle;
+    static AvailableSPIProperties availableSPIPorts[];
+    MEM_ERROR InitializeSPIInterface(SPIProperties *spiProperties);
 };
 
 
