@@ -31,6 +31,7 @@ public:
     } typedef MEM_ERROR;
 
     static MEM_ERROR HAL_StatusTypeDefToErr(int status);
+    static const char * MemErrorToString(MEM_ERROR errorCode);
 };
 
 
