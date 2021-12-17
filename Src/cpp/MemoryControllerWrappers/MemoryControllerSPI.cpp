@@ -41,9 +41,7 @@ MEM_ERROR MemoryControllerSPI::Write8BitWord(uint32_t address, uint8_t valueToWr
         return ret;
 
     SPIWrapper::SetWriteProtect();
-    SPIWrapper::SetChipSelect();
     err = m_SPIWrapper->SendData(sendBuffer, &sendBufferLen, 10000);
-    SPIWrapper::ResetChipSelect();
     SPIWrapper::ResetWriteProtect();
 
     if (err != MemoryErrorHandling::MEM_NO_ERROR)
@@ -78,7 +76,6 @@ MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t address, uint8_t *readValue
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
 
-    SPIWrapper::SetChipSelect();
     SPIWrapper::SetWriteProtect();
     err = m_SPIWrapper->SendData(readData, &lenReadData, 1000);
     SPIWrapper::ResetWriteProtect();
@@ -89,7 +86,6 @@ MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t address, uint8_t *readValue
     uint8_t retData[2];
     uint16_t retDataSize = 2;
     err = m_SPIWrapper->ReceiveData(retData, &retDataSize, 1000);
-    SPIWrapper::ResetChipSelect();
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
 
@@ -447,13 +443,11 @@ MEM_ERROR MemoryControllerSPI::SendSPICommand(SPI_Commands spiCMD, uint8_t *retV
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     auto cmd = (uint8_t)spiCMD;
-    SPIWrapper::SetChipSelect();
     uint16_t size = 1;
     MEM_ERROR err = m_SPIWrapper->SendData(&cmd, &size, 10);
     size = 1;
     if(response || err != MemoryErrorHandling::MEM_NO_ERROR)
         m_SPIWrapper->ReceiveData(retValue, &size, 10);
-    SPIWrapper::ResetChipSelect();
     return err;
 
 }

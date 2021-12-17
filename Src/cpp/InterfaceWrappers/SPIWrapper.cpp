@@ -95,6 +95,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
     hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
     hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     hspi4.Init.CRCPolynomial = 10;
+    ResetChipSelect();
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Init(&hspi4));
 }
 #else
@@ -155,12 +156,15 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
+    SetChipSelect();
 #if STM32
-    return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
+    MEM_ERROR ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
 #else
     m_SPIHandle.StoreBuffer(data, size);
-    return MemoryErrorHandling::MEM_NO_ERROR;
+    MEM_ERROR ret =  MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
+    ResetChipSelect();
+    return ret;
 }
 
 /**
@@ -175,11 +179,14 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
+    SetChipSelect();
 #if STM32
-    return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
+    MEM_ERROR ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
 #else
     m_SPIHandle.ReadBuffer(data, size);
-    return MemoryErrorHandling::MEM_NO_ERROR;
+    ret = MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
+    ResetChipSelect();
+    return ret;
 }
 
