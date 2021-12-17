@@ -14,6 +14,8 @@ public:
     explicit UARTWrapper(const char* interfaceName, uint32_t baudrate = 9600, UART_Mode mode = UARTWrapper_TRANSMIT_RECEIVE, UART_WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
                          UART_Partiy parity = UARTWrapper_NO_PARITY, UART_StopBits stopBits = UARTWrapper_STOP_BITS_1);
 
+    virtual ~UARTWrapper();
+
     MEM_ERROR Initialize() override;
 
     MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;

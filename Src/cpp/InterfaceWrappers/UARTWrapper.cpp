@@ -32,43 +32,18 @@ UARTWrapper::UARTWrapper(const char* interfaceName, uint32_t baudrate, UART_Mode
     m_UARTHandle->m_StopBits = stopBits;
 }
 
+
+UARTWrapper::~UARTWrapper()
+{
+    delete m_UARTHandle;
+}
+
 /*
  * @brief								callback function called if something is received via UART
  * @param UART_HandleTypeDef *huart		the UART handler to communicate with the user
  */
 void UARTWrapper::HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     // clear Rx_Buffer before receiving new data
-    if(huart->Instance == UART4){
-        if(Rx_Index == 0){
-            clearBuffer(0);
-        }
-        // if received data different from ascii 13 (Enter)
-        if(Rx_Data[0] != 13){
-            // only allow 0-9, A-Z, a-z, SP (32), DEL (127)
-            if(Rx_Data[0] == 32 || Rx_Data[0] == 127 || (Rx_Data[0] > 47 && Rx_Data[0] < 58) || (Rx_Data[0] > 64 && Rx_Data[0] < 91) ||
-               (Rx_Data[0] > 96 && Rx_Data[0] < 123)){
-                if(Rx_Data[0] == 127){
-                    if(Rx_Index > 0){
-                        Rx_Index--;
-                    }
-                    // correct extended ascii chars which uses two bytes when press 'Delete'
-                    if(Rx_Buffer[Rx_Index] > 127 && Rx_Index > 0){
-                        Rx_Index--;
-                    }
-                    //clearBuffer(Rx_Index);
-                }else{
-                    Rx_Buffer[Rx_Index++] = Rx_Data[0];
-                }
-                // print input char by char
-                HAL_UART_Transmit_IT(huart, (uint8_t *)Rx_Data, 1);
-            }
-        }else{
-            // if received data = 13
-            Rx_Index = 0;
-            Transfer_cplt = 1; // transfer complete, data is ready to read
-        }
-        HAL_UART_Receive_IT(huart, (uint8_t *)Rx_Data, 1);
-    }
 }
 
 MEM_ERROR UARTWrapper::Initialize()
@@ -107,19 +82,22 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 #if STM32
 /*static*/ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTProperties *uartProperties)
 {
-
     int elemCtr = 0;
+    bool interfaceFound = false;
     for(AvailableUARTProperties availPorts: availableUARTPorts)
     {
         if(strcmp(availPorts.m_name, uartProperties->m_InterfaceName) == 0)
         {
             uartProperties->m_UARTHandle.Instance = availableUARTPorts[elemCtr].m_UARTHandle;
+            interfaceFound = true;
             break;
         }
 
         elemCtr++;
     }
 
+    if(!interfaceFound)
+        return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
 
     uartProperties->m_UARTHandle.Init.BaudRate = uartProperties->m_Baudrate;
 
@@ -134,7 +112,7 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 
     if(uartProperties->m_StopBits == UARTWrapper_STOP_BITS_1)
         uartProperties->m_UARTHandle.Init.StopBits = UART_STOPBITS_1;
-    else
+    else if(uartProperties->m_StopBits == UARTWrapper_STOP_BITS_2)
         uartProperties->m_UARTHandle.Init.StopBits = UART_STOPBITS_2;
 
     if(uartProperties->m_Parity == UARTWrapper_NO_PARITY)
@@ -159,6 +137,8 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+
+
 #else
 /*static*/ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartHandle)
 {
