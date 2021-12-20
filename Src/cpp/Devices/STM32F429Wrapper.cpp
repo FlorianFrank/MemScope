@@ -105,7 +105,7 @@ extern void initialise_monitor_handles();
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeDevice()
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::Initialize()
 {
 #if STM32
 #if RDMON_SPECS
@@ -128,7 +128,7 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeDevice()
 #endif // STM32
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeDevice()
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitialize()
 {
 #if STM32
     HAL_StatusTypeDef ret = HAL_DeInit();
