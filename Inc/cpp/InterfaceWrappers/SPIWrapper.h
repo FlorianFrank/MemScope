@@ -31,11 +31,13 @@ public:
     MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
-    static void SetWriteProtect();
-    static void ResetWriteProtect();
+    inline static void SetWriteProtect();
+    inline static void ResetWriteProtect();
 
-    static void SetChipSelect();
-    static void ResetChipSelect();
+    inline static void SetChipSelect();
+    inline static void ResetChipSelect();
+
+    inline static bool ReadChipSelect();
 
     virtual ~SPIWrapper();
 

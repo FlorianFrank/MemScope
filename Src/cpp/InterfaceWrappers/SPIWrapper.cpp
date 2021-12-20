@@ -3,6 +3,7 @@
  * @copyright University of Passau - Chair of computer engineering
  */
 #include <cstring>
+#include <cstdio>
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 #include "io_pin_defines.h"
 
@@ -53,6 +54,7 @@ MEM_ERROR SPIWrapper::Initialize()
  */
 MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 {
+
     int elemCtr = 0;
     bool interfaceFound = false;
     for(AvailableSPIProperties availPorts: availableSPIPorts)
@@ -107,7 +109,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 /**
  * @brief Sets the Write Protect Pin on pin PC6
  */
-/*static*/ void SPIWrapper::SetWriteProtect()
+/*static*/ inline void SPIWrapper::SetWriteProtect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
@@ -117,7 +119,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 /**
  * @brief Resets the Write Protect Pin. On the STM32 on pin PC6.
  */
-/*static*/ void SPIWrapper::ResetWriteProtect()
+/*static*/ inline void SPIWrapper::ResetWriteProtect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
@@ -127,7 +129,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 /**
  * @brief Sets the Chip Select Pin. On STM32 on pin PF6
  */
-/*static*/ void SPIWrapper::SetChipSelect()
+/*static*/ inline void SPIWrapper::SetChipSelect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
@@ -137,7 +139,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 /**
  * @brief Resets the Chip Select Pin. On STM32 on pin PF6
  */
-/*static*/ void SPIWrapper::ResetChipSelect()
+/*static*/ inline void SPIWrapper::ResetChipSelect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_SET);
@@ -156,14 +158,36 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    SetChipSelect();
+    bool retCS = ReadChipSelect();
+    while(!retCS)
+        retCS = ReadChipSelect();
+
+    bool writeEnable = false;
+    MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
+    if(m_SPIHandle->m_Mode == SPI_MASTER)
+    {
+        SetChipSelect();
+        writeEnable = true;
+    }
+    else
+    {
+        while(!writeEnable)
+            writeEnable = ReadChipSelect();
+    }
 #if STM32
-    MEM_ERROR ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
+    if(writeEnable)
+    {
+        ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(
+                HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
+    }
+    else
+        return MemoryErrorHandling::MEM_HAL_TIMEOUT;
 #else
     m_SPIHandle.StoreBuffer(data, size);
     MEM_ERROR ret =  MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
-    ResetChipSelect();
+    if(m_SPIHandle->m_Mode == SPI_MASTER)
+        ResetChipSelect();
     return ret;
 }
 
@@ -179,14 +203,40 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    SetChipSelect();
+    bool retCS = ReadChipSelect();
+    while(!retCS)
+        retCS = ReadChipSelect();
+
+    bool readEnable = false;
+    MEM_ERROR ret;
+    if(m_SPIHandle->m_Mode == SPI_MASTER)
+    {
+        SetChipSelect();
+        readEnable = true;
+    }else
+    {
+        while(!readEnable)
+            readEnable = ReadChipSelect();
+    }
+
 #if STM32
-    MEM_ERROR ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
+    if(readEnable)
+        ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
+    else
+        return MemoryErrorHandling::MEM_HAL_TIMEOUT;
 #else
     m_SPIHandle.ReadBuffer(data, size);
     ret = MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
-    ResetChipSelect();
+    if(m_SPIHandle->m_Mode == SPI_MASTER)
+        ResetChipSelect();
     return ret;
+}
+
+inline bool SPIWrapper::ReadChipSelect()
+{
+#if STM32
+    return  HAL_GPIO_ReadPin(SPI5_CS_GPIO_Port, SPI5_CS_Pin) == GPIO_PIN_RESET;
+#endif // STM32
 }
 
