@@ -50,6 +50,8 @@
             return "Timeout ocurred";
         case MEM_INTERFACE_NOT_SUPPORTED:
             return "Memory interface not supported";
+        case MEM_INTERFACE_NOT_FOUND:
+            return "Interface not found";
         case MEM_INVALID_ARGUMENT:
             return "Invalid argument passed to function";
         case MEM_IO_ERROR:
