@@ -6,6 +6,11 @@
 #include "cpp/InterfaceWrappers/UARTWrapper.h"
 
 
+/**
+ * @brief This array contains the list of all possible interfaces on the STM32F429-Disc1 chip.
+ * It contains the interface, the minimum and maximum baudrate as well as the RX and TX Pins.
+ *
+ */
 /*static*/ AvailableUARTProperties UARTWrapper::availableUARTPorts[] = {
 #if STM32F429xx
         {UART4, "UART4", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
