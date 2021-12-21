@@ -68,6 +68,8 @@
             return "Buffer to small";
         case MEM_MEMORY_NOT_SUPPORTED:
             return "Memory type not supported";
+        case MEM_DEVICE_NOT_SPECIFIED:
+            return "No target device specified";
     }
 }
 
