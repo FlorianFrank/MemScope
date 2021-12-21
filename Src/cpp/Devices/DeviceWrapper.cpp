@@ -3,3 +3,17 @@
 //
 
 #include "cpp/Devices/DeviceWrapper.h"
+
+/*virtual*/ MemoryErrorHandling::MEM_ERROR DeviceWrapper::Initialize(){
+    return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
+}
+
+/*virtual*/ MemoryErrorHandling::MEM_ERROR DeviceWrapper::DeInitialize()
+{
+    return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
+}
+
+MemoryErrorHandling::MEM_ERROR DeviceWrapper::InitializeInterface(std::string &interfaceName)
+{
+    return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
+}

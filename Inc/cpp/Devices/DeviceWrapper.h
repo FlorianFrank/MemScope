@@ -5,12 +5,16 @@
 #ifndef MEMORY_TESTING_FW_DEVICEWRAPPER_H
 #define MEMORY_TESTING_FW_DEVICEWRAPPER_H
 
+#include <string>
 #include "cpp/MemoryErrorHandling.h"
 
 class DeviceWrapper
 {
-    virtual MemoryErrorHandling::MEM_ERROR Initialize() = 0;
-    virtual MemoryErrorHandling::MEM_ERROR DeInitialize() = 0;
+public:
+    virtual ~DeviceWrapper()= default;
+    virtual MemoryErrorHandling::MEM_ERROR Initialize();
+    virtual MemoryErrorHandling::MEM_ERROR DeInitialize();
+    virtual MemoryErrorHandling::MEM_ERROR InitializeInterface(std::string& interfaceName);
 };
 
 
