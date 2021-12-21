@@ -9,6 +9,7 @@
 #include "InterfaceWrappers.h"
 #include "SPIProperties.h"
 #include "cpp/MemoryErrorHandling.h"
+#include "cpp/Devices/DeviceWrapper.h"
 
 #include <cstdint>
 
@@ -39,12 +40,14 @@ public:
 
     inline static bool ReadChipSelect();
 
-    virtual ~SPIWrapper();
+    ~SPIWrapper();
 
 private:
     SPIProperties* m_SPIHandle;
     static AvailableSPIProperties availableSPIPorts[];
     MEM_ERROR InitializeSPIInterface(SPIProperties *spiProperties);
+
+    DeviceWrapper* m_DeviceWrapper;
 };
 
 

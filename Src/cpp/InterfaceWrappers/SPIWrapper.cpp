@@ -4,6 +4,7 @@
  */
 #include <cstring>
 #include <cstdio>
+#include <cpp/Devices/STM32F429Wrapper.h>
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 #include "io_pin_defines.h"
 
@@ -27,6 +28,8 @@ extern "C" {
 SPIWrapper::SPIWrapper(const char *interfaceName, SPI_Mode spiMode, SPI_Baudrate_Prescaler prescaler,
                        SPI_Clock_Phase clockPhase, SPI_Clock_Polarity clockPolarity)
 {
+    m_DeviceWrapper = new STM32F429Wrapper();
+
     m_SPIHandle = new SPIProperties();
     m_SPIHandle->m_InterfaceName = interfaceName;
     m_SPIHandle->m_Prescaler = prescaler;
@@ -38,6 +41,7 @@ SPIWrapper::SPIWrapper(const char *interfaceName, SPI_Mode spiMode, SPI_Baudrate
 SPIWrapper::~SPIWrapper()
 {
     delete m_SPIHandle;
+    delete m_DeviceWrapper;
 }
 
 
@@ -54,12 +58,12 @@ MEM_ERROR SPIWrapper::Initialize()
  */
 MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
 {
-
+    m_DeviceWrapper->InitializeInterface(spiProperties->m_InterfaceName);
     int elemCtr = 0;
     bool interfaceFound = false;
     for(AvailableSPIProperties availPorts: availableSPIPorts)
     {
-        if(strcmp(availPorts.m_name, spiProperties->m_InterfaceName) == 0)
+        if(availPorts.m_name == spiProperties->m_InterfaceName)
         {
             spiProperties->m_SPIHandle.Instance = availableSPIPorts[elemCtr].m_UARTHandle;
             interfaceFound = true;
@@ -163,7 +167,7 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
         retCS = ReadChipSelect();
 
     bool writeEnable = false;
-    MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
+    MEM_ERROR ret;
     if(m_SPIHandle->m_Mode == SPI_MASTER)
     {
         SetChipSelect();
