@@ -8,7 +8,7 @@
 #include "cpp/MemoryErrorHandling.h"
 #include "TimeMeasurement.h"
 #include "io_pin_defines.h"
-#include "InterfaceWrappers.h"
+#include "cpp/InterfaceWrappers/InterfaceWrappers.h"
 
 /* see fmc.c
  * FMC_NORSRAM_BANK1 = 0x60000000
@@ -41,6 +41,8 @@ public:
     } TestStatus;
 
     explicit MemoryController(InterfaceWrappers *interfaceWrapper);
+
+    virtual MEM_ERROR Initialize() = 0;
 
     // Basic Read and write functions which must be implemented by the deriving classes
     virtual MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) = 0;

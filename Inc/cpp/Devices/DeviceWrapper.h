@@ -5,8 +5,9 @@
 #ifndef MEMORY_TESTING_FW_DEVICEWRAPPER_H
 #define MEMORY_TESTING_FW_DEVICEWRAPPER_H
 
-#include <string>
 #include "cpp/MemoryErrorHandling.h"
+
+#include <string>
 
 class DeviceWrapper
 {

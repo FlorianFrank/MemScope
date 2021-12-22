@@ -20,7 +20,7 @@ public:
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
 
 protected:
-    char STRING_BUFFER[STRING_BUFFER_SIZE];
+    char STRING_BUFFER[STRING_BUFFER_SIZE]{};
     // receive buffer
 
 };
