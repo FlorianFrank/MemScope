@@ -8,11 +8,13 @@
 #include "InterfaceWrappers.h"
 #include "UARTProperties.h"
 
+using namespace UARTProperties;
+
 class UARTWrapper : public InterfaceWrappers
 {
 public:
-    explicit UARTWrapper(const char* interfaceName, uint32_t baudrate = 9600, UART_Mode mode = UARTWrapper_TRANSMIT_RECEIVE, UART_WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
-                         UART_Partiy parity = UARTWrapper_NO_PARITY, UART_StopBits stopBits = UARTWrapper_STOP_BITS_1);
+    explicit UARTWrapper(const char* interfaceName, uint32_t baudrate = 9600, UARTProperties::Mode mode = UARTWrapper_TRANSMIT_RECEIVE, WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
+                         Parity parity = UARTWrapper_NO_PARITY, UART_StopBits stopBits = UARTWrapper_STOP_BITS_1);
 
     virtual ~UARTWrapper();
 
@@ -25,11 +27,11 @@ public:
     void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 private:
-    UARTProperties *m_UARTHandle;
+    UARTHandle *m_UARTHandle;
     static AvailableUARTProperties availableUARTPorts[];
 
     // Device specific functions
-    static MEM_ERROR InitializeUARTDeviceSpecific(UARTProperties *uartProperties);
+    static MEM_ERROR InitializeUARTDeviceSpecific(UARTHandle *uartProperties);
 
 };
 
