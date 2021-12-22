@@ -14,6 +14,7 @@
 #include <cstdint>
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
+using namespace SPIProperties;
 
 /**
  * @brief This class serves as wrapper for SPI communication.
@@ -22,10 +23,10 @@ using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 class SPIWrapper : public InterfaceWrappers
 {
 public:
-    explicit SPIWrapper(const char *interfaceName, SPI_Mode spiMode = SPI_MASTER,
-                        SPI_Baudrate_Prescaler prescaler = SPI_Prescaler_2,
-                        SPI_Clock_Phase clockPhase = SPIWrapper_CP_1_EDGE,
-                        SPI_Clock_Polarity clockPolarity = SPIWrapper_CPOL_LOW);
+    explicit SPIWrapper(const char *interfaceName, Mode spiMode = SPI_MASTER,
+                        BaudratePrescaler prescaler = SPI_Prescaler_2,
+                        ClockPhase clockPhase = SPIWrapper_CP_1_EDGE,
+                        ClockPoloarity clockPolarity = SPIWrapper_CPOL_LOW);
 
     MEM_ERROR Initialize() override;
 
@@ -43,9 +44,8 @@ public:
     ~SPIWrapper();
 
 private:
-    SPIProperties* m_SPIHandle;
-    static AvailableSPIProperties availableSPIPorts[];
-    MEM_ERROR InitializeSPIInterface(SPIProperties *spiProperties);
+    SPIHandle* m_SPIHandle;
+    MEM_ERROR InitializeSPIInterface(SPIHandle *spiProperties);
 
     DeviceWrapper* m_DeviceWrapper;
 };

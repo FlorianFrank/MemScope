@@ -15,22 +15,26 @@ extern "C" {
 };
 #endif // STM32
 
-/*static*/ AvailableSPIProperties SPIWrapper::availableSPIPorts[]
-{
-        {SPI1, "SPI1", "PF0", "PF0", "PF0", "PF0"},
-        {SPI2, "SPI2", "PF0", "PF0", "PF0", "PF0"},
-        {SPI3, "SPI3", "PF0", "PF0", "PF0", "PF0"},
-        {SPI4, "SPI4", "PF0", "PF0", "PF0", "PF0"},
-        {SPI5, "SPI5", "PF0", "PF0", "PF0", "PF0"},
-        {SPI6, "SPI6", "PF0", "PF0", "PF0", "PF0"},
-};
+AvailableSPIProperties availableSPIPorts[]
+        {
+                {SPI1, "SPI1", {IO_BANK_B, IO_PIN_4}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_A, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                {SPI2, "SPI2",{IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                {SPI3, "SPI3", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                {SPI4, "SPI4",{IO_BANK_E, IO_PIN_5}, {IO_BANK_E, IO_PIN_6}, {IO_BANK_E, IO_PIN_2}, {IO_BANK_E, IO_PIN_4}},
+                {SPI5, "SPI5", {IO_BANK_F, IO_PIN_8}, {IO_BANK_F, IO_PIN_9}, {IO_BANK_F, IO_PIN_7}, {IO_BANK_F, IO_PIN_6}},
+                {SPI6, "SPI6", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+        };
 
-SPIWrapper::SPIWrapper(const char *interfaceName, SPI_Mode spiMode, SPI_Baudrate_Prescaler prescaler,
-                       SPI_Clock_Phase clockPhase, SPI_Clock_Polarity clockPolarity)
+
+SPIWrapper::SPIWrapper(const char *interfaceName, Mode spiMode, BaudratePrescaler prescaler,
+                       ClockPhase clockPhase, ClockPoloarity clockPolarity)
 {
+#if STM32
     m_DeviceWrapper = new STM32F429Wrapper();
-
-    m_SPIHandle = new SPIProperties();
+#else
+    m_DeviceWrapper = new DeviceWrapper();
+#endif
+    m_SPIHandle = new SPIHandle();
     m_SPIHandle->m_InterfaceName = interfaceName;
     m_SPIHandle->m_Prescaler = prescaler;
     m_SPIHandle->m_ClockPhase = clockPhase;
@@ -56,7 +60,7 @@ MEM_ERROR SPIWrapper::Initialize()
  * @param spiProperties properties like the clock polarity, clock phase or prescaler to set.
  * @return MEM_NO_ERROR if no error occurs.
  */
-MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
+MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIHandle *spiProperties)
 {
     m_DeviceWrapper->InitializeInterface(spiProperties->m_InterfaceName);
     int elemCtr = 0;
@@ -105,7 +109,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Init(&spiProperties->m_SPIHandle));
 }
 #else
-MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIProperties *spiProperties)
+MEM_ERROR SPIWrapper::InitializeSPIInterface(STM32Handle *spiProperties)
 {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
