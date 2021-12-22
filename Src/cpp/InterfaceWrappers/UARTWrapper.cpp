@@ -2,7 +2,6 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#include <cstring>
 #include "cpp/InterfaceWrappers/UARTWrapper.h"
 
 
@@ -13,22 +12,22 @@
  */
 /*static*/ AvailableUARTProperties UARTWrapper::availableUARTPorts[] = {
 #if STM32F429xx
-        {UART4, "UART4", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {UART5, "UART5", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {UART7, "UART7", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {UART8, "UART8", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {USART1, "USART1", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {USART2, "USART2", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {USART3, "USART3", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
-        {USART6, "USART6", 9600, 2000000, "PF0", "PF1"}, // TODO Pins anpassen
+        {USART1, "USART1", 9600, 2000000, {IO_BANK_A, IO_PIN_10}, {IO_BANK_A, IO_PIN_9}},
+        {USART2, "USART2", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+        {USART3, "USART3", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+        {UART4, "UART4", 9600, 2000000, {IO_BANK_C, IO_PIN_11}, {IO_BANK_C, IO_PIN_10}},
+        {UART5, "UART5", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+        {USART6, "USART6", 9600, 2000000,{IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+        {UART7, "UART7", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+        {UART8, "UART8", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
 #endif // STM32F429xx
 };
 
 
-UARTWrapper::UARTWrapper(const char* interfaceName, uint32_t baudrate, UART_Mode mode, UART_WordLength wordLen,
-                                                  UART_Partiy parity, UART_StopBits stopBits)
+UARTWrapper::UARTWrapper(const char* interfaceName, uint32_t baudrate, Mode mode, WordLength wordLen,
+                                                  Parity parity, UART_StopBits stopBits)
 {
-    m_UARTHandle = new UARTProperties;
+    m_UARTHandle = new UARTHandle;
     m_UARTHandle->m_InterfaceName = interfaceName;
     m_UARTHandle->m_Baudrate = baudrate;
     m_UARTHandle->m_Mode = mode;
@@ -85,13 +84,13 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 }
 
 #if STM32
-/*static*/ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTProperties *uartProperties)
+/*static*/ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
 {
     int elemCtr = 0;
     bool interfaceFound = false;
-    for(AvailableUARTProperties availPorts: availableUARTPorts)
+    for(const AvailableUARTProperties& availPorts: availableUARTPorts)
     {
-        if(strcmp(availPorts.m_name, uartProperties->m_InterfaceName) == 0)
+        if(availPorts.m_name == uartProperties->m_InterfaceName)
         {
             uartProperties->m_UARTHandle.Instance = availableUARTPorts[elemCtr].m_UARTHandle;
             interfaceFound = true;
