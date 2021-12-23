@@ -21,8 +21,10 @@ file(GLOB_RECURSE ProjectFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/Inc/cpp/.h"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/*.cpp"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/MemoryControllerWrappers/*.cpp"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/InterfaceWrappers/*.cpp")
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/MemoryController/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/InterfaceWrappers/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Inc/cpp/MemoryModules/*.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Src/cpp/MemoryModules/*.cpp")
 
 file(GLOB_RECURSE StartupFiles
 	"${CMAKE_CURRENT_SOURCE_DIR}/startup/.s")
