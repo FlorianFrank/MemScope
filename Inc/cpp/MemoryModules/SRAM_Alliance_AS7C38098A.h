@@ -12,7 +12,7 @@ class SRAM_Alliance_AS7C38098A: public MemoryModule
     ~SRAM_Alliance_AS7C38098A() override;
 
     SRAM_Alliance_AS7C38098A();
-    MEM_ERROR Initialize();
+    MEM_ERROR Initialize() override;
 };
 
 

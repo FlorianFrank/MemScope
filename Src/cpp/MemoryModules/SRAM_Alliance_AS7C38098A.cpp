@@ -6,8 +6,8 @@
 
 
 SRAM_Alliance_AS7C38098A::SRAM_Alliance_AS7C38098A(): MemoryModule(MemoryProperties::TYPE_SRAM,
-                                                                   "SRAM_Cypress_CY7C1041CV33",
-                                                                   MemoryProperties::PARALLEL, 16, 262144,
+                                                                   "SRAM_Alliance_AS7C38098A",
+                                                                   MemoryProperties::PARALLEL, 16, 524288,
                                                                    {233, 358}, {3000, 3600})
 {}
 

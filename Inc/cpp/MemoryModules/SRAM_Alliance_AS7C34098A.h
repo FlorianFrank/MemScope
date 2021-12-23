@@ -10,7 +10,11 @@
 
 class SRAM_Alliance_AS7C34098A: public MemoryModule
 {
+protected:
+    SRAM_Alliance_AS7C34098A();
+    ~SRAM_Alliance_AS7C34098A() override;
 
+    MEM_ERROR Initialize() override;
 };
 
 
