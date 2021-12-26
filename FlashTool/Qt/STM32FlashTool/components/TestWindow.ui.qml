@@ -4,109 +4,115 @@ import QtQuick.Controls 2.0
 
 Item {
     GridLayout {
-        id: grid_layout
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.margins: 5
-        flow: GridLayout.LeftToRight
+        anchors.margins: 10
+        anchors.fill: parent
         columns: 2
-        rows: 10
 
         Rectangle {
-            id: rectangle
-            color: "#039be5"
-            radius: 10
             Layout.fillHeight: true
-            Layout.fillWidth: true
+            width: 100
 
-            Text {
-                id: memory_selection_label
-                text: 'Select test: '
-                color: "white"
-                font.pixelSize: 27
+            Layout.columnSpan: 2
+            color: "grey"
+
+            Label {
                 anchors.centerIn: parent
-            }
-        }
-
-        Rectangle {
-            id: rectangle2
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-
-            ComboBox {
-                id: comboBox
-                anchors.fill: parent
-                currentIndex: 2
-                anchors.margins: 5
-                model: ["Test alternating", "Test periodic counter", "Test write zeros", "Test write ones"]
-            }
-        }
-
-
-        Rectangle {
-            id: test_state
-            color: "#039be5"
-            radius: 10
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            Text {
-                id: test_state_label
+                text: "Select Tests"
                 color: "white"
-                font.pixelSize: 27
-                text: qsTr("Test status:")
-                anchors.centerIn: parent
+                font.pixelSize: 20
             }
         }
 
         Rectangle {
             Layout.fillHeight: true
-            Layout.fillWidth: true
+            width: 200
 
-            Text {
-                id: test_execution_state
-                text: qsTr("Passed")
+            color: "blue"
+
+            Label {
+                text: "Select Test:"
                 color: "white"
-                font.pixelSize: 27
-                anchors.centerIn: parent
+                font.pixelSize: 20
             }
         }
 
-        Rectangle {
+        ComboBox {
             Layout.fillHeight: true
-            Layout.fillWidth: true
-            color: "#039be5"
-            radius: 10
+            width: 200
+            model: ["Test Simple Read and write operation"]
+        }
+
+        GridLayout {
             Layout.columnSpan: 2
 
-            Text {
-                id: log_label
-                color: "white"
-                font.pixelSize: 27
-                text: qsTr("Logging")
-                anchors.centerIn: parent
-            }
-        }
+            Rectangle {
+                width: 100
+                Layout.fillHeight: true
+                color: "blue"
 
-        Rectangle {
-            Layout.columnSpan: 2
-            Layout.rowSpan: 7
-            height: 9
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-            border.color: 'black'
-            border.width: 1
+                Label {
+                    text: "Init:"
+                    color: "white"
+                    font.pixelSize: 20
+                }
+            }
+
             TextArea {
-                anchors.fill: parent
-                id: logging_area
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                text: "Memory mem = InitializeMemory();"
+                Layout.rowSpan: 2
+            }
+        }
+
+        GridLayout {
+            Layout.columnSpan: 2
+
+            Rectangle {
+                width: 100
+                Layout.fillHeight: true
+                color: "blue"
+
+                Label {
+                    text: "Running:"
+                    color: "white"
+                    font.pixelSize: 20
+                }
+            }
+
+            TextArea {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                text: "ReadMemory(mem1);\n Delay(10ms); ReadMemory(mem1)"
+                Layout.rowSpan: 2
+            }
+        }
+
+        GridLayout {
+            Layout.columnSpan: 2
+
+            Rectangle {
+                width: 100
+                Layout.fillHeight: true
+                color: "blue"
+
+                Label {
+                    text: "Done:"
+                    color: "white"
+                    font.pixelSize: 20
+                }
+            }
+
+            TextArea {
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                text: "DeinitializeMemory(mem1);"
+
+                Layout.rowSpan: 2
             }
         }
     }
 }
-
 /*##^##
 Designer {
     D{i:0;autoSize:true;formeditorZoom:0.75;height:480;width:640}

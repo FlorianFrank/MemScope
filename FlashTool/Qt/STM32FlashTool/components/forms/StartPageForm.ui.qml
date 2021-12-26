@@ -14,18 +14,155 @@ Item {
     property alias compileState: compile_state
     property alias compileLoggingArea: logging_area
     property alias compileProgress: compile_state_progres_bar.value
+    property alias frequency_slider: frequency_slider
+    property alias frequency_percentage_label: frequency_percentage_label
+
+    property alias check_box_UART4_input: checkBoxUART4Input
+    property alias check_box_UART5_input: checkBoxUART5Input
+    property alias check_box_SPI1_input: checkBoxSPI1Input
+    property alias check_box_SPI2_input: checkBoxSPI2Input
+    property alias check_box_USB_HOST_input: checkBoxUSBHostInput
+
+    property alias check_box_UART4_output: checkBoxUART4Output
+    property alias check_box_UART5_output: checkBoxUART5Output
+    property alias check_box_SPI1_output: checkBoxSPI1Output
+    property alias check_box_SPI2_output: checkBoxSPI2Output
+    property alias check_box_USB_HOST_output: checkBoxUSBHostOutput
+
+
+    width: 1000
+    height: 1500
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 20
 
+        RowLayout {
+            anchors.fill: parent
+            Label {
+                text: "Select board:"
+            }
+            ComboBox {
+                id: boardType
+                height: 30
+                Layout.bottomMargin: 20
+                model: ["STM32F429 DISC1"]
+                Layout.fillWidth: true
+                anchors.right: parent.right
+                width: parent.width * 0.3
+            }
+        }
+
         SelectChipDropDown {
             id: memory_selector
             height: 30
-            Layout.bottomMargin: 5
-            comboBoxTitle: "Select memory chip"
+            Layout.bottomMargin: 20
+            comboBoxTitle: "Select memory chip:"
             comboBoxItems: memoryConfig.memoryTypes
             Layout.fillWidth: true
+        }
+
+        RowLayout {
+            anchors.topMargin: 20
+            spacing: 100
+            ColumnLayout {
+                Label {
+                    text: "Set Input Interface:"
+                    font.bold: true
+                }
+
+                CheckBox {
+                    id: checkBoxUART4Input
+                    checked: false
+                    text: qsTr("UART4")
+                }
+
+                CheckBox {
+                    id: checkBoxUART5Input
+                    checked: false
+                    text: qsTr("UART5")
+                }
+
+                CheckBox {
+                    id: checkBoxSPI1Input
+                    checked: false
+                    text: qsTr("SPI1")
+                }
+
+                CheckBox {
+                    id: checkBoxSPI2Input
+                    checked: false
+                    text: qsTr("SPI2")
+                }
+                CheckBox {
+                    id: checkBoxUSBHostInput
+                    checked: false
+                    text: qsTr("USB Host")
+                }
+            }
+
+            ColumnLayout {
+                Label {
+                    text: "Set output interface:"
+                    font.bold: true
+                }
+
+                CheckBox {
+                    id: checkBoxUART4Output
+                    checked: false
+                    text: qsTr("UART4")
+                }
+
+                CheckBox {
+                    id: checkBoxUART5Output
+                    checked: false
+                    text: qsTr("UART5")
+                }
+
+                CheckBox {
+                    id: checkBoxSPI1Output
+                    checked: false
+                    text: qsTr("SPI1")
+                }
+
+                CheckBox {
+                    id: checkBoxSPI2Output
+                    checked: false
+                    text: qsTr("SPI2")
+                }
+                CheckBox {
+                    id: checkBoxUSBHostOutput
+                    checked: false
+                    text: qsTr("USB Host")
+                }
+            }
+
+            ColumnLayout {
+                anchors.top: parent.top
+                Label {
+                    text: qsTr("Set clock frequency:")
+                    font.bold: true
+                }
+
+                Slider {
+                    id: frequency_slider
+                    from: 100
+                    to: 180
+                    value: 180
+                    stepSize: 1
+                    snapMode: Slider.SnapAlways
+                }
+
+                Label {
+                    id: frequency_percentage_label
+                    text: "180 MHz"
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pointSize: 20
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Layout.fillHeight: false
+                    Layout.fillWidth: false
+                }
+            }
         }
 
         Button {
@@ -35,12 +172,12 @@ Item {
             anchors.margins: 50
             Layout.topMargin: 5
             Layout.margins: 0
-            height: parent.height * 0.1
+            height: parent.height * 0.07
         }
 
         LoggingOutput {
             id: logging_area
-            height: parent.height * 0.8
+            height: parent.height * 0.4
             Layout.fillWidth: true
         }
 
@@ -48,10 +185,7 @@ Item {
             id: compile_state_progres_bar
             anchors.left: parent.left
             anchors.right: parent.right
-            height: parent.height * 0.1
-            onValueChanged: () => {
-                                console.log("VALUE " + memoryConfig.percentage)
-                            }
+            height: parent.height * 0.07
         }
 
         CompilationState {
@@ -65,14 +199,7 @@ Item {
             id: flash_button
             label: "Flash STM board"
             Layout.fillWidth: true
-            height: parent.height * 0.1
+            height: parent.height * 0.07
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:480;width:640}
-}
-##^##*/
-
