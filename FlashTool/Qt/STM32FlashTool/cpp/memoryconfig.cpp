@@ -21,7 +21,7 @@ MemoryConfig::MemoryConfig(QObject *parent) : QObject(parent), m_CompileStatus("
                       "FRAM_FUJITSU_MB85R1001ANC_GE1",
                       "RERAM_ADESTO_RM25C512C_LTAI_T",
                       "RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1",
-                      "FRAM_CYPRESS_FM22L16_55_TG"}), m_CurrentIdx(0), m_Percentage(0.0)
+                      "FRAM_CYPRESS_FM22L16_55_TG"}), m_CurrentIdx(0), m_Percentage(0.0), m_frequency(180)
 {
 
 }
@@ -76,6 +76,11 @@ void MemoryConfig::startFlashing()
     emit setCompileText(m_CompileText[m_CompileText.size() -1]);
 }
 
+void MemoryConfig::setFrequency(float value)
+{
+    qDebug() << "HELLO WORLD VALUE: " << value <<  "\n";
+}
+
 /*static*/ void MemoryConfig::startCompilation(QString memory)
 {
 
@@ -121,6 +126,12 @@ void MemoryConfig::startFlashing()
 
 }
 
+void MemoryConfig::setIOInterfaceEnable(const QString type, const QString interfaceName, bool state)
+{
+    qDebug() << interfaceName << ":" << state << " " << type << "\n";
+}
+
+
 
 void MemoryConfig::readSubProcess()
 {
@@ -157,6 +168,7 @@ QString& MemoryConfig::compileText()
 float MemoryConfig::percentage(){
     return m_Percentage;
 }
+
 
 
 void MemoryConfig::setCompileText(QString &compileText)

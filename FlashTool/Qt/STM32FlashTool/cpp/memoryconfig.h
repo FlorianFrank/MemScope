@@ -8,6 +8,14 @@
 
 class Compilation;
 
+enum IO_Interface {
+    UART4,
+    UART5,
+    SPI1,
+    SPI2,
+    USB_HOST
+};
+
 class MemoryConfig : public QObject
 {
     Q_OBJECT
@@ -36,8 +44,6 @@ signals:
     void compileStatusChanged();
     void percentageChanged();
 
-
-
 public slots:
     void setMemoryTypes(QStringList&);
     void compile();
@@ -46,6 +52,8 @@ public slots:
     void setCompileText(QString &compileText);
     void readError();
     void startFlashing();
+    void setFrequency(float);
+    void setIOInterfaceEnable(const QString type, const QString interfaceName, bool state);
 
 private:
    QStringList m_MemoryTypesList;
@@ -57,7 +65,7 @@ private:
    std::thread *th;
    QString m_CompileStatus;
    float m_Percentage;
-
+   float m_frequency;
 
 };
 

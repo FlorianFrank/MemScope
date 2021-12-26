@@ -3,7 +3,7 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QQmlContext>
-#include "memoryconfig.h"
+#include "cpp/memoryconfig.h"
 
 
 int main(int argc, char *argv[])

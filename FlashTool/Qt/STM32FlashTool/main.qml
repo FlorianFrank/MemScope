@@ -8,10 +8,10 @@ import './components/'
 
 Window {
     id: window
-    width: 700
-    height: 480
+    width: 1500
+    height: 900
     minimumWidth: 400
-    minimumHeight: 550
+    minimumHeight: 570
     visible: true
 
     onWidthChanged: () => {
@@ -53,6 +53,7 @@ Window {
          anchors.rightMargin: 0;
          anchors.leftMargin: 0;
          anchors.topMargin: 0;
+         anchors.bottomMargin: 10;
          titleStr: "Memory Test"
      }
 

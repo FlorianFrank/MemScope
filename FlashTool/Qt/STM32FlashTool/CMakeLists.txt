@@ -23,6 +23,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #            ${CMAKE_CURRENT_SOURCE_DIR}/path/to/libssl.so)
 #    endif()
 #endif()
+set(CMAKE_PREFIX_PATH "/home/florianfrank/Qt/5.12.11/gcc_64/lib/cmake")
+
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Quick LinguistTools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick LinguistTools REQUIRED)
@@ -31,7 +33,7 @@ set(TS_FILES STM32FlashTool_en_150.ts)
 
 set(PROJECT_SOURCES
         main.cpp
-        memoryconfig.cpp
+        cpp/memoryconfig.cpp
       #  compilation.cpp
         qml.qrc
         ${TS_FILES}
