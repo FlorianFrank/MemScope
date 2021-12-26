@@ -1,11 +1,11 @@
-#include "memoryconfig.h"
+#include "cpp/Include/MemoryConfig.h"
 #include <QtDebug>
-#include <stdlib.h>
+#include <cstdlib>
 #include <QTextCodec>
 #include <QDir>
-#include <unistd.h>
 #include <regex>
 #include <iostream>
+#include "ConsoleOutputParser.h"
 
 MemoryConfig::MemoryConfig(QObject *parent) : QObject(parent), m_CompileStatus("waiting for compilation"),
     m_MemoryTypesList({"Please select the memory module",
@@ -108,7 +108,7 @@ void MemoryConfig::setFrequency(float value)
            m_Process->setProgram("cmake");
            QString absBuildPath;
            tmpDir.absoluteFilePath(absBuildPath);
-           QStringList arguments = {"../../../..", "-DBuildFolder=" + absBuildPath, "-DBoardName='stm32f429'", "-DMEMORY_TYPE="+memory+"=1", "-DBoardClass=STM32F4", "-DCPU=cortex-m4", "-DFPUType=hard", "-DFPUSpecification=fpv4-sp-d16", "-Dspecs=rdimon.specs", "-DOS_USE_SEMIHOSTING=1"};
+           QStringList arguments = {"../../../../..", "-DBuildFolder=" + absBuildPath, "-DBoardName='stm32f429'", "-DMEMORY_TYPE="+memory+"=1", "-DBoardClass=STM32F4", "-DCPU=cortex-m4", "-DFPUType=hard", "-DFPUSpecification=fpv4-sp-d16", "-Dspecs=rdimon.specs", "-DOS_USE_SEMIHOSTING=1"};
            m_Process->setArguments(arguments);
            m_Process->start();
            m_Process->waitForFinished(30000);
@@ -137,7 +137,7 @@ void MemoryConfig::readSubProcess()
 {
      QByteArray ret = m_Process->readAllStandardOutput();
     QString compileText = QTextCodec::codecForMib(106)->toUnicode(ret);
-    int percentage = getProgressInPercentFromComilationString(compileText);
+    int percentage = ConsoleOutputParser::getProgressInPercentFromComilationString(compileText);
     if(percentage != -1) {
 
         m_Percentage = ((float)percentage)/100;
@@ -193,32 +193,3 @@ QString& MemoryConfig::compileStatus()
     return m_CompileStatus;
 }
 
-QString MemoryConfig::searchForCompileProgressInPercent(QString &message)
-{
-        std::regex searchExpr( R"(\[\s?\d{1,3}%\])");
-        std::smatch regexMatch;
-        std::string messageStdString = message.toStdString();
-        std::regex_search(messageStdString, regexMatch, searchExpr);
-        QString firstRegexMatch(regexMatch[0].str().c_str());
-        return firstRegexMatch;
-}
-
-QString MemoryConfig::removeBracesandPercentageSymbolFromRegexMatch(QString &regexMatch)
-{
-    std::string match = regexMatch.toStdString();
-    std::regex replaceExpr( R"(\[|\]|%|\s)");
-    QString percentageStrCleaned(std::regex_replace(match,replaceExpr, "").c_str());
-    return percentageStrCleaned;
-}
-
-
-int MemoryConfig::getProgressInPercentFromComilationString(QString &compileString)
-{
-        QString regexMatch = searchForCompileProgressInPercent(compileString);
-        if(regexMatch.size() > 0)
-        {
-            QString percentageInString = removeBracesandPercentageSymbolFromRegexMatch(regexMatch);
-            return percentageInString.toInt();
-        }
-        return -1;
-}

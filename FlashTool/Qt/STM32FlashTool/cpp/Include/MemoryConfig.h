@@ -18,7 +18,7 @@ enum IO_Interface {
 
 class MemoryConfig : public QObject
 {
-    Q_OBJECT
+Q_OBJECT
     Q_PROPERTY(QStringList memoryTypes READ getMemoryTypes WRITE setMemoryTypes  NOTIFY memoryTypesChanged)
     Q_PROPERTY(int selectedIdx READ getIndex NOTIFY dropDownIndexChanged)
     Q_PROPERTY(QString compileText READ compileText WRITE setCompileText NOTIFY compileTextChanged);
@@ -33,9 +33,6 @@ public:
     QString& compileText();
     QString& compileStatus();
     float percentage();
-    QString searchForCompileProgressInPercent(QString &message);
-    QString removeBracesandPercentageSymbolFromRegexMatch(QString &regexMatch);
-    int getProgressInPercentFromComilationString(QString &compileString);
 
 signals:
     void memoryTypesChanged();
@@ -56,6 +53,7 @@ public slots:
     void setIOInterfaceEnable(const QString type, const QString interfaceName, bool state);
 
 private:
+
    QStringList m_MemoryTypesList;
    int m_CurrentIdx;
    Compilation *m_Compilation;
