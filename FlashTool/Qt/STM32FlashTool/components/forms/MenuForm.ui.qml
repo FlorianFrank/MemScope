@@ -14,7 +14,6 @@ Item {
             color: 'grey'
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.top: parent.top
 
             RowLayout {
                 id: row_layout
@@ -27,7 +26,7 @@ Item {
 
 /*##^##
 Designer {
-    D{i:0;autoSize:true;height:480;width:640}
+    D{i:0;autoSize:true;formeditorZoom:0.5;height:480;width:640}
 }
 ##^##*/
 

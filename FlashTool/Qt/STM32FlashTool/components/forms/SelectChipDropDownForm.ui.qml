@@ -7,22 +7,33 @@ Item {
     property alias comboBoxItems: chipSelectCombobox.model
     property alias combobox: chipSelectCombobox
 
-    Row {
-        id: column
+    RowLayout {
+        id: row
         anchors.fill: parent
         anchors.margins: 2
 
         Text {
             id: comboboxStr
             text: "Loram ipsum"
+            Layout.fillWidth: true
             color: "black"
             width: parent.width * 0.3
+            Layout.alignment: Qt.AlignLeft
         }
 
         ComboBox {
             id: chipSelectCombobox
-            anchors.right: parent.right
-            width: parent.width * 0.6
+            clip: false
+            Layout.fillWidth: true
+            anchors.rightMargin: 0
+            Layout.alignment: Qt.AlignRight
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;formeditorZoom:0.66;height:480;width:640}
+}
+##^##*/
+

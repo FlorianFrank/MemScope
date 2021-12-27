@@ -1,5 +1,5 @@
 import QtQuick 2.0
-import MemoryConfig 1.0
+import StartPageHandler 1.0
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 2.5
 import QtQuick.Controls.Styles 1.0
@@ -29,16 +29,15 @@ Item {
     property alias check_box_SPI2_output: checkBoxSPI2Output
     property alias check_box_USB_HOST_output: checkBoxUSBHostOutput
 
-
     width: 1000
     height: 1500
+    property alias label: label
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 20
 
         RowLayout {
-            anchors.fill: parent
             Label {
                 text: "Select board:"
             }
@@ -48,7 +47,6 @@ Item {
                 Layout.bottomMargin: 20
                 model: ["STM32F429 DISC1"]
                 Layout.fillWidth: true
-                anchors.right: parent.right
                 width: parent.width * 0.3
             }
         }
@@ -56,6 +54,7 @@ Item {
         SelectChipDropDown {
             id: memory_selector
             height: 30
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             Layout.bottomMargin: 20
             comboBoxTitle: "Select memory chip:"
             comboBoxItems: memoryConfig.memoryTypes
@@ -103,6 +102,7 @@ Item {
 
             ColumnLayout {
                 Label {
+                    id: label
                     text: "Set output interface:"
                     font.bold: true
                 }
@@ -138,7 +138,6 @@ Item {
             }
 
             ColumnLayout {
-                anchors.top: parent.top
                 Label {
                     text: qsTr("Set clock frequency:")
                     font.bold: true
@@ -183,9 +182,9 @@ Item {
 
         ProgressBar {
             id: compile_state_progres_bar
-            anchors.left: parent.left
-            anchors.right: parent.right
             height: parent.height * 0.07
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
         }
 
         CompilationState {
@@ -203,3 +202,9 @@ Item {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;formeditorZoom:0.5}
+}
+##^##*/

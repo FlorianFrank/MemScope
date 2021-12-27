@@ -20,7 +20,6 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             minimumPointSize: 50
-            anchors.centerIn: parent.Center
             color: "white"
         }
     }

@@ -15,16 +15,10 @@ Item {
         border.color: "#039be5"
         anchors.fill: parent
 
-
-
-        Column {
-            id: column
-            anchors.fill: parent
             Text {
                 id: statusLabel
                 width: 15
                 text: "status"
-                anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: 3
             }
@@ -42,14 +36,5 @@ Item {
                 anchors.bottomMargin: 0
                 anchors.rightMargin: 7
             }
-        }
-
     }
-
 }
-
-/*##^##
-Designer {
-    D{i:0;formeditorZoom:10}D{i:4}D{i:2;invisible:true}
-}
-##^##*/
