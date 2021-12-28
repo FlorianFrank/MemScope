@@ -1,10 +1,10 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.12
 
-
 Item {
 
     property alias textAreaStr: loggingDisplay.text
+    property alias textArea: loggingDisplay
 
     Text {
         id: loggingText
@@ -27,15 +27,15 @@ Item {
             id: view
             anchors.fill: parent
 
-        TextArea {
-            id: loggingDisplay
-            anchors.fill: parent
-            wrapMode: Text.WordWrap
-            anchors.topMargin: 0
-        }
+            TextArea {
+                id: loggingDisplay
+                textFormat: Text.RichText
+                anchors.fill: parent
+                wrapMode: Text.WordWrap
+                anchors.topMargin: 0
+            }
         }
     }
-
 }
 
 /*##^##
@@ -43,3 +43,4 @@ Designer {
     D{i:0;autoSize:true;formeditorZoom:2;height:480;width:640}
 }
 ##^##*/
+
