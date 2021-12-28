@@ -3,11 +3,14 @@
 #include <QLocale>
 #include <QTranslator>
 #include <QQmlContext>
-#include "cpp/memoryconfig.h"
+#include "cpp/Include/StartPageHandler.h"
+#include "EasyLoggingWrapper.h"
 
+INITIALIZE_EASYLOGGINGPP
 
 int main(int argc, char *argv[])
 {
+    EasyLoggingWrapper::InitializeLogging(argc, argv);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
@@ -24,8 +27,7 @@ int main(int argc, char *argv[])
         }
     }
 
-
-    qmlRegisterType< MemoryConfig>("MemoryConfig", 1, 0, "MemoryConfig");
+    qmlRegisterType< StartPageHandler>("StartPageHandler", 1, 0, "StartPageHandler");
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
@@ -36,7 +38,6 @@ int main(int argc, char *argv[])
     }, Qt::QueuedConnection);
     engine.load(url);
 
-
-
     return app.exec();
+    return 0;
 }
