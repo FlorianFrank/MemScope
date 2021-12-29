@@ -28,8 +28,8 @@ public:
         MEM_INVALID_COMMAND,
         MEM_BUFFER_TO_SMALL,
         MEM_MEMORY_NOT_SUPPORTED,
-        MEM_DEVICE_NOT_SPECIFIED
-
+        MEM_DEVICE_NOT_SPECIFIED,
+        MEM_MEMORY_CONTROLLER_NOT_SPECIFIED
     } typedef MEM_ERROR;
 
     static MEM_ERROR HAL_StatusTypeDefToErr(int status);

@@ -70,7 +70,10 @@
             return "Memory type not supported";
         case MEM_DEVICE_NOT_SPECIFIED:
             return "No target device specified";
+        case MEM_MEMORY_CONTROLLER_NOT_SPECIFIED:
+            return "Memory controller not specified";
     }
+    return "Unknown error";
 }
 
 
