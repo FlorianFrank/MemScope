@@ -5,17 +5,17 @@
 #ifndef STM_MEASUREMENT_FIRMWARE_USBWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_USBWRAPPER_H
 
-#include "cpp/InterfaceWrappers.h"
+#include "InterfaceWrapper.h"
 
 // TODO
 #define STM32 1
 #if STM32
 extern "C" {
 #include <usbd_cdc.h>
-};
+}
 #endif // STM32
 
-class USBWrapper : public InterfaceWrappers
+class USBWrapper : public InterfaceWrapper
 {
 public:
     void receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize);

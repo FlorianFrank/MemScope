@@ -5,7 +5,7 @@
 #ifndef MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H
 #define MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H
 
-#include "cpp/MemoryController.h"
+#include "MemoryController.h"
 
 /**
  * @brief This class is used to read and write to memory modules with a parallel connection.
@@ -14,7 +14,7 @@
 class MemoryControllerParallel : public MemoryController
 {
 public:
-    explicit MemoryControllerParallel(InterfaceWrappers *interfaceWrapper);
+    explicit MemoryControllerParallel(InterfaceWrapper *interfaceWrapper);
 
     MEM_ERROR Initialize() override;
 

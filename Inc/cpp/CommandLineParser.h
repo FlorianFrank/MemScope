@@ -6,19 +6,19 @@
 #define MEMORY_TESTING_FW_COMMANDLINEPARSER_H
 
 
-#include "cpp/MemoryController.h"
+#include "cpp/MemoryControllers/MemoryController.h"
 #include "CommandDefines.h"
 #include <cstdint>
 
 extern "C" {
 #include <stm32f4xx_hal_uart.h>
-};
+}
 
 class CommandLineParser
 {
 public:
 
-    explicit CommandLineParser (MemoryController *memoryController, InterfaceWrappers *commmunicationInterface);
+    explicit CommandLineParser (MemoryController *memoryController, InterfaceWrapper *commmunicationInterface);
 
     void showHelp(uint8_t *inBuff, uint32_t *buffLen);
 
@@ -43,7 +43,7 @@ private:
 
     char m_SendBuffer[STRING_BUFFER_SIZE];
 
-    InterfaceWrappers *m_InterfaceWrapper;
+    InterfaceWrapper *m_InterfaceWrapper;
 
 };
 
