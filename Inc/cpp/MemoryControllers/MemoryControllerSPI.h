@@ -6,7 +6,7 @@
 #define MEMORY_TESTING_FW_MEMORYCONTROLLERSPI_H
 
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
-#include "cpp/MemoryController.h"
+#include "MemoryController.h"
 
 /**
  * @brief This class implements the communication with SPI based memory controllers.
