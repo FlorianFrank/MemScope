@@ -2,8 +2,8 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#ifndef MEMORY_TESTING_FW_INTERFACEWRAPPERS_H
-#define MEMORY_TESTING_FW_INTERFACEWRAPPERS_H
+#ifndef MEMORY_TESTING_FW_INTERFACEWRAPPER_H
+#define MEMORY_TESTING_FW_INTERFACEWRAPPER_H
 
 #include <cstdint>
 #include "io_pin_defines.h"
@@ -11,10 +11,11 @@
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
-class InterfaceWrappers
+class InterfaceWrapper
 {
 public:
     virtual MEM_ERROR Initialize() = 0;
+    virtual ~InterfaceWrapper()= default;
 
     virtual MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
@@ -26,4 +27,4 @@ protected:
 };
 
 
-#endif //MEMORY_TESTING_FW_INTERFACEWRAPPERS_H
+#endif //MEMORY_TESTING_FW_INTERFACEWRAPPER_H

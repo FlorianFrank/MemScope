@@ -6,7 +6,7 @@
 #define STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 
 
-#include "InterfaceWrappers.h"
+#include "InterfaceWrapper.h"
 #include "SPIProperties.h"
 #include "cpp/MemoryErrorHandling.h"
 #include "cpp/Devices/DeviceWrapper.h"
@@ -20,7 +20,7 @@ using namespace SPIProperties;
  * @brief This class serves as wrapper for SPI communication.
  * Currently this wrapper only supports an STM32F429DISC1 board.
  */
-class SPIWrapper : public InterfaceWrappers
+class SPIWrapper : public InterfaceWrapper
 {
 public:
     explicit SPIWrapper(const char *interfaceName, Mode spiMode = SPI_MASTER,
@@ -28,20 +28,22 @@ public:
                         ClockPhase clockPhase = SPIWrapper_CP_1_EDGE,
                         ClockPoloarity clockPolarity = SPIWrapper_CPOL_LOW);
 
+
+
     MEM_ERROR Initialize() override;
 
     MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
-    inline static void SetWriteProtect();
-    inline static void ResetWriteProtect();
+    static void SetWriteProtect();
+    static void ResetWriteProtect();
 
-    inline static void SetChipSelect();
-    inline static void ResetChipSelect();
+    static void SetChipSelect();
+    static void ResetChipSelect();
 
     inline static bool ReadChipSelect();
 
-    ~SPIWrapper();
+    ~SPIWrapper() override;
 
 private:
     SPIHandle* m_SPIHandle;

@@ -5,12 +5,12 @@
 #ifndef STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H
 
-#include "InterfaceWrappers.h"
+#include "InterfaceWrapper.h"
 #include "UARTProperties.h"
 
 using namespace UARTProperties;
 
-class UARTWrapper : public InterfaceWrappers
+class UARTWrapper : public InterfaceWrapper
 {
 public:
     explicit UARTWrapper(const char* interfaceName, uint32_t baudrate = 9600, UARTProperties::Mode mode = UARTWrapper_TRANSMIT_RECEIVE, WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
