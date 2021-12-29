@@ -6,7 +6,6 @@
 #include <CommandDefines.h>
 
 #include "io_pin_defines.h"
-#include <memory_defines.h>
 extern "C" {
 #include "metrics.h"
 }
@@ -16,14 +15,15 @@ extern "C" {
 
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
+#define MEM_ACCESS_WIDTH_BIT 16 // TODO
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 
-MemoryController::MemoryController(InterfaceWrapper *interfaceWrapper) : write_mode(0xFF), len(0), STRING_BUFFER(""),
-                                                                          m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
-                                                                          srambp(nullptr), total_one(0), total_zero(0),
-                                                                          flipped_one(0), flipped_zero(0)
+MemoryController::MemoryController(InterfaceWrapper *interfaceWrapper, uint32_t memorySize) : write_mode(0xFF), len(0), STRING_BUFFER(""),
+                                                                                              m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
+                                                                                              srambp(nullptr), total_one(0), total_zero(0),
+                                                                                              flipped_one(0), flipped_zero(0), m_MemorySize(memorySize)
 {
     m_InterfaceWrapper = interfaceWrapper;
 }
@@ -166,7 +166,7 @@ MEM_ERROR MemoryController::FillWithZeros(){
     uint8_t value = 0x00;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-    return FillMemoryArea(0, MEM_SIZE_ADR, value);
+    return FillMemoryArea(0, m_MemorySize, value);
 }
 
 
@@ -177,11 +177,11 @@ MEM_ERROR MemoryController::FillWithZerosAndVerifyRead()
 #elif MEM_ACCESS_WIDTH_BIT == 8
     uint8_t value = 0x00;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
-    auto ret = FillMemoryArea(0, MEM_SIZE_ADR, value);
+    auto ret = FillMemoryArea(0, m_MemorySize, value);
     if (ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
-    return VerifyMemoryArea(0, MEM_SIZE_ADR, value);
+    return VerifyMemoryArea(0, m_MemorySize, value);
 }
 
 
@@ -202,7 +202,7 @@ MEM_ERROR MemoryController::FillWithOnes()
     uint8_t value = 0xFF;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-    return FillMemoryArea(0, MEM_SIZE_ADR, value);
+    return FillMemoryArea(0, m_MemorySize, value);
 }
 
 /*
@@ -229,7 +229,7 @@ MEM_ERROR MemoryController::FillMemoryWithAscendingValues()
         return static_cast<uint8_t>(address % 0xFF);
     };
 #endif // MEM_ACCESS_WIDTH_BIT == 16
-    auto ret = FillMemoryArea(0, MEM_SIZE_ADR, countFunction);
+    auto ret = FillMemoryArea(0, m_MemorySize, countFunction);
     if (ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
     return MemoryErrorHandling::MEM_NO_ERROR;
@@ -255,10 +255,10 @@ MemoryController::FillMemoryWithAscendingValuesAndVerifyRead(uint8_t *buffer, ui
         return static_cast<uint8_t>(address % 0xFF);
     };
 #endif // MEM_ACCESS_WIDTH_BIT == 16
-    auto ret = FillMemoryArea(0, MEM_SIZE_ADR, countFunction);
+    auto ret = FillMemoryArea(0, m_MemorySize, countFunction);
     if (ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
-    return VerifyMemoryArea(0, MEM_SIZE_ADR, countFunction);
+    return VerifyMemoryArea(0, m_MemorySize, countFunction);
 }
 
 /*
@@ -283,7 +283,7 @@ MEM_ERROR MemoryController::FillMemoryWithAlternatingZeroAndOne()
     uint8_t value = 0x55;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-    return FillMemoryArea(0, MEM_SIZE_ADR, value);
+    return FillMemoryArea(0, m_MemorySize, value);
 }
 
 /*
@@ -308,7 +308,7 @@ MEM_ERROR MemoryController::FillMemoryWithAlternatingOneAndZero()
     uint8_t value = 0xAA;
 #endif // MEM_ACCESS_WIDTH_BIT == 16
 
-    return FillMemoryArea(0, MEM_SIZE_ADR, value);
+    return FillMemoryArea(0, m_MemorySize, value);
 }
 
 
@@ -332,9 +332,9 @@ void MemoryController::InitArguments(){
     start_value = 0;
 }
 
-/*static*/ bool MemoryController::IsInvalidAddress(uint32_t address)
+/*static*/ bool MemoryController::IsInvalidAddress(uint32_t address, uint32_t size)
 {
-    return (address >= MEM_SIZE_ADR) ?  true : false;
+    return (address >= size) ?  true : false;
 }
 
 MEM_ERROR MemoryController::Initialize()
