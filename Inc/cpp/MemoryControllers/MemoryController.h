@@ -6,9 +6,9 @@
 #define MEMORY_TESTING_FW_MEMORYCONTROLLER_H
 
 #include "cpp/MemoryErrorHandling.h"
-#include "TimeMeasurement.h"
+#include "cpp/TimeMeasurement.h"
 #include "io_pin_defines.h"
-#include "cpp/InterfaceWrappers/InterfaceWrappers.h"
+#include "cpp/InterfaceWrappers/InterfaceWrapper.h"
 
 /* see fmc.c
  * FMC_NORSRAM_BANK1 = 0x60000000
@@ -29,26 +29,26 @@ class SPIWrapper;
 
 #define MEMORY_BUFFER_SIZE	40960						// 5x8192 buffer size for the sram buffer
 
+typedef enum {
+    FAILED = 0,
+    PASSED = !FAILED
+} TestStatus;
+
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 class MemoryController
 {
 public:
+    explicit MemoryController(InterfaceWrapper *interfaceWrapper);
+    virtual ~MemoryController();
 
-    typedef enum {
-        FAILED = 0,
-        PASSED = !FAILED
-    } TestStatus;
-
-    explicit MemoryController(InterfaceWrappers *interfaceWrapper);
-
-    virtual MEM_ERROR Initialize() = 0;
+    virtual MEM_ERROR Initialize();
 
     // Basic Read and write functions which must be implemented by the deriving classes
-    virtual MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) = 0;
-    virtual MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret) = 0;
-    virtual MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) = 0;
-    virtual MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) = 0;
+    virtual MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value);
+    virtual MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret);
+    virtual MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value);
+    virtual MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value);
 
 
     MEM_ERROR WriteSingleValue(uint32_t address, uint8_t value);
@@ -73,10 +73,6 @@ public:
     MEM_ERROR FillMemoryWithAlternatingZeroAndOne();
     MEM_ERROR FillMemoryWithAlternatingOneAndZero();
 
-
-    // TODO refactor
-    MEM_ERROR GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen);
-
 protected:
     static bool IsInvalidAddress(uint32_t address);
 
@@ -91,7 +87,7 @@ protected:
     TimeMeasurement m_timeMeasurement;
 
     uint32_t m_MMIOStartAddress;
-    InterfaceWrappers *m_InterfaceWrapper;
+    InterfaceWrapper *m_InterfaceWrapper;
 
     // commands
     uint16_t start_value = 0x0; // start value for ascending writing

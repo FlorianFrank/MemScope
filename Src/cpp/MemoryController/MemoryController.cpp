@@ -2,7 +2,7 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#include "cpp/MemoryController.h"
+#include "cpp/MemoryControllers/MemoryController.h"
 #include <CommandDefines.h>
 
 #include "io_pin_defines.h"
@@ -20,12 +20,17 @@ extern "C" {
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 
-MemoryController::MemoryController(InterfaceWrappers *interfaceWrapper) : write_mode(0xFF), len(0), STRING_BUFFER(""),
+MemoryController::MemoryController(InterfaceWrapper *interfaceWrapper) : write_mode(0xFF), len(0), STRING_BUFFER(""),
                                                                           m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
                                                                           srambp(nullptr), total_one(0), total_zero(0),
                                                                           flipped_one(0), flipped_zero(0)
 {
     m_InterfaceWrapper = interfaceWrapper;
+}
+
+MemoryController::~MemoryController()
+{
+
 }
 
 MEM_ERROR MemoryController::WriteSingleValue(uint32_t address, uint8_t value)
@@ -200,202 +205,6 @@ MEM_ERROR MemoryController::FillWithOnes()
     return FillMemoryArea(0, MEM_SIZE_ADR, value);
 }
 
-
-/*
- * @brief								gets the probability of flipped 0's and 1's for the written values
- * 										displays an error message and exits, if no write operation was performed
- * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
- */
-MEM_ERROR MemoryController::GetProbabilityOfFlippedOnesAndZeros(uint8_t *buffer, uint32_t *buffLen){
-
-    if(!buffer || !buffLen || *buffLen == 0)
-        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
-
-    // if no write access was performed => warning
-    if (write_mode == 0xFF) {
-        sprintf((char*) buffer,
-                "Caution. No write operation was performed. Therefore we have no values to compare with...\r\nExit\r\n\n");
-        len = strlen((char*)buffer);
-        return MemoryErrorHandling::MEM_NOT_WRITTEN;
-    }
-
-    // reset the counter for statistical analysis
-    InitCounter();
-    uint32_t start_local = 0;
-    uint32_t end_local = 0;
-
-#if MEM_ACCESS_WIDTH_BIT == 16
-    uint16_t expected_value = 0;
-
-    // switch between the different command modes to set the correct values to compare with
-    switch(write_mode){
-        case FILL_WITH_ZEROS:
-            // writeZeroAll
-            expected_value = 0x0;
-            break;
-        case FILL_WITH_ONES:
-            // writeOneAll
-            expected_value = 0xFFFF;
-            break;
-        case WRITE_ASCENDING:
-            // writeValueAsc
-            expected_value = start_value;
-            break;
-        case WRITE_ALTERNATE_ZERO_ONE:
-            // writeAlternateZeroOne
-            expected_value = 0x5555;
-            break;
-        case WRITE_ALTERNATE_ONE_ZERO:
-            // writeAlternateOneZero
-            expected_value = 0xAAAA;
-            break;
-        case WRITE_ADDRESS:
-            // writeSRAM
-            expected_value = start_value;
-            start_local = start_adr;
-            end_local = end_adr;
-            break;
-        case WRITE_ADDRESS_RANGE:
-            // writeSRAMRange
-            expected_value = start_value;
-            start_local = start_adr;
-            end_local = end_adr;
-            break;
-    }
-    //expected_value = 0x00FF;
-    for(uint32_t adr = start_local; adr < end_local; adr++){
-        uint16_t real_value;
-        MEM_ERROR ret = Read16BitWord(adr, &real_value);
-        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
-            return ret;
-        flipped_one += flipped_one_16b(expected_value, real_value);
-        flipped_zero += flipped_zero_16b(expected_value, real_value);
-        total_one += get_num_one_16b(expected_value);
-        total_zero += get_num_zero_16b(expected_value);
-        // if 'writeValueAsc' increment the expected_value
-        if(write_mode == 3){
-            expected_value++;
-        }
-    }
-#endif // MEM_ACCESS_WIDTH_BIT == 16
-
-#if MEM_ACCESS_WIDTH_BIT == 8
-    uint8_t expected_value;
-
-		// switch between the different command modes to set the correct values to compare with
-		switch(m_WriteMode){
-		case FILL_WITH_ZEROS:
-			// writeZeroAll
-			expected_value = 0x0;
-			break;
-		case FILL_WITH_ONES:
-			// writeOneAll
-			expected_value = 0xFF;
-			break;
-		case WRITE_ASCENDING:
-			// writeValueAsc
-			expected_value = start_value;
-			break;
-		case WRITE_ALTERNATE_ZERO_ONE:
-			// writeAlternateZeroOne
-			expected_value = 0x55;
-			break;
-		case WRITE_ALTERNATE_ONE_ZERO:
-			// writeAlternateOneZero
-			expected_value = 0xAA;
-			break;
-		case WRITE_ADDRESS:
-			// writeSRAM
-			expected_value = start_value;
-			start_local = start_adr;
-			end_local = start_adr + 1; // TODO
-			break;
-		case WRITE_ADDRESS_RANGE:
-			// writeSRAMRange
-			expected_value = start_value;
-			start_local = start_adr;
-			end_local = end_adr;
-			break;
-		default:
-		    return MEM_INVALID_COMMAND;
-		}
-		//expected_value = 0x0F;
-		for(uint32_t adr = start_local; adr < end_local; adr++){
-			uint8_t real_value;
-			MEM_ERROR ret = MemoryRead8BitWord(adr, &real_value);
-			if(ret != MEM_NO_ERROR)
-				return ret;
-
-			flipped_one += flipped_one_8b(expected_value, real_value);
-			flipped_zero += flipped_zero_8b(expected_value, real_value);
-			total_one += get_num_one_8b(expected_value);
-			total_zero += get_num_zero_8b(expected_value);
-			// if 'writeValueAsc' increment the expected_value
-			if(m_WriteMode == 3){
-				expected_value++;
-			}
-		}
-#endif // #if MEM_ACCESS_WIDTH_BIT == 8
-
-    // prevent division by zero
-    if(total_one == 0){
-        sprintf((char*)buffer, "P(1->0) = NaN\r\n");
-        len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)m_SendBuffer, len);
-    }else{
-        // displays the probability that a 1 changes to a 0
-        float p_one_to_zero = ((float)flipped_one / (float)total_one) * 100;
-        sprintf((char*)buffer, "P(1->0) = %.16f%%\r\n", p_one_to_zero);
-        len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)m_SendBuffer, len);
-    }
-
-    if(total_zero == 0){
-        sprintf((char*)&buffer[len], "P(0->1) = NaN\r\n");
-        len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)m_SendBuffer, len);
-    }else{
-        // displays the probability that a 0 changes to a 1
-        float p_zero_to_one = ((float)flipped_zero / (float)total_zero) * 100;
-        sprintf((char*)&buffer[len], "P(0->1) = %.16f%%\r\n", p_zero_to_one);
-        len = strlen((char*)buffer);
-        //send(huart, (uint8_t *)m_SendBuffer, len);
-    }
-    float p_total_flip_probability = ((float)(flipped_one + flipped_zero) / (float)(total_one + total_zero)) * 100;
-
-    // displays the total flip probability
-    sprintf((char*)&buffer[len], "P(flip) = %.16f%%\r\n", p_total_flip_probability);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)m_SendBuffer, len);
-
-    // displays the total flip 1's
-    sprintf((char*)&buffer[len], "Total number of flipped 1->0:  %lu\r\n", (unsigned long)flipped_one);
-    len = strlen((char*)buffer);
-
-    // displays the total 1's
-    sprintf((char*)&buffer[len], "Total number of ones in expected value:  %lu\r\n", (unsigned long)total_one);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)m_SendBuffer, len);
-
-    // displays the total flip 0's
-    sprintf((char*)&buffer[len], "Total number of flipped 0->1:  %lu\r\n", (unsigned long)flipped_zero);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)m_SendBuffer, len);
-
-    // displays the total 0's
-    sprintf((char*)&buffer[len], "Total number of zeros in expected value:  %lu\r\n", (unsigned long)total_zero);
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)m_SendBuffer, len);
-
-    // displays the total flipped bits
-    sprintf((char*)&buffer[len], "Total number of flipped bits:  %lu\r\n\n", (unsigned long)(flipped_one + flipped_zero));
-    len = strlen((char*)buffer);
-    //send(huart, (uint8_t *)m_SendBuffer, len);
-    *buffLen = len;
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
-
 /*
  * @brief								fills the first address SRAM with the argument and increment it by one
  * @param UART_HandleTypeDef huart*		the UART handler to communicate with the user
@@ -526,5 +335,30 @@ void MemoryController::InitArguments(){
 /*static*/ bool MemoryController::IsInvalidAddress(uint32_t address)
 {
     return (address >= MEM_SIZE_ADR) ?  true : false;
+}
+
+MEM_ERROR MemoryController::Initialize()
+{
+    return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
+}
+
+MEM_ERROR MemoryController::Write8BitWord(uint32_t adr, uint8_t value)
+{
+    return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
+}
+
+MEM_ERROR MemoryController::Read8BitWord(uint32_t adr, uint8_t *ret)
+{
+    return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
+}
+
+MEM_ERROR MemoryController::Write16BitWord(uint32_t adr, uint16_t value)
+{
+    return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
+}
+
+MEM_ERROR MemoryController::Read16BitWord(uint32_t adr, uint16_t *value)
+{
+    return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
 }
 
