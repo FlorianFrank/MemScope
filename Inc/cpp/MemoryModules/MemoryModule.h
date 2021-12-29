@@ -6,10 +6,13 @@
 #define MEMORY_TESTING_FW_MEMORYMODULE_H
 
 #include "cpp/MemoryModules/MemoryProperties.h"
-#include "cpp/MemoryControllers/MemoryController.h"
+#include "cpp/MemoryErrorHandling.h"
 
 #include <string>
 #include <cstdint>
+#include <cpp/InterfaceWrappers/InterfaceWrapper.h>
+
+class MemoryController;
 
 using namespace MemoryProperties;
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
@@ -18,6 +21,7 @@ class MemoryModule
 {
 public:
     MemoryModule() = delete;
+    virtual MEM_ERROR Initialize() = 0;
 
 protected:
     MemoryModule(Type memoryType, const char *memoryLabel, Connection connectionType, uint8_t bitWidth,
