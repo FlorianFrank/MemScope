@@ -93,4 +93,6 @@ int _fstat(int fd, struct stat* st) {
   return 0;
 }
 #endif // Semi hosting
+#else
+int dummy();
 #endif // rdimon.specs
