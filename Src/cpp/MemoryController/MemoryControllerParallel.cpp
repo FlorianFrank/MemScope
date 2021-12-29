@@ -2,16 +2,16 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#include "cpp/MemoryControllerWrappers/MemoryControllerParallel.h"
+#include "cpp/MemoryControllers/MemoryControllerParallel.h"
 
 #ifdef STM32
 extern "C" {
 #include <SystemFiles/fmc.h>
-};
+}
 #endif // STM32
 
-MemoryControllerParallel::MemoryControllerParallel(InterfaceWrappers *interfaceWrapper) : MemoryController(
-        interfaceWrapper)
+MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWrapper) : MemoryController(
+        interfaceWrapper, 50 /*TODO*/)
 {
 }
 
@@ -33,7 +33,7 @@ MEM_ERROR MemoryControllerParallel::Initialize()
  */
 MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
 {
-    if (IsInvalidAddress(adr))
+    if (IsInvalidAddress(adr, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
 #if STM32
@@ -51,7 +51,7 @@ MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
  */
 MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
 {
-    if (IsInvalidAddress(adr))
+    if (IsInvalidAddress(adr, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if(!ret)
@@ -73,7 +73,7 @@ MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
  */
 MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
 {
-    if(IsInvalidAddress(adr))
+    if(IsInvalidAddress(adr, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
 
@@ -97,7 +97,7 @@ MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
  */
 MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value)
 {
-    if(IsInvalidAddress(adr))
+    if(IsInvalidAddress(adr, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if(!value)

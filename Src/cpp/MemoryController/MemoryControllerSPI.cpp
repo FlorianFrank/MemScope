@@ -4,12 +4,12 @@
  */
 #include <cstring> // memcpy
 #include <cstdio> // printf TODO remove later
-#include "cpp/MemoryControllerWrappers/MemoryControllerSPI.h"
+#include "cpp/MemoryControllers/MemoryControllerSPI.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
 
 MemoryControllerSPI::MemoryControllerSPI(SPIWrapper *interfaceWrapper):
-MemoryController(interfaceWrapper), m_SPIWrapper(interfaceWrapper)
+MemoryController(interfaceWrapper, 50 /*TODO*/), m_SPIWrapper(interfaceWrapper)
 {
 }
 
@@ -146,7 +146,7 @@ MEM_ERROR MemoryControllerSPI::ReadStatusRegister(MemoryStatusRegister &statusRe
 
 /*static*/ MemoryControllerSPI::MemoryStatusRegister MemoryControllerSPI::Uint8ToStatusRegister(uint8_t statusRegister)
 {
-    return (MemoryStatusRegister) {static_cast<uint8_t>((statusRegister & 128) >> 7),
+    return {static_cast<uint8_t>((statusRegister & 128) >> 7),
                                    static_cast<uint8_t>((statusRegister & 64) >> 6),
                                    static_cast<uint8_t>((statusRegister & 32) >> 5),
                                    static_cast<uint8_t>((statusRegister & 12) >> 2),
@@ -337,7 +337,7 @@ MEM_ERROR MemoryControllerSPI::EraseChip()
 /*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMAdesto(uint32_t address, uint8_t valueToWrite,
                                                                         uint8_t *returnSendBuffer, uint16_t *sendBufferSize)
 {
-    if (IsInvalidAddress(address))
+    if (IsInvalidAddress(address, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if (!sendBufferSize || *sendBufferSize < 4)
@@ -362,7 +362,7 @@ MEM_ERROR MemoryControllerSPI::EraseChip()
  */
 /*static*/ MEM_ERROR MemoryControllerSPI::CreateReadMessageReRAMAdesto(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize)
 {
-    if (IsInvalidAddress(address))
+    if (IsInvalidAddress(address, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if (!sendBufferSize || *sendBufferSize < 3)
@@ -388,7 +388,7 @@ MEM_ERROR MemoryControllerSPI::EraseChip()
 /*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMFujitsu(uint32_t address, uint8_t valueToWrite,
                                                                          uint8_t *sendBuffer, uint16_t *sendBufferSize)
 {
-    if (IsInvalidAddress(address))
+    if (IsInvalidAddress(address, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if (!sendBufferSize || *sendBufferSize < 5)
@@ -414,7 +414,7 @@ MEM_ERROR MemoryControllerSPI::EraseChip()
  */
 /*static*/ MEM_ERROR MemoryControllerSPI::CreateReadMessageReRAMFujitsu(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize)
 {
-    if (IsInvalidAddress(address))
+    if (IsInvalidAddress(address, 10 /*TODO*/))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if (!sendBufferSize || *sendBufferSize < 4)
