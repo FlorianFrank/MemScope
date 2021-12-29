@@ -14,7 +14,7 @@
 **
 **  Target      : STMicroelectronics STM32
 **
-**  Distribution: The file is distributed “as is,” without any warranty
+**  Distribution: The file is distributed ï¿½as is,ï¿½ without any warranty
 **                of any kind.
 **
 *****************************************************************************
@@ -206,5 +206,6 @@ int _execve(char *name, char **argv, char **env)
 	errno = ENOMEM;
 	return -1;
 }
-
+#else
+void dummy(){}
 #endif // RDMON_SPECS
