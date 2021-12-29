@@ -9,6 +9,7 @@
 #include "cpp/TimeMeasurement.h"
 #include "io_pin_defines.h"
 #include "cpp/InterfaceWrappers/InterfaceWrapper.h"
+#include "cpp/MemoryModules/MemoryModule.h"
 
 /* see fmc.c
  * FMC_NORSRAM_BANK1 = 0x60000000
@@ -39,7 +40,7 @@ using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 class MemoryController
 {
 public:
-    explicit MemoryController(InterfaceWrapper *interfaceWrapper);
+    explicit MemoryController(InterfaceWrapper *interfaceWrapper, uint32_t memorySize);
     virtual ~MemoryController();
 
     virtual MEM_ERROR Initialize();
@@ -74,7 +75,7 @@ public:
     MEM_ERROR FillMemoryWithAlternatingOneAndZero();
 
 protected:
-    static bool IsInvalidAddress(uint32_t address);
+    static bool IsInvalidAddress(uint32_t address, uint32_t size);
 
     // helper functions
     void InitCounter();
@@ -105,6 +106,7 @@ protected:
     uint32_t flipped_one;
     uint32_t flipped_zero;
 
+    uint32_t m_MemorySize;
 };
 
 #endif /* __MEMORY_CONTROL_H */
