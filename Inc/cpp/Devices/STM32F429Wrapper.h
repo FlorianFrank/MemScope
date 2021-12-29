@@ -5,8 +5,9 @@
 #ifndef MEMORY_TESTING_FW_STM32F429WRAPPER_H
 #define MEMORY_TESTING_FW_STM32F429WRAPPER_H
 #ifdef STM32
-#include <cpp/MemoryErrorHandling.h>
+#include "cpp/MemoryErrorHandling.h"
 #include "DeviceWrapper.h"
+#include "DeviceDefines.h"
 
 #include <stm32f429xx.h>
 #include <stm32f4xx_hal_gpio.h>
@@ -14,15 +15,6 @@
 #include <vector>
 #include <list>
 
-
-class GPIOPin {
-public:
-    GPIOPin(GPIO_TypeDef *bank, uint32_t pin): m_GPIOBank(bank), m_GPIOPin(pin){ }
-    bool operator == (const GPIOPin& s) const { return m_GPIOPin == s.m_GPIOPin && m_GPIOBank == s.m_GPIOBank; }
-
-    GPIO_TypeDef* m_GPIOBank;
-    uint32_t m_GPIOPin;
-};
 
 /**
  * @brief This class wraps functions used by the STM32F429 board.
