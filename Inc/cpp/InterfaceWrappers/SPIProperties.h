@@ -87,7 +87,7 @@ namespace SPIProperties
 #if STM32
         SPI_TypeDef *m_UARTHandle;
 #endif
-        const char m_name[10];
+        std::string m_name;
         GPIOPin m_MISOPin;
         GPIOPin m_MOSIPin;
         GPIOPin m_CLKPin;
