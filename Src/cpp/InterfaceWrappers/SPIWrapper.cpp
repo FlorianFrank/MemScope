@@ -4,7 +4,7 @@
  */
 #include <cstring>
 #include <cstdio>
-#include <cpp/Devices/STM32F429Wrapper.h>
+#include "cpp/Devices/STM32F429Wrapper.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 #include "io_pin_defines.h"
 
@@ -12,7 +12,7 @@
 extern "C" {
 #include "SystemFiles/spi.h"
 #include <stm32f4xx_hal_spi.h>
-};
+}
 #endif // STM32
 
 AvailableSPIProperties availableSPIPorts[]
@@ -117,7 +117,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(STM32Handle *spiProperties)
 /**
  * @brief Sets the Write Protect Pin on pin PC6
  */
-/*static*/ inline void SPIWrapper::SetWriteProtect()
+/*static*/ void SPIWrapper::SetWriteProtect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_RESET);
@@ -127,7 +127,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(STM32Handle *spiProperties)
 /**
  * @brief Resets the Write Protect Pin. On the STM32 on pin PC6.
  */
-/*static*/ inline void SPIWrapper::ResetWriteProtect()
+/*static*/ void SPIWrapper::ResetWriteProtect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_WP_GPIO_Port, SPI5_WP_Pin, GPIO_PIN_SET);
@@ -137,7 +137,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(STM32Handle *spiProperties)
 /**
  * @brief Sets the Chip Select Pin. On STM32 on pin PF6
  */
-/*static*/ inline void SPIWrapper::SetChipSelect()
+/*static*/ void SPIWrapper::SetChipSelect()
 {
 #if STM32
     HAL_GPIO_WritePin(SPI5_CS_GPIO_Port, SPI5_CS_Pin, GPIO_PIN_RESET);
