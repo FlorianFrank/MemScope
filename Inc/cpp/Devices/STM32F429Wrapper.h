@@ -30,7 +30,7 @@ public:
     MemoryErrorHandling::MEM_ERROR Initialize() override;
     MemoryErrorHandling::MEM_ERROR DeInitialize() override;
 
-    MemoryErrorHandling::MEM_ERROR InitializeInterface(std::string &interfaceName) override;
+    MemoryErrorHandling::MEM_ERROR InitializeHardwareInterface(std::string &interfaceName) override;
 
 private:
     static MemoryErrorHandling::MEM_ERROR SystemClock_Config();
