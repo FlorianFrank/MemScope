@@ -13,7 +13,7 @@
     return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
 }
 
-MemoryErrorHandling::MEM_ERROR DeviceWrapper::InitializeInterface(std::string &interfaceName)
+/*virtual*/ MemoryErrorHandling::MEM_ERROR DeviceWrapper::InitializeHardwareInterface(std::string &interfaceName)
 {
     return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
 }
