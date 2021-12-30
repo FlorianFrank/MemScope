@@ -29,7 +29,7 @@ STM32F429Wrapper::~STM32F429Wrapper()
 {
     for (GPIOPin& elem: m_InitializedGPIOPins)
     {
-        DeInitializeGPIO(elem);
+        DeInitializeGPIOPin(elem);
     }
     for(GPIO_TypeDef* elem: m_InitializedGPIOBanks)
     {
@@ -41,7 +41,7 @@ STM32F429Wrapper::~STM32F429Wrapper()
  * @brief This function initializes the clock configuration.
  * @return Error Code
  */
-/*static*/ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::SystemClock_Config()
+/*static*/ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::SystemClockConfig()
 {
 #if 1 // TODO
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -127,13 +127,11 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::Initialize()
     initialise_monitor_handles();
 #endif // RDMON_SPECS
 
-    MemoryErrorHandling::MEM_ERROR err = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_Init());
-    if(err != MemoryErrorHandling::MEM_NO_ERROR)
-        return err;
+    MemoryErrorHandling::MEM_ERROR ret = InitializeDefaultGPIOSettings();
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
 
-    MX_GPIO_Init(); // TODO remove
-
-    return SystemClock_Config();
+    return SystemClockConfig();
 }
 
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitialize()
@@ -148,92 +146,102 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitialize()
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeSPI4()
 {
     __HAL_RCC_SPI4_CLK_ENABLE();
-    InitializeGPIO({GPIOE, GPIO_PIN_2 | GPIO_PIN_5 | GPIO_PIN_6}, GPIO_PIN_SET, GPIO_MODE_AF_PP, GPIO_NOPULL,
-                   GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI4);
+    InitializeGPIOPin({GPIOE, GPIO_PIN_2 | GPIO_PIN_5 | GPIO_PIN_6}, GPIO_PIN_SET, GPIO_MODE_AF_PP, GPIO_NOPULL,
+                      GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI4);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeSPI5()
 {
     __HAL_RCC_SPI5_CLK_ENABLE();
-    InitializeGPIO({GPIOF, SPI5_CS_Pin | SPI5_HOLDspi5_Pin}, GPIO_PIN_SET, GPIO_MODE_INPUT, GPIO_NOPULL,
-                   GPIO_SPEED_FREQ_VERY_HIGH, 0);
-    InitializeGPIO({GPIOF, GPIO_PIN_7 | SPI5_MISO_Pin | SPI5_MOSI_Pin}, GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL,
-                   GPIO_SPEED_FREQ_LOW, GPIO_AF5_SPI5);
+    InitializeGPIOPin({GPIOF, SPI5_CS_Pin | SPI5_HOLDspi5_Pin}, GPIO_PIN_SET, GPIO_MODE_INPUT, GPIO_NOPULL,
+                      GPIO_SPEED_FREQ_VERY_HIGH, 0);
+    InitializeGPIOPin({GPIOF, GPIO_PIN_7 | SPI5_MISO_Pin | SPI5_MOSI_Pin}, GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL,
+                      GPIO_SPEED_FREQ_LOW, GPIO_AF5_SPI5);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeSPI4()
+__attribute__((unused)) MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeSPI4()
 {
     __HAL_RCC_SPI4_CLK_DISABLE();
-    DeInitializeGPIO({GPIOE, GPIO_PIN_2 | GPIO_PIN_5 | GPIO_PIN_6});
+    DeInitializeGPIOPin({GPIOE, GPIO_PIN_2 | GPIO_PIN_5 | GPIO_PIN_6});
     return MemoryErrorHandling::MEM_REGISTER_NOT_SET;
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeSPI5()
+__attribute__((unused)) MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeSPI5()
 {
     __HAL_RCC_SPI5_CLK_DISABLE();
-    return DeInitializeGPIO({GPIOF, GPIO_PIN_7 | SPI5_MISO_Pin | SPI5_MOSI_Pin | SPI5_CS_Pin | SPI5_HOLDspi5_Pin});
+    return DeInitializeGPIOPin({GPIOF, GPIO_PIN_7 | SPI5_MISO_Pin | SPI5_MOSI_Pin | SPI5_CS_Pin | SPI5_HOLDspi5_Pin});
 }
 
 MemoryErrorHandling::MEM_ERROR
-STM32F429Wrapper::InitializeGPIO(GPIOPin GPIOPin, GPIO_PinState gpioPinState, uint32_t mode, uint32_t pull,
-                                 uint32_t speed, uint32_t alternate)
+STM32F429Wrapper::InitializeGPIOPin(GPIOPin gpioPin, GPIO_PinState gpioPinState, uint32_t mode, uint32_t pull,
+                                    uint32_t speed, uint32_t alternate)
 {
-    if (!GPIOPin.m_GPIOBank)
+    GPIOBank bank = gpioPin.GetGPIOBank();
+    if (!bank)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
+    if(std::find(m_InitializedGPIOBanks.begin(), m_InitializedGPIOBanks.end(), gpioPin.GetGPIOBank()) == m_InitializedGPIOBanks.end())
+    {
+        MemoryErrorHandling::MEM_ERROR ret = InitializeGPIOBank(gpioPin.GetGPIOBank());
+        if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+            return ret;
+        m_InitializedGPIOBanks.push_back(bank);
+    }
 
+    uint32_t pin = gpioPin.GetGPIOPin();
     GPIO_InitTypeDef gpioInitStruct = {0};
-    gpioInitStruct.Pin = GPIOPin.m_GPIOPin;
+    gpioInitStruct.Pin = pin;
     gpioInitStruct.Mode = mode;
     gpioInitStruct.Pull = pull;
     gpioInitStruct.Speed = speed;
     gpioInitStruct.Alternate = alternate;
-    HAL_GPIO_Init(GPIOPin.m_GPIOBank, &gpioInitStruct);
-    HAL_GPIO_WritePin(GPIOPin.m_GPIOBank, GPIOPin.m_GPIOPin, gpioPinState);
-    m_InitializedGPIOPins.push_back(GPIOPin);
+
+    HAL_GPIO_Init(bank, &gpioInitStruct);
+    HAL_GPIO_WritePin(bank, pin, gpioPinState);
+    m_InitializedGPIOPins.push_back(gpioPin);
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeGPIO(const GPIOPin &gpioPin)
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeGPIOPin(const GPIOPin &gpioPin)
 {
-    HAL_GPIO_DeInit(gpioPin.m_GPIOBank, gpioPin.m_GPIOPin);
+    HAL_GPIO_DeInit(gpioPin.GetGPIOBank(), gpioPin.GetGPIOPin());
     m_InitializedGPIOPins.remove(gpioPin);
     return MemoryErrorHandling::MEM_REGISTER_NOT_SET;
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeGPIOBank(GPIO_TypeDef *GPIOBank)
+__attribute__((unused)) MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeGPIOBank(GPIOBank gpioBank)
 {
-    if (GPIOBank == GPIOA)
+    if (gpioBank == GPIOA)
         __HAL_RCC_GPIOA_CLK_ENABLE();
-    else if (GPIOBank == GPIOB)
+    else if (gpioBank == GPIOB)
         __HAL_RCC_GPIOB_CLK_ENABLE();
-    else if (GPIOBank == GPIOC)
+    else if (gpioBank == GPIOC)
         __HAL_RCC_GPIOC_CLK_ENABLE();
-    else if (GPIOBank == GPIOD)
+    else if (gpioBank == GPIOD)
         __HAL_RCC_GPIOD_CLK_ENABLE();
-    else if (GPIOBank == GPIOE)
+    else if (gpioBank == GPIOE)
         __HAL_RCC_GPIOE_CLK_ENABLE();
-    else if (GPIOBank == GPIOF)
+    else if (gpioBank == GPIOF)
         __HAL_RCC_GPIOF_CLK_ENABLE();
-    else if (GPIOBank == GPIOG)
+    else if (gpioBank == GPIOG)
         __HAL_RCC_GPIOG_CLK_ENABLE();
-    else if (GPIOBank == GPIOH)
+    else if (gpioBank == GPIOH)
         __HAL_RCC_GPIOH_CLK_ENABLE();
-    else if (GPIOBank == GPIOI)
+    else if (gpioBank == GPIOI)
         __HAL_RCC_GPIOI_CLK_ENABLE();
     else
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    m_InitializedGPIOBanks.push_back(GPIOBank);
+    m_InitializedGPIOBanks.push_back(gpioBank);
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeGPIOBank(GPIO_TypeDef *GPIOBank)
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeGPIOBank(GPIOBank GPIOBank)
 {
     if (GPIOBank == GPIOA)
         __HAL_RCC_GPIOA_CLK_DISABLE();
@@ -262,7 +270,7 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeGPIOBank(GPIO_TypeD
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeInterface(std::string &interfaceName)
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeHardwareInterface(std::string &interfaceName)
 {
     if (interfaceName == "SPI1")
         return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
@@ -278,6 +286,110 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeInterface(std::string
         return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
 
     return MemoryErrorHandling::MEM_INTERFACE_NOT_FOUND;
+}
+
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeDefaultGPIOSettings()
+{
+
+    MemoryErrorHandling::MEM_ERROR ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_Init());
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_A, STLINK_RX_Pin|STLINK_TX_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF7_USART1);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+
+    ret = InitializeGPIOPin({IO_BANK_A, B1_Pin|MEMS_INT1_Pin|MEMS_INT2_Pin|TP_INT1_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_EVT_RISING, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, 0);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_A, ACP_RST_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_B, BOOT1_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_B, G4_Pin|G5_Pin|B6_Pin|B7_Pin | ZZ_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_C, SPI4_WP_Pin|NCS_MEMS_SPI_Pin|CSX_Pin|OTG_FS_PSO_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, 0);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_C, OTG_FS_OC_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_EVT_RISING, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_C, G6_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_C, I2C3_SDA_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C3);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_C, I2C3_SCL_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C3);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_C, SPI5_WP_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+
+    ret = InitializeGPIOPin({IO_BANK_D, G7_Pin|B2_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOBank(IO_BANK_E);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_F, SPI5_CS_Pin|SPI5_HOLDspi5_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, 0);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_G, R7_Pin|DOTCLK_Pin|B3_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_G, G3_Pin|B4_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF9_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOPin({IO_BANK_G, LD3_Pin|LD4_Pin},
+                            GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF9_LTDC);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = InitializeGPIOBank(IO_BANK_H);
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    HAL_GPIO_WritePin(IO_BANK_F, SPI5_CS_Pin|SPI5_HOLDspi5_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IO_BANK_C, SPI5_WP_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(IO_BANK_B, ZZ_Pin, GPIO_PIN_SET);
+
+    return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
 #endif // STM32
