@@ -7,11 +7,7 @@
 
 #include "cpp/Devices/DeviceDefines.h"
 
-#if STM32
-#include <stm32f4xx_hal_spi.h>
-#endif // STM32
-
-#include <string>
+#include <string> // std::string
 
 
 #if STM32
@@ -25,6 +21,10 @@ typedef struct __SPI_HandleTypeDef SPIIdentifier;
 namespace SPIProperties
 {
 
+    /**
+     * @brief This enum contains the possible prescallers which
+     * allow to set the baudraute by dividing a base frequency.
+     */
     enum BaudratePrescaler
     {
         SPI_Prescaler_2 = 2,
@@ -37,38 +37,41 @@ namespace SPIProperties
         SPI_Prescaler_256 = 256,
     };
 
-/**
- * @brief This enum contains the parameters for the clock polarity.
- * Data is send either at a transition from high to low or vice versa.
- */
+    /**
+     * @brief This enum contains the parameters for the clock polarity.
+     * Data is send either at a transition from high to low or vice versa.
+     */
     enum ClockPoloarity
     {
         SPIWrapper_CPOL_LOW, SPIWrapper_CPOL_HIGH
     };
 
-/**
- * @brief This enum contains the parameters setting the clock phase.
- * when 1 edge is set, data is sampled on rising and shifted out on falling edge.
- * when 2 edge is set the interface behaves in opposite direction.
- */
+    /**
+     * @brief This enum contains the parameters setting the clock phase.
+     * when 1 edge is set, data is sampled on rising and shifted out on falling edge.
+     * when 2 edge is set the interface behaves in opposite direction.
+     */
     enum ClockPhase
     {
-        SPIWrapper_CP_1_EDGE, SPIWrapper_CP_2_EDGE,
+        SPIWrapper_CP_1_EDGE,
+        SPIWrapper_CP_2_EDGE,
     };
 
-/**
- * @brief Enum to select if the interface should be opened in transmit, receive or bidirectional mode.
- */
+    /**
+     * @brief Enum to select if the interface should be opened in transmit, receive or bidirectional mode.
+     */
     enum Mode
     {
-        SPI_MASTER, SPI_SLAVE,
+        /** When selecting SPI_MASTER, the board is responsible to set the clock and select the slave by an slave select signal. */
+        SPI_MASTER,
+        /** When selecting SPI_SLAVE, the board waits for the master slave select and clock signal to send and receive data. */
+        SPI_SLAVE,
     };
 
-
-/**
- * @brief This struct contains all properties of an UART interface.
- * It is internally stored in the UARTWrapper class.
- */
+    /**
+     * @brief This struct contains all properties of an UART interface.
+     * It is internally stored in the UARTWrapper class.
+     */
     struct SPIHandle
     {
         SPIIdentifier m_SPIHandle;
@@ -79,9 +82,10 @@ namespace SPIProperties
         ClockPhase m_ClockPhase;
     };
 
-/**
- * @brief This struct stores value of all
- */
+    /**
+     * @brief This struct stores the properties of an SPI interface.
+     * It stores the name to initialize the interface via the DeviceWrapper, as well as the required Pins.
+     */
     struct AvailableSPIProperties
     {
 #if STM32
