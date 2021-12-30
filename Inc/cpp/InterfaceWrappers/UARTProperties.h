@@ -5,8 +5,8 @@
 #ifndef MEMORY_TESTING_FW_UARTPROPERTIES_H
 #define MEMORY_TESTING_FW_UARTPROPERTIES_H
 
-
 #include "cpp/Devices/DeviceDefines.h"
+#include <string>
 
 #if STM32
 extern "C" {
