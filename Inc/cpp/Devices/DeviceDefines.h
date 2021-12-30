@@ -6,9 +6,6 @@
 #define MEMORY_TESTING_FW_DEVICEDEFINES_H
 #include "cpp/MemoryErrorHandling.h"
 
-#include <vector>
-#include <list>
-
 #if STM32
 #include <stm32f4xx_hal_gpio.h>
 
