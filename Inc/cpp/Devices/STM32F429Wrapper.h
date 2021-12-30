@@ -4,19 +4,13 @@
  */
 #ifndef MEMORY_TESTING_FW_STM32F429_WRAPPER_H
 #define MEMORY_TESTING_FW_STM32F429_WRAPPER_H
-#include "cpp/MemoryErrorHandling.h"
 #include "DeviceWrapper.h"
+#include "cpp/MemoryErrorHandling.h"
 #include "DeviceDefines.h"
 
-#include <vector>
 #include <list>
 
 #ifdef STM32
-#if STM32F429xx
-#include <stm32f429xx.h>
-#endif // STM32F429xx
-#include <stm32f4xx_hal_gpio.h>
-
 /**
  * @brief This class wraps functions used by the STM32F429 board.
  * Like initializing the system clock or the hardware abstraction layers.
@@ -24,7 +18,7 @@
 class STM32F429Wrapper: public DeviceWrapper
 {
 public:
-    STM32F429Wrapper();
+    STM32F429Wrapper() = default;
     ~STM32F429Wrapper() override;
 
     MemoryErrorHandling::MEM_ERROR Initialize() override;
@@ -48,9 +42,9 @@ private:
     MemoryErrorHandling::MEM_ERROR DeInitializeGPIOPin(const GPIOPin &gpioPin);
 
     __attribute__((unused)) MemoryErrorHandling::MEM_ERROR InitializeGPIOBank(GPIOBank gpioBank);
-    MemoryErrorHandling::MEM_ERROR DeInitializeGPIOBank(GPIOBank GPIOBank);
+    MemoryErrorHandling::MEM_ERROR DeInitializeGPIOBank(GPIOBank gpioBank);
 
-    std::vector<GPIOBank> m_InitializedGPIOBanks;
+    std::list<GPIOBank> m_InitializedGPIOBanks;
     std::list<GPIOPin> m_InitializedGPIOPins;
 };
 #endif // NOT_STM32

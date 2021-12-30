@@ -72,6 +72,8 @@
             return "No target device specified";
         case MEM_MEMORY_CONTROLLER_NOT_SPECIFIED:
             return "Memory controller not specified";
+        case MEM_GPIO_PIN_ALREADY_IN_USE:
+            return "GPIO Pin already in use";
     }
     return "Unknown error";
 }

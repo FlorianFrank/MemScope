@@ -9,10 +9,6 @@
 #if STM32
 #include <stm32f4xx_hal_gpio.h>
 
-#if STM32F429xx
-#include <stm32f429xx.h>
-#endif // STM32F429xx
-
 typedef GPIO_TypeDef* GPIOBank;
 
 #define  IO_BANK_A          ((GPIO_TypeDef *) GPIOA_BASE)
@@ -23,6 +19,7 @@ typedef GPIO_TypeDef* GPIOBank;
 #define  IO_BANK_F          ((GPIO_TypeDef *) GPIOF_BASE)
 #define  IO_BANK_G          ((GPIO_TypeDef *) GPIOG_BASE)
 #define  IO_BANK_H          ((GPIO_TypeDef *) GPIOH_BASE)
+#define  IO_BANK_I          ((GPIO_TypeDef *) GPIOI_BASE)
 #define  IO_BANK_UNDEFINED  ((GPIO_TypeDef *) nullptr)
 
 
