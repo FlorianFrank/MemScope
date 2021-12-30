@@ -64,6 +64,16 @@ public:
         return m_GPIOPin == gpioPin.m_GPIOPin && m_GPIOBank == gpioPin.m_GPIOBank;
     }
 
+    const GPIO_TypeDef *GetGPIOBank() const
+    {
+        return m_GPIOBank;
+    }
+
+    uint32_t GetGPIOPin() const
+    {
+        return m_GPIOPin;
+    }
+
     GPIOBank m_GPIOBank;
     uint32_t m_GPIOPin;
 };
