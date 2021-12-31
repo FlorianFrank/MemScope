@@ -8,6 +8,8 @@
 #include "cpp/Devices/DeviceDefines.h"
 
 #include <string> // std::string
+#include <utility>
+#include <vector>
 
 
 #if STM32
@@ -86,10 +88,23 @@ namespace SPIProperties
      * @brief This struct stores the properties of an SPI interface.
      * It stores the name to initialize the interface via the DeviceWrapper, as well as the required Pins.
      */
-    struct AvailableSPIProperties
+    class AvailableSPIProperties
     {
+    public:
+        AvailableSPIProperties(SPI_TypeDef* handle, std::string name, GPIOPin misoPin, GPIOPin mosiPin, GPIOPin clkPin, GPIOPin csPin)
+                : m_SPIHandle(handle), m_name(std::move(name)), m_MISOPin(misoPin), m_MOSIPin(mosiPin), m_CLKPin(clkPin), m_CSPin(csPin)
+        {};
+
+        SPI_TypeDef *GetSPIHandle() const { return m_SPIHandle; }
+        const std::string &GetName() const { return m_name; }
+        const GPIOPin &GetMISOPin() const { return m_MISOPin; }
+        const GPIOPin &GetMOSIPin() const { return m_MOSIPin; }
+        const GPIOPin &GetCLKPin() const { return m_CLKPin; }
+        const GPIOPin &GetCSPin() const { return m_CSPin; }
+
+    private:
 #if STM32
-        SPI_TypeDef *m_UARTHandle;
+        SPI_TypeDef *m_SPIHandle;
 #endif
         std::string m_name;
         GPIOPin m_MISOPin;

@@ -16,23 +16,30 @@ extern "C" {
 #endif // STM32
 
 
-
-
-
-SPIWrapper::SPIWrapper(const char *interfaceName, Mode spiMode, BaudratePrescaler prescaler,
-                       ClockPhase clockPhase, ClockPoloarity clockPolarity)
+SPIWrapper::SPIWrapper(const char *interfaceName, Mode spiMode, BaudratePrescaler prescaler, ClockPhase clockPhase,
+                       ClockPoloarity clockPolarity)
 {
-#if STM32
-    m_DeviceWrapper = new STM32F429Wrapper();
-#else
-    m_DeviceWrapper = new DeviceWrapper();
-#endif
     m_SPIHandle = new SPIHandle();
     m_SPIHandle->m_InterfaceName = interfaceName;
     m_SPIHandle->m_Prescaler = prescaler;
     m_SPIHandle->m_ClockPhase = clockPhase;
     m_SPIHandle->m_ClockPolarity = clockPolarity;
     m_SPIHandle->m_Mode = spiMode;
+
+
+#if STM32
+    m_DeviceWrapper = new STM32F429Wrapper();
+    m_AvailableSPIPorts = {
+            {SPI1, "SPI1", {IO_BANK_B,         IO_PIN_4},         {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_A,         IO_PIN_5},         {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+            {SPI2, "SPI2", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+            {SPI3, "SPI3", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+            {SPI4, "SPI4", {IO_BANK_E,         IO_PIN_5},         {IO_BANK_E,         IO_PIN_6},         {IO_BANK_E,         IO_PIN_2},         {IO_BANK_E,         IO_PIN_4}},
+            {SPI5, "SPI5", {IO_BANK_F,         IO_PIN_8},         {IO_BANK_F,         IO_PIN_9},         {IO_BANK_F,         IO_PIN_7},         {IO_BANK_F,         IO_PIN_6}},
+            {SPI6, "SPI6", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+            };
+#else
+    m_DeviceWrapper = new DeviceWrapper();
+#endif
 }
 
 SPIWrapper::~SPIWrapper()
@@ -58,11 +65,11 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIHandle *spiProperties)
     m_DeviceWrapper->InitializeHardwareInterface(spiProperties->m_InterfaceName);
     int elemCtr = 0;
     bool interfaceFound = false;
-    for(const AvailableSPIProperties& availPorts: availableSPIPorts)
+    for(const AvailableSPIProperties& availPorts: m_AvailableSPIPorts)
     {
         if(availPorts.GetName() == spiProperties->m_InterfaceName)
         {
-            spiProperties->m_SPIHandle.Instance = availableSPIPorts[elemCtr].GetSPIHandle();
+            spiProperties->m_SPIHandle.Instance = m_AvailableSPIPorts[elemCtr].GetSPIHandle();
             interfaceFound = true;
             break;
         }

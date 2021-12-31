@@ -44,7 +44,6 @@ private:
     MEM_ERROR InitializeSPIInterface(SPIHandle *spiProperties);
 
     DeviceWrapper* m_DeviceWrapper;
+    std::vector<AvailableSPIProperties> m_AvailableSPIPorts;
 };
-
-
 #endif //STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
