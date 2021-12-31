@@ -74,6 +74,8 @@
             return "Memory controller not specified";
         case MEM_GPIO_PIN_ALREADY_IN_USE:
             return "GPIO Pin already in use";
+        case MEM_UNSUPPORTED_BAUDRATE:
+            return "Baudrate not supported"
     }
     return "Unknown error";
 }
