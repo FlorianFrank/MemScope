@@ -6,7 +6,7 @@
 #define MEMORY_TESTING_FW_DEVICE_WRAPPER_H
 #include "cpp/MemoryErrorHandling.h"
 
-#include <string>
+#include <string> // std::string
 
 /**
  * @brief This class serves as an abstract class providing mandatory interfaces for supported devices.
