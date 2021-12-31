@@ -2,10 +2,10 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#include <cstring>
-#include <cstdio>
 #include "cpp/Devices/STM32F429Wrapper.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
+#include "cpp/TimeMeasurement.h"
+
 #include "io_pin_defines.h"
 
 #if STM32
@@ -15,15 +15,8 @@ extern "C" {
 }
 #endif // STM32
 
-AvailableSPIProperties availableSPIPorts[]
-        {
-                {SPI1, "SPI1", {IO_BANK_B, IO_PIN_4}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_A, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-                {SPI2, "SPI2",{IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-                {SPI3, "SPI3", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-                {SPI4, "SPI4",{IO_BANK_E, IO_PIN_5}, {IO_BANK_E, IO_PIN_6}, {IO_BANK_E, IO_PIN_2}, {IO_BANK_E, IO_PIN_4}},
-                {SPI5, "SPI5", {IO_BANK_F, IO_PIN_8}, {IO_BANK_F, IO_PIN_9}, {IO_BANK_F, IO_PIN_7}, {IO_BANK_F, IO_PIN_6}},
-                {SPI6, "SPI6", {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-        };
+
+
 
 
 SPIWrapper::SPIWrapper(const char *interfaceName, Mode spiMode, BaudratePrescaler prescaler,
@@ -62,14 +55,14 @@ MEM_ERROR SPIWrapper::Initialize()
  */
 MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIHandle *spiProperties)
 {
-    m_DeviceWrapper->InitializeInterface(spiProperties->m_InterfaceName);
+    m_DeviceWrapper->InitializeHardwareInterface(spiProperties->m_InterfaceName);
     int elemCtr = 0;
     bool interfaceFound = false;
-    for(AvailableSPIProperties availPorts: availableSPIPorts)
+    for(const AvailableSPIProperties& availPorts: availableSPIPorts)
     {
-        if(availPorts.m_name == spiProperties->m_InterfaceName)
+        if(availPorts.GetName() == spiProperties->m_InterfaceName)
         {
-            spiProperties->m_SPIHandle.Instance = availableSPIPorts[elemCtr].m_UARTHandle;
+            spiProperties->m_SPIHandle.Instance = availableSPIPorts[elemCtr].GetSPIHandle();
             interfaceFound = true;
             break;
         }
@@ -158,10 +151,10 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(STM32Handle *spiProperties)
  * @brief Send data on the specified SPI interface. CS must be set manually!
  * @param data byte buffer to send.
  * @param size input size to send.
- * @param timeout timeout when using blocking SPI functions.
+ * @param timeoutInMs timeoutInMs when using blocking SPI functions.
  * @return MEM_NO_ERROR if execution was successful.
  */
-MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
+MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs)
 {
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -173,23 +166,20 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
     bool writeEnable = false;
     MEM_ERROR ret;
     if(m_SPIHandle->m_Mode == SPI_MASTER)
-    {
         SetChipSelect();
-        writeEnable = true;
-    }
     else
     {
+        uint32_t timeStampStart = TimeMeasurement::ResetAndStartTimer();
         while(!writeEnable)
+        {
             writeEnable = ReadChipSelect();
+            if(TimeMeasurement::TransformClockFrequencyToNs(TimeMeasurement::GetTimer() - timeStampStart) * 1e6 >= timeoutInMs)
+                return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+        }
     }
 #if STM32
-    if(writeEnable)
-    {
         ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(
-                HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
-    }
-    else
-        return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+                HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeoutInMs));
 #else
     m_SPIHandle.StoreBuffer(data, size);
     MEM_ERROR ret =  MemoryErrorHandling::MEM_NO_ERROR;
@@ -203,10 +193,10 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
  * @brief Receives data on the specified SPI interface. CS must be set manually!
  * @param data byte buffer which is returned.
  * @param size the input specifies the maximum size of the read buffer. The same buffer is used to set the output size.
- * @param timeout timeout in ms when using blocking functions.
+ * @param timeoutInMs timeoutInMs in ms when using blocking functions.
  * @return MEM_NO_ERROR if execution was successful.
  */
-MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
+MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs)
 {
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
@@ -215,23 +205,23 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
     while(!retCS)
         retCS = ReadChipSelect();
 
-    bool readEnable = false;
     MEM_ERROR ret;
     if(m_SPIHandle->m_Mode == SPI_MASTER)
-    {
         SetChipSelect();
-        readEnable = true;
-    }else
+    else
     {
+        bool readEnable = false;
+        uint32_t timeStampStart = TimeMeasurement::ResetAndStartTimer();
         while(!readEnable)
+        {
             readEnable = ReadChipSelect();
+            if(TimeMeasurement::TransformClockFrequencyToNs(TimeMeasurement::GetTimer() - timeStampStart) * 1e6 >= timeoutInMs)
+                return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+        }
     }
 
 #if STM32
-    if(readEnable)
-        ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeout));
-    else
-        return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+        ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeoutInMs));
 #else
     m_SPIHandle.ReadBuffer(data, size);
     ret = MemoryErrorHandling::MEM_NO_ERROR;

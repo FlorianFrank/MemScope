@@ -4,14 +4,10 @@
  */
 #ifndef STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
-
-
 #include "InterfaceWrapper.h"
 #include "SPIProperties.h"
 #include "cpp/MemoryErrorHandling.h"
 #include "cpp/Devices/DeviceWrapper.h"
-
-#include <cstdint>
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 using namespace SPIProperties;
@@ -28,12 +24,12 @@ public:
                         ClockPhase clockPhase = SPIWrapper_CP_1_EDGE,
                         ClockPoloarity clockPolarity = SPIWrapper_CPOL_LOW);
 
-
+    ~SPIWrapper() override;
 
     MEM_ERROR Initialize() override;
 
-    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
-    MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs) override;
+    MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs) override;
 
     static void SetWriteProtect();
     static void ResetWriteProtect();
@@ -42,8 +38,6 @@ public:
     static void ResetChipSelect();
 
     inline static bool ReadChipSelect();
-
-    ~SPIWrapper() override;
 
 private:
     SPIHandle* m_SPIHandle;
