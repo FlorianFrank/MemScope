@@ -94,14 +94,16 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
         {
             uartProperties->m_UARTHandle.Instance = availableUARTPorts[elemCtr].m_UARTHandle;
             interfaceFound = true;
+            if(uartProperties->m_Baudrate < availPorts.m_minBaudrate || uartProperties->m_Baudrate > availPorts.m_maxBaudrate)
+                return MemoryErrorHandling::MEM_UNSUPPORTED_BAUDRATE;
             break;
         }
-
         elemCtr++;
     }
 
     if(!interfaceFound)
         return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
+
 
     uartProperties->m_UARTHandle.Init.BaudRate = uartProperties->m_Baudrate;
 

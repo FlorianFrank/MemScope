@@ -6,7 +6,7 @@
 #define MEMORY_TESTING_FW_UARTPROPERTIES_H
 
 #include "cpp/Devices/DeviceDefines.h"
-#include <string>
+#include <string> // std::string
 
 #if STM32
 extern "C" {
@@ -17,17 +17,17 @@ extern "C" {
 namespace UARTProperties
 {
 
-/**
- * @brief Enum to select if the interface should be opened in transmit, receive or bidirectional mode.
- */
+    /**
+     * @brief Enum to select if the interface should be opened in transmit, receive or bidirectional mode.
+     */
     enum Mode
     {
         UARTWrapper_TRANSMIT, UARTWrapper_RECEIVE, UARTWrapper_TRANSMIT_RECEIVE
     };
 
-/**
- * @brief Enum to select the word length of the interface.
- */
+    /**
+     * @brief Enum to select the word length of the interface.
+     */
     enum WordLength
     {
         UARTWrapper_WORD_LENGTH_5,
@@ -37,30 +37,33 @@ namespace UARTProperties
         UARTWrapper_WORD_LENGTH_9
     };
 
-/**
- * @brief Enum to select the parity of the UART interface.
- */
+    /**
+     * @brief Enum to select the parity of the UART interface.
+     */
     enum Parity
     {
-        UARTWrapper_NO_PARITY, UARTWrapper_PARITY_EVEN, UARTWrapper_PARITY_ODD
+        UARTWrapper_NO_PARITY,
+        UARTWrapper_PARITY_EVEN,
+        UARTWrapper_PARITY_ODD
     };
 
-/**
- * @brief Enum to select the stop bits of the UART interface.
- */
+    /**
+     * @brief Enum to select the stop bits of the UART interface.
+     */
     enum UART_StopBits
     {
-        UARTWrapper_STOP_BITS_1, UARTWrapper_STOP_BITS_2
+        UARTWrapper_STOP_BITS_1,
+        UARTWrapper_STOP_BITS_2
     };
 
 #if STM32
     typedef struct __UART_HandleTypeDef UARTInstance;
 #endif // STM32
 
-/**
- * @brief This struct contains all properties of an UART interface.
- * It is internally stored in the UARTWrapper class.
- */
+    /**
+     * @brief This struct contains all properties of an UART interface.
+     * It is internally stored in the UARTWrapper class.
+     */
     struct UARTHandle
     {
         UARTInstance m_UARTHandle;
@@ -72,9 +75,9 @@ namespace UARTProperties
         UART_StopBits m_StopBits;
     };
 
-/**
- * @brief This struct stores value of all
- */
+    /**
+     * @brief This struct stores value of all
+     */
     struct AvailableUARTProperties
     {
 #if STM32
@@ -88,5 +91,4 @@ namespace UARTProperties
     };
 
 }
-
 #endif //MEMORY_TESTING_FW_UARTPROPERTIES_H
