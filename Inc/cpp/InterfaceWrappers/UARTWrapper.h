@@ -4,19 +4,25 @@
  */
 #ifndef STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H
-
 #include "InterfaceWrapper.h"
 #include "UARTProperties.h"
 
+#include <vector>
+
+
 using namespace UARTProperties;
 
+/**
+ * @brief This class wrapps the device specific UART implementation.
+ * It implements the functions to initialize, read and write from and to the interface.
+ */
 class UARTWrapper : public InterfaceWrapper
 {
 public:
     explicit UARTWrapper(const char* interfaceName, uint32_t baudrate = 9600, UARTProperties::Mode mode = UARTWrapper_TRANSMIT_RECEIVE, WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
                          Parity parity = UARTWrapper_NO_PARITY, UART_StopBits stopBits = UARTWrapper_STOP_BITS_1);
 
-    virtual ~UARTWrapper();
+    ~UARTWrapper() override;
 
     MEM_ERROR Initialize() override;
 
@@ -24,16 +30,10 @@ public:
 
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
-    void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
-
 private:
+    MEM_ERROR InitializeUARTDeviceSpecific(UARTHandle *uartProperties);
+
     UARTHandle *m_UARTHandle;
-    static AvailableUARTProperties availableUARTPorts[];
-
-    // Device specific functions
-    static MEM_ERROR InitializeUARTDeviceSpecific(UARTHandle *uartProperties);
-
+    std::vector<AvailableUARTProperties> m_AvailableUARTPorts;
 };
-
-
 #endif //STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H

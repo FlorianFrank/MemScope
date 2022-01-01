@@ -4,26 +4,6 @@
  */
 #include "cpp/InterfaceWrappers/UARTWrapper.h"
 
-
-/**
- * @brief This array contains the list of all possible interfaces on the STM32F429-Disc1 chip.
- * It contains the interface, the minimum and maximum baudrate as well as the RX and TX Pins.
- *
- */
-/*static*/ AvailableUARTProperties UARTWrapper::availableUARTPorts[] = {
-#if STM32F429xx
-        {USART1, "USART1", 9600, 2000000, {IO_BANK_A, IO_PIN_10}, {IO_BANK_A, IO_PIN_9}},
-        {USART2, "USART2", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-        {USART3, "USART3", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-        {UART4, "UART4", 9600, 2000000, {IO_BANK_C, IO_PIN_11}, {IO_BANK_C, IO_PIN_10}},
-        {UART5, "UART5", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-        {USART6, "USART6", 9600, 2000000,{IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-        {UART7, "UART7", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-        {UART8, "UART8", 9600, 2000000, {IO_BANK_D, IO_PIN_5}, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
-#endif // STM32F429xx
-};
-
-
 UARTWrapper::UARTWrapper(const char* interfaceName, uint32_t baudrate, Mode mode, WordLength wordLen,
                                                   Parity parity, UART_StopBits stopBits)
 {
@@ -34,6 +14,17 @@ UARTWrapper::UARTWrapper(const char* interfaceName, uint32_t baudrate, Mode mode
     m_UARTHandle->m_WordLength = wordLen;
     m_UARTHandle->m_Parity = parity;
     m_UARTHandle->m_StopBits = stopBits;
+
+#if STM32F429xx
+    m_AvailableUARTPorts = {{USART1, "USART1", 9600, 2000000, {IO_BANK_A, IO_PIN_10}, {IO_BANK_A,         IO_PIN_9}},
+                            {USART2, "USART2", 9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                            {USART3, "USART3", 9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                            {UART4,  "UART4",  9600, 2000000, {IO_BANK_C, IO_PIN_11}, {IO_BANK_C,         IO_PIN_10}},
+                            {UART5,  "UART5",  9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                            {USART6, "USART6", 9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                            {UART7,  "UART7",  9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
+                            {UART8,  "UART8",  9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}}};
+#endif // STM32F429xx
 }
 
 
@@ -42,20 +33,22 @@ UARTWrapper::~UARTWrapper()
     delete m_UARTHandle;
 }
 
-/*
- * @brief								callback function called if something is received via UART
- * @param UART_HandleTypeDef *huart		the UART handler to communicate with the user
- */
-void UARTWrapper::HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
-    // clear Rx_Buffer before receiving new data
-}
-
+ /**
+  * @brief This function initializes the device specific properties like initializing the GPIO pins, sets the baudrate, stop bits, etc.
+  * @return MEM_NO_ERROR if the execution was successful. Otherwise return an error code.
+  */
 MEM_ERROR UARTWrapper::Initialize()
 {
     return InitializeUARTDeviceSpecific(m_UARTHandle);
 }
 
-
+/**
+ * @brief This function implements the function to send data over the previously initialized UART interface.
+ * @param data here, the data to send must be passed.
+ * @param size here the buffer to send should be passed. After executing the function, this variable contains the amount of actually written bytes.
+ * @param timeout a timeout must be specified when using blocking functions.
+ * @return MEM_ERROR if no error occured otherwise return an error code.
+ */
 MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     if(!data || !size)
@@ -72,6 +65,13 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
+/**
+ * @brief This function implements the function to receive data from the previously initialized UART interface.
+ * @param data the buffer to receive the data. It must be equally or larger the size specified in size.
+ * @param size here the buffer to receive should be passed. After executing the function, this variable contains the amount of actually received bytes.
+ * @param timeout a timeout must be specified when using blocking functions.
+ * @return MEM_ERROR if no error occured otherwise return an error code.
+ */
 MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     HAL_StatusTypeDef ret = HAL_UART_Receive(&m_UARTHandle->m_UARTHandle, data, *size, timeout);
@@ -84,15 +84,19 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 }
 
 #if STM32
-/*static*/ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
+/**
+ * @brief This function initializes the device specific properties of an UART interface.
+ * In this case the function is implementd for an STM32 board. It sets the baudrate, word length, stop bits, etc.
+ */
+MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
 {
     int elemCtr = 0;
     bool interfaceFound = false;
-    for(const AvailableUARTProperties& availPorts: availableUARTPorts)
+    for(const AvailableUARTProperties& availPorts: m_AvailableUARTPorts)
     {
         if(availPorts.m_name == uartProperties->m_InterfaceName)
         {
-            uartProperties->m_UARTHandle.Instance = availableUARTPorts[elemCtr].m_UARTHandle;
+            uartProperties->m_UARTHandle.Instance = m_AvailableUARTPorts[elemCtr].m_UARTHandle;
             interfaceFound = true;
             if(uartProperties->m_Baudrate < availPorts.m_minBaudrate || uartProperties->m_Baudrate > availPorts.m_maxBaudrate)
                 return MemoryErrorHandling::MEM_UNSUPPORTED_BAUDRATE;
@@ -146,12 +150,11 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 
 
 #else
-/*static*/ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartHandle)
+/**
+ * @brief Dummy implementation to allow compilation when no board is defined.
+ */
+MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartHandle)
 {
     return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
 }
 #endif // STM32
-
-
-
-
