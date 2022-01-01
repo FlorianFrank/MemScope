@@ -36,12 +36,12 @@ public:
     virtual MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
 
     /**
- * @brief This function must be implement to receive data from the interface.
- * @param data the buffer to receive the data. It must be equally or larger the size specified in size.
- * @param size here the buffer to receive should be passed. After executing the function, this variable contains the amount of actually received bytes.
- * @param timeout a timeout must be specified when using blocking functions.
- * @return MEM_ERROR if no error occured otherwise return an error code.
- */
+     * @brief This function must be implement to receive data from the interface.
+     * @param data the buffer to receive the data. It must be equally or larger the size specified in size.
+     * @param size here the buffer to receive should be passed. After executing the function, this variable contains the amount of actually received bytes.
+     * @param timeout a timeout must be specified when using blocking functions.
+     * @return MEM_ERROR if no error occured otherwise return an error code.
+     */
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
 };
 
