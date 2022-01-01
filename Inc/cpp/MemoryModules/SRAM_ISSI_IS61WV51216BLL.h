@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an SRAM ISSI IS61WV51216BLL memory chip.
- * See link \link https://www.mouser.de/datasheet/2/198/61-64WV51216-258283.pdf.
+ * See link <a href="https://www.mouser.de/datasheet/2/198/61-64WV51216-258283.pdf">Memory Datasheet</a>.
  */
 class SRAM_ISSI_IS61WV51216BLL: public MemoryModule
 {

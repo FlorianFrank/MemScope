@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an FRAM Rohm MR48V256CTAZAARL memory chip.
- * See link \link https://www.mouser.de/datasheet/2/348/ROHM-06-04-2018-FEDR48V256C-01-1500402.pdf.
+ * See link <a href="https://www.mouser.de/datasheet/2/348/ROHM-06-04-2018-FEDR48V256C-01-1500402.pdf">Memory Datasheet</a>.
  */
 class FRAM_Rohm_MR48V256CTAZAARL: public MemoryModule
 {

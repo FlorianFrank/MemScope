@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an SRAM Cypress CY7C1041CV33 memory chip.
- * See link \link https://www.cypress.com/file/38796/download.
+ * See link <a href="https://www.cypress.com/file/38796/download">Memory Datasheet</a>.
  */
 class SRAM_Cypress_CY7C1041CV33 : public MemoryModule
 {

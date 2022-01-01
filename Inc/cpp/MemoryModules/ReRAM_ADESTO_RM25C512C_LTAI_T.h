@@ -10,7 +10,7 @@ class SPIWrapper;
 
 /**
  * @brief This class sets the parameters for an an RERAM ADESTO RM25C512C_LTAI_T memory chip.
- * See link \link https://www.mouser.de/datasheet/2/590/DS-RM25C512C_079-1385763.pdf.
+ * See link <a href="https://www.mouser.de/datasheet/2/590/DS-RM25C512C_079-1385763.pdf">Memory Datasheet</a>.
  */
 class RERAM_ADESTO_RM25C512C_LTAI_T: public MemoryModule
 {

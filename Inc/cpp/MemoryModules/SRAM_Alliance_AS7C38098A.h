@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an SRAM Alliance AS7C38098A memory chip.
- * See link \link https://www.mouser.de/datasheet/2/12/AS7C38098A-1288225.pdf.
+ * See link <a href="https://www.mouser.de/datasheet/2/12/AS7C38098A-1288225.pdf">Memory Datasheet</a>.
  */
 class SRAM_Alliance_AS7C38098A: public MemoryModule
 {

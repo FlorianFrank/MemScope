@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an FRAM Fujitsu MB85R1001ANC GE1 memory chip.
- * See link \link https://www.fujitsu.com/downloads/MICRO/fme/fram/datasheet-MB85R1001A.pdf.
+ * See link <a href="https://www.fujitsu.com/downloads/MICRO/fme/fram/datasheet-MB85R1001A.pdf">Memory Datasheet</a>.
  */
 class FRAM_Fujitsu_MB85R1001ANC_GE1: public MemoryModule
 {

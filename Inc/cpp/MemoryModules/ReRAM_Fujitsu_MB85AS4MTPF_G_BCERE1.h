@@ -10,7 +10,7 @@ class SPIWrapper;
 
 /**
  * @brief This class sets the parameters for an an RERAM Fujitsu MB85AS4MTPF memory chip.
- * See link \link https://www.mouser.com/pdfDocs/MB85AS4MT.pdf.
+ * See link <a href="https://www.mouser.com/pdfDocs/MB85AS4MT.pdf">Memory Datasheet</a>.
  */
 class ReRAM_Fujitsu_MB85AS4MTPF_G_BCERE1: public MemoryModule
 {

@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an MRAM Everspin MR4A08BUYS45 memory chip.
- * See link \link https://www.mouser.de/datasheet/2/144/MR4A08B_Datasheet-1511665.pdf.
+ * See link <a href="https://www.mouser.de/datasheet/2/144/MR4A08B_Datasheet-1511665.pdf">Memory Datasheet</a>.
  */
 class MRAM_Everspin_MR4A08BUYS45: public MemoryModule
 {

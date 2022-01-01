@@ -8,7 +8,7 @@
 
 /**
  * @brief This class sets the parameters for an an FRAM Cypress FM22L16 55 TG memory chip.
- * See link \link https://www.mouser.de/datasheet/2/100/CYPR_S_A0011121120_1-2541176.pdf.
+ * See link <a href="https://www.mouser.de/datasheet/2/100/CYPR_S_A0011121120_1-2541176.pdf">Memory Datasheet</a>.
  */
 class FRAM_Cypress_FM22L16_55_TG: public MemoryModule
 {
