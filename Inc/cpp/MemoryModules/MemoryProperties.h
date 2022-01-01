@@ -31,9 +31,6 @@ namespace MemoryProperties
 
     /**
      * @brief This struct defines the min and max temperatures supported by a specific memory type.
-
-
-
      */
     struct TemperatureProperties
     {
