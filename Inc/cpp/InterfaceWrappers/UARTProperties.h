@@ -78,8 +78,46 @@ namespace UARTProperties
     /**
      * @brief This struct stores value of all
      */
-    struct AvailableUARTProperties
+    class AvailableUARTProperties
     {
+    public:
+        AvailableUARTProperties(USART_TypeDef *uartHandle, const std::string &name, uint32_t minBaudrate,
+                                uint32_t maxBaudrate, const GPIOPin &rxPin, const GPIOPin &txPin) : m_UARTHandle(
+                uartHandle), m_name(name), m_minBaudrate(minBaudrate), m_maxBaudrate(maxBaudrate), m_rxPin(rxPin),
+                                                                                                    m_txPin(txPin)
+        {}
+
+        USART_TypeDef *GetUARTHandle() const
+        {
+            return m_UARTHandle;
+        }
+
+        const std::string &GetName() const
+        {
+            return m_name;
+        }
+
+        uint32_t GetMinBaudrate() const
+        {
+            return m_minBaudrate;
+        }
+
+        uint32_t GetMaxBaudrate() const
+        {
+            return m_maxBaudrate;
+        }
+
+        const GPIOPin &GetRxPin() const
+        {
+            return m_rxPin;
+        }
+
+        const GPIOPin &GetTxPin() const
+        {
+            return m_txPin;
+        }
+
+    private:
 #if STM32
         USART_TypeDef *m_UARTHandle{};
 #endif

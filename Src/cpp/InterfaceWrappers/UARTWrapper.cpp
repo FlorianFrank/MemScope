@@ -94,11 +94,11 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     bool interfaceFound = false;
     for(const AvailableUARTProperties& availPorts: m_AvailableUARTPorts)
     {
-        if(availPorts.m_name == uartProperties->m_InterfaceName)
+        if(availPorts.GetName() == uartProperties->m_InterfaceName)
         {
-            uartProperties->m_UARTHandle.Instance = m_AvailableUARTPorts[elemCtr].m_UARTHandle;
+            uartProperties->m_UARTHandle.Instance = m_AvailableUARTPorts[elemCtr].GetUARTHandle();
             interfaceFound = true;
-            if(uartProperties->m_Baudrate < availPorts.m_minBaudrate || uartProperties->m_Baudrate > availPorts.m_maxBaudrate)
+            if(uartProperties->m_Baudrate < availPorts.GetMinBaudrate() || uartProperties->m_Baudrate > availPorts.GetMaxBaudrate())
                 return MemoryErrorHandling::MEM_UNSUPPORTED_BAUDRATE;
             break;
         }
