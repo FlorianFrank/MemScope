@@ -18,8 +18,6 @@ public:
     static void ResetTimer();
     static void StopTimer();
     static uint32_t GetTimer();
-
-private:
     static uint32_t TransformClockFrequencyToNs(uint32_t value);
 };
 
