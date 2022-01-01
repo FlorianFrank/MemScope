@@ -1,13 +1,15 @@
-//
-// Created by florianfrank on 23.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of Computer Engineering
+ */
 #ifndef MEMORY_TESTING_FW_SRAM_CYPRESS_CY7C1051CDV33_H
 #define MEMORY_TESTING_FW_SRAM_CYPRESS_CY7C1041CV33_H
-
-
 #include "MemoryModule.h"
 
+/**
+ * @brief This class sets the parameters for an an SRAM Cypress CY7C1041CV33 memory chip.
+ * See link \link https://www.cypress.com/file/38796/download.
+ */
 class SRAM_Cypress_CY7C1041CV33 : public MemoryModule
 {
 public:
@@ -16,6 +18,4 @@ public:
 
     MEM_ERROR Initialize() override;
 };
-
-
 #endif //MEMORY_TESTING_FW_SRAM_CYPRESS_CY7C1051CDV33_H

@@ -1,22 +1,23 @@
-//
-// Created by florianfrank on 23.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of Computer Engineering
+ */
 #ifndef MEMORY_TESTING_FW_MEMORYMODULE_H
 #define MEMORY_TESTING_FW_MEMORYMODULE_H
-
 #include "cpp/MemoryModules/MemoryProperties.h"
+#include "cpp/InterfaceWrappers/InterfaceWrapper.h"
 #include "cpp/MemoryErrorHandling.h"
 
-#include <string>
-#include <cstdint>
-#include <cpp/InterfaceWrappers/InterfaceWrapper.h>
+#include <string> // std::string
 
 class MemoryController;
 
 using namespace MemoryProperties;
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
+/**
+ * @brief This abstract class provides all the required functions to be implemented by a new memory module.
+ */
 class MemoryModule
 {
 public:
@@ -39,8 +40,6 @@ private:
     uint32_t m_MemorySize;
     TemperatureProperties m_TemperatureProperties;
     VoltageProperties m_VoltageProperties;
-
     MemoryController *m_MemoryController;
 };
-
 #endif //MEMORY_TESTING_FW_MEMORYMODULE_H
