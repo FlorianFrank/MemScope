@@ -1,7 +1,7 @@
-//
-// Created by florianfrank on 2021-12-23.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of Computer Engineering
+ */
 #include "cpp/MemoryModules/ReRAM_ADESTO_RM25C512C_LTAI_T.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
@@ -21,6 +21,5 @@ RERAM_ADESTO_RM25C512C_LTAI_T::~RERAM_ADESTO_RM25C512C_LTAI_T()
 
 MEM_ERROR RERAM_ADESTO_RM25C512C_LTAI_T::Initialize()
 {
-
     return MemoryModule::Initialize(m_SPIWrapper);
 }

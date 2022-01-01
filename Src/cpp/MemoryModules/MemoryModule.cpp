@@ -1,7 +1,7 @@
-//
-// Created by florianfrank on 23.12.21.
-//
-
+/**
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of Computer Engineering
+ */
 #include <cpp/MemoryControllers/MemoryControllerParallel.h>
 #include <cpp/MemoryControllers/MemoryControllerSPI.h>
 #include "cpp/MemoryModules/MemoryModule.h"
@@ -15,8 +15,7 @@ MemoryModule::MemoryModule(Type memoryType, const char *memoryLabel, Connection 
                                                                     m_TemperatureProperties(temperatureProperties),
                                                                     m_VoltageProperties(voltageProperties),
                                                                     m_MemoryController(nullptr)
-{
-}
+{}
 
 
 MemoryModule::~MemoryModule()
