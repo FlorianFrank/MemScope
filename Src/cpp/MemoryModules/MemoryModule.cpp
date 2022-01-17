@@ -32,8 +32,48 @@ MEM_ERROR MemoryModule::Initialize(InterfaceWrapper *interfaceWrapper)
     }
     else if(m_ConnectionType == MemoryProperties::SPI)
     {
-        m_MemoryController = new MemoryControllerSPI(reinterpret_cast<SPIWrapper *>(interfaceWrapper)); // TODO
+        m_MemoryController = new MemoryControllerSPI(reinterpret_cast<SPIWrapper *>(interfaceWrapper), <#initializer#>); // TODO
         return MemoryErrorHandling::MEM_NO_ERROR;
     }
     return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
+}
+
+Type MemoryModule::GetMemoryType() const
+{
+    return m_MemoryType;
+}
+
+const std::string &MemoryModule::GetMemoryLabel() const
+{
+    return m_MemoryLabel;
+}
+
+Connection MemoryModule::GetConnectionType() const
+{
+    return m_ConnectionType;
+}
+
+uint8_t MemoryModule::GetBitWidth() const
+{
+    return m_BitWidth;
+}
+
+uint32_t MemoryModule::GetMemorySize() const
+{
+    return m_MemorySize;
+}
+
+const TemperatureProperties &MemoryModule::GetTemperatureProperties() const
+{
+    return m_TemperatureProperties;
+}
+
+const VoltageProperties &MemoryModule::GetVoltageProperties() const
+{
+    return m_VoltageProperties;
+}
+
+MemoryController *MemoryModule::GetMemoryController() const
+{
+    return m_MemoryController;
 }

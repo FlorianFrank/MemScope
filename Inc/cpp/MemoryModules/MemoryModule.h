@@ -32,6 +32,23 @@ protected:
 
     MEM_ERROR Initialize(InterfaceWrapper *interfaceWrapper);
 
+public:
+    Type GetMemoryType() const;
+
+    const std::string &GetMemoryLabel() const;
+
+    Connection GetConnectionType() const;
+
+    uint8_t GetBitWidth() const;
+
+    uint32_t GetMemorySize() const;
+
+    const TemperatureProperties &GetTemperatureProperties() const;
+
+    const VoltageProperties &GetVoltageProperties() const;
+
+    MemoryController *GetMemoryController() const;
+
 private:
     Type m_MemoryType;
     std::string m_MemoryLabel;
