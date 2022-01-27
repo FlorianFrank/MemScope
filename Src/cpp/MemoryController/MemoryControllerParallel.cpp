@@ -10,8 +10,8 @@ extern "C" {
 }
 #endif // STM32
 
-MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWrapper) : MemoryController(
-        interfaceWrapper, 50 /*TODO*/)
+MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule)
+        : MemoryController(interfaceWrapper, memoryModule)
 {
 }
 
@@ -33,7 +33,7 @@ MEM_ERROR MemoryControllerParallel::Initialize()
  */
 MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
 {
-    if (IsInvalidAddress(adr, 10 /*TODO*/))
+    if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize()))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
 #if STM32
@@ -51,7 +51,7 @@ MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
  */
 MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
 {
-    if (IsInvalidAddress(adr, 10 /*TODO*/))
+    if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize()))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if(!ret)
@@ -73,7 +73,7 @@ MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
  */
 MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
 {
-    if(IsInvalidAddress(adr, 10 /*TODO*/))
+    if(IsInvalidAddress(adr, m_MemoryModule.GetMemorySize()))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
 
@@ -92,12 +92,12 @@ MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
  * @brief This function reads an 16 bit value from a passed address.
  * Currently only a STM32F429DISC1 board is supported, which reads values using memory mapped IO.
  * @param adr address to read from.
- * @param ret the value which is returned after the reading operation.
+ * @param value the value to be read. Add a pointer as argument to retrieve the data.
  * @return MEM_NO_ERROR if write execution was successful. An error is returned if the address is invalid.
  */
 MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value)
 {
-    if(IsInvalidAddress(adr, 10 /*TODO*/))
+    if(IsInvalidAddress(adr, m_MemoryModule.GetMemorySize()))
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
 
     if(!value)

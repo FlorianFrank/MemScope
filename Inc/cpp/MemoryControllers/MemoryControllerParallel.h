@@ -14,7 +14,7 @@
 class MemoryControllerParallel : public MemoryController
 {
 public:
-    explicit MemoryControllerParallel(InterfaceWrapper *interfaceWrapper);
+    explicit MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule);
 
     MEM_ERROR Initialize() override;
 
@@ -25,8 +25,5 @@ public:
     MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) override;
 
     MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) override;
-
 };
-
-
 #endif //MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H
