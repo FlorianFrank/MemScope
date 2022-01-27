@@ -4,14 +4,19 @@
  */
 #ifndef MEMORY_TESTING_FW_UARTPROPERTIES_H
 #define MEMORY_TESTING_FW_UARTPROPERTIES_H
-
 #include "cpp/Devices/DeviceDefines.h"
+
 #include <string> // std::string
+#include <utility>
 
 #if STM32
 extern "C" {
+#include "stm32f4xx_hal_dma.h"
 #include <stm32f4xx_hal_uart.h>
 }
+typedef USART_TypeDef* UARTInnerInstance;
+#else
+typedef int UARTInnerInstance;
 #endif // STM32
 
 namespace UARTProperties
@@ -58,6 +63,8 @@ namespace UARTProperties
 
 #if STM32
     typedef struct __UART_HandleTypeDef UARTInstance;
+#else
+    typedef uint32_t UARTInstance;
 #endif // STM32
 
     /**
@@ -81,13 +88,13 @@ namespace UARTProperties
     class AvailableUARTProperties
     {
     public:
-        AvailableUARTProperties(USART_TypeDef *uartHandle, const std::string &name, uint32_t minBaudrate,
+        AvailableUARTProperties(UARTInnerInstance uartHandle, std::string name, uint32_t minBaudrate,
                                 uint32_t maxBaudrate, const GPIOPin &rxPin, const GPIOPin &txPin) : m_UARTHandle(
-                uartHandle), m_name(name), m_minBaudrate(minBaudrate), m_maxBaudrate(maxBaudrate), m_rxPin(rxPin),
+                uartHandle), m_name(std::move(name)), m_minBaudrate(minBaudrate), m_maxBaudrate(maxBaudrate), m_rxPin(rxPin),
                                                                                                     m_txPin(txPin)
         {}
 
-        USART_TypeDef *GetUARTHandle() const
+        UARTInnerInstance GetUARTHandle() const
         {
             return m_UARTHandle;
         }
@@ -118,9 +125,8 @@ namespace UARTProperties
         }
 
     private:
-#if STM32
-        USART_TypeDef *m_UARTHandle{};
-#endif
+
+        UARTInnerInstance m_UARTHandle{};
         std::string m_name;
         uint32_t m_minBaudrate{};
         uint32_t m_maxBaudrate{};
