@@ -44,6 +44,4 @@ public:
      */
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
 };
-
-
 #endif //MEMORY_TESTING_FW_INTERFACEWRAPPER_H
