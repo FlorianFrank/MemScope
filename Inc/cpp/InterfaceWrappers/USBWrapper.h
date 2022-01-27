@@ -7,8 +7,6 @@
 
 #include "InterfaceWrapper.h"
 
-// TODO
-#define STM32 1
 #if STM32
 extern "C" {
 #include <usbd_cdc.h>
@@ -31,6 +29,4 @@ public:
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
 };
-
-
 #endif //STM_MEASUREMENT_FIRMWARE_USBWRAPPER_H

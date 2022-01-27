@@ -4,8 +4,9 @@
  */
 #include "cpp/InterfaceWrappers/USBWrapper.h"
 
+#if STM32
 char MY_RX_BUFFER[CDC_DATA_HS_MAX_PACKET_SIZE]= {0};
-
+#endif // STM32
 
 void USBWrapper::receiveUSB(uint8_t *dstBuffer, uint32_t bufferSize)
 {
