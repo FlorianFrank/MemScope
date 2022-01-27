@@ -8,9 +8,14 @@
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
 
-MemoryControllerSPI::MemoryControllerSPI(SPIWrapper *interfaceWrapper):
-MemoryController(interfaceWrapper, 50 /*TODO*/), m_SPIWrapper(interfaceWrapper)
+MemoryControllerSPI::MemoryControllerSPI(SPIWrapper *interfaceWrapper, MemoryModule &memoryModule) : MemoryController(
+        interfaceWrapper, memoryModule), m_SPIWrapper(interfaceWrapper)
 {
+    if(m_MemoryModule.GetConnectionType() != MemoryProperties::SPI)
+    {
+        // TODO exception
+    }
+    m_MemoryModule.Initialize();
 }
 
 /**
@@ -21,22 +26,14 @@ MemoryController(interfaceWrapper, 50 /*TODO*/), m_SPIWrapper(interfaceWrapper)
  */
 MEM_ERROR MemoryControllerSPI::Write8BitWord(uint32_t address, uint8_t valueToWrite)
 {
-    MEM_ERROR err = SetWriteEnableLatch(false);
+    MEM_ERROR err = SetWriteEnableLatch(false, 0);
     if (err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
 
     uint8_t sendBuffer[8];
     uint16_t sendBufferLen = 8;
 
-    MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
-#if RERAM_ADESTO_RM25C512C_LTAI_T
-    ret =  CreateWriteMessageReRAMAdesto(address, valueToWrite, sendBuffer, &sendBufferLen);
-#elif RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
-    ret = CreateWriteMessageReRAMFujitsu(address, valueToWrite, sendBuffer, &sendBufferLen);
-#else // unsupported memory type
-    return MemoryErrorHandling::MEM_MEMORY_NOT_SUPPORTED;
-#endif // if RERAM_ADESTO_RM25C512C_LTAI_T
-
+    MEM_ERROR ret = m_MemoryModule.CreateWriteMessage(address, valueToWrite, sendBuffer, &sendBufferLen);
     if (ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
@@ -58,21 +55,14 @@ MEM_ERROR MemoryControllerSPI::Write8BitWord(uint32_t address, uint8_t valueToWr
  */
 MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t address, uint8_t *readValue)
 {
-    MEM_ERROR err = SetWriteEnableLatch(false);
+    MEM_ERROR err = SetWriteEnableLatch(false, 0);
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
 
     uint8_t readData[4];
     uint16_t lenReadData = 4;
 
-    // Write Execution
-#if RERAM_ADESTO_RM25C512C_LTAI_T
-    err = CreateReadMessageReRAMAdesto(address, readData, &lenReadData);
-#elif RERAM_FUJITSU_MB85AS4MTPF_G_BCERE1
-    err =  CreateReadMessageReRAMFujitsu(address, readData, &lenReadData);
-#else // if RERAM_ADESTO_RM25C512C_LTAI_T
-    return MemoryErrorHandling::MEM_MEMORY_NOT_SUPPORTED;
-#endif // if RERAM_ADESTO_RM25C512C_LTAI_T else if FRAM_FUJITSU_MB85R1001ANC_GE1
+    err = m_MemoryModule.CreateReadMessage(address, readData, &lenReadData);;
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
 
@@ -100,7 +90,10 @@ MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t address, uint8_t *readValue
  */
 MEM_ERROR MemoryControllerSPI::Write16BitWord(uint32_t address, uint16_t valueToWrite)
 {
-    return MemoryErrorHandling::MEM_INVALID_COMMAND;
+    if(m_MemoryModule.GetBitWidth() != 16)
+        return MemoryErrorHandling::MEM_INVALID_COMMAND;
+    else
+        return MemoryErrorHandling::MEM_FUNCTION_NOT_IMPLEMENTED;
 }
 
 /**
@@ -111,7 +104,10 @@ MEM_ERROR MemoryControllerSPI::Write16BitWord(uint32_t address, uint16_t valueTo
  */
 MEM_ERROR MemoryControllerSPI::Read16BitWord(uint32_t address, uint16_t *valueToRead)
 {
-    return MemoryErrorHandling::MEM_INVALID_COMMAND;
+    if(m_MemoryModule.GetBitWidth() != 16)
+        return MemoryErrorHandling::MEM_INVALID_COMMAND;
+    else
+        return MemoryErrorHandling::MEM_FUNCTION_NOT_IMPLEMENTED;
 }
 
 /**
@@ -198,7 +194,7 @@ void MemoryControllerSPI::PrintStatusRegister(MemoryStatusRegister reg)
  * @param checkRegister flag if the function should check if the register is set.
  * @return MEM_NO_ERROR if no error occurred otherwise return error code.
  */
-MEM_ERROR MemoryControllerSPI::SetWriteEnableLatch(bool checkRegister)
+MEM_ERROR MemoryControllerSPI::SetWriteEnableLatch(bool checkRegister, uint32_t timeoutInMs)
 {
     SPIWrapper::SetWriteProtect();
     MEM_ERROR ret = SendSPICommand(ReRAM_WREN, nullptr, false);
@@ -209,12 +205,16 @@ MEM_ERROR MemoryControllerSPI::SetWriteEnableLatch(bool checkRegister)
     if(checkRegister)
     {
         MemoryStatusRegister statusRegister;
+        TimeMeasurement tm{};
+        uint32_t timeStampStart = TimeMeasurement::TransformClockFrequencyToMs(tm.ResetAndStartTimer());
         do
         {
+            if(tm.GetElapsedTimeInMS() - timeStampStart > timeoutInMs)
+                return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+
             MEM_ERROR err = ReadStatusRegister(statusRegister);
             if (err != MemoryErrorHandling::MEM_NO_ERROR)
                 return err;
-            // TODO timeout
         }while(statusRegister.WriteEnableBit != 1);
         //return MEM_REGISTER_NOT_SET;
     }
@@ -245,14 +245,11 @@ MEM_ERROR MemoryControllerSPI::Reset_WriteEnableLatch()
  */
 uint32_t MemoryControllerSPI::PollWriteInProgressRegister(uint32_t timeoutCycles)
 {
-    uint32_t startTS;
     uint32_t endTS = 0;
 
     //start timer
-    TimeMeasurement::ResetAndStartTimer();
-    startTS = TimeMeasurement::GetTimer();
-
-    // TODO timeout
+    TimeMeasurement tm{};
+    uint32_t startTS = tm.ResetAndStartTimer();
     do {
         MemoryStatusRegister statusRegister;
         MEM_ERROR err = ReadStatusRegister(statusRegister);
@@ -260,12 +257,10 @@ uint32_t MemoryControllerSPI::PollWriteInProgressRegister(uint32_t timeoutCycles
             return err;
 
         if (statusRegister.WriteInProgressBit == 0) {
-            TimeMeasurement::StopTimer();
-            endTS = TimeMeasurement::GetTimer() - startTS;
-            return endTS;
+            return tm.StopTimer();
         }
         if(timeoutCycles != 0)
-            endTS = TimeMeasurement::GetTimer();
+            endTS =tm.GetTimer();
     }while(startTS + timeoutCycles > endTS);
 
     return endTS;
@@ -323,111 +318,6 @@ MEM_ERROR MemoryControllerSPI::SetSleepMode()
 MEM_ERROR MemoryControllerSPI::EraseChip()
 {
     return SendSPICommand(ReRAM_PD, nullptr, false);
-}
-
-/**
- * @brief Creates the byte buffer containing the command to write from an Adesto RM25C515C chip.
- * The write frame has following format <0x02, second address byte, first address byte, value to write>
- * @param address the address is subdivided into the first and second byte and copied into the sendBuffer.
- * @param valueToWrite the value which should be written to the address.
- * @param returnSendBuffer the buffer containing the commands to send over the SPI interface.
- * @param sendBufferSize the size of the command buffer. To indicate how many bytes should be sent.
- * @return MEM_NO_ERROR if no error occurred otherwise return error code.
- */
-/*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMAdesto(uint32_t address, uint8_t valueToWrite,
-                                                                        uint8_t *returnSendBuffer, uint16_t *sendBufferSize)
-{
-    if (IsInvalidAddress(address, 10 /*TODO*/))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-    if (!sendBufferSize || *sendBufferSize < 4)
-        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
-
-    // TODO optimieren
-    uint8_t initialize_write_data[] = {ReRAM_WRITE, static_cast<uint8_t>(((address >> 8) & 0xFF)),
-                                       static_cast<uint8_t>(((address >> 0) & 0xFF)), valueToWrite};
-    memcpy(returnSendBuffer, initialize_write_data, sizeof initialize_write_data);
-    *sendBufferSize = 4;
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
-
-/**
- * @brief Creates the byte buffer containing the command to read from an Adesto RM25C515C chip.
- * The read frame has following format <0x03, second address byte, first address byte>
- * @param address the address is subdivided into the first and second byte and copied into the sendBuffer.
- * @param sendBuffer the buffer containing the commands to send over the SPI interface.
- * @param sendBufferSize the size of the command buffer. To indicate how many bytes should be sent.
- * @return MEM_NO_ERROR if no error occurred otherwise return error code.
- */
-/*static*/ MEM_ERROR MemoryControllerSPI::CreateReadMessageReRAMAdesto(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize)
-{
-    if (IsInvalidAddress(address, 10 /*TODO*/))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-    if (!sendBufferSize || *sendBufferSize < 3)
-        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
-
-    uint8_t initialize_write_data[] = {ReRAM_READ, static_cast<uint8_t>(((address >> 8) & 0xFF)),
-                                       static_cast<uint8_t>(((address >> 0) & 0xFF))};
-    memcpy(sendBuffer, initialize_write_data, sizeof initialize_write_data);
-    *sendBufferSize = 3;
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
-
-/**
- * @brief Creates the byte buffer containing the command to write from an Fujitsu MB85AS4M ReRAM chip.
- * The read frame has following format <0x02, third address byte, second address byte, first address byte, valueToWrite to send>
- * @param address the address is subdivided into the first, second and third byte and copied into the sendBuffer.
- * @param valueToWrite the value which should be written on the address.
- * @param sendBuffer the buffer containing the commands to send over the SPI interface.
- * @param sendBufferSize the size of the command buffer. To indicate how many bytes should be sent.
- * @return MEM_NO_ERROR if no error occurred otherwise return error code.
- */
-/*static*/ MEM_ERROR MemoryControllerSPI::CreateWriteMessageReRAMFujitsu(uint32_t address, uint8_t valueToWrite,
-                                                                         uint8_t *sendBuffer, uint16_t *sendBufferSize)
-{
-    if (IsInvalidAddress(address, 10 /*TODO*/))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-    if (!sendBufferSize || *sendBufferSize < 5)
-        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
-
-    uint8_t initialize_write_data[] = {ReRAM_WRITE, static_cast<uint8_t>(((address >> 16) & 0xFF)),
-                                       static_cast<uint8_t>(((address >> 8) & 0xFF)),
-                                       static_cast<uint8_t>(((address >>  0) & 0xFF)), valueToWrite};
-
-    memcpy(sendBuffer, initialize_write_data, sizeof initialize_write_data);
-    *sendBufferSize = 5;
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
-}
-
-/**
- * @brief Creates the byte buffer containing the command to read from an Fujitsu MB85AS4M ReRAM chip.
- * The read frame has following format <0x03, third address byte, second address byte, first address byte>
- * @param address the address is subdivided into the first, second and third byte and copied into the sendBuffer.
- * @param sendBuffer the buffer containing the commands to send over the SPI interface.
- * @param sendBufferSize the size of the command buffer. To indicate how many bytes should be sent.
- * @return MEM_NO_ERROR if no error occurred otherwise return error code.
- */
-/*static*/ MEM_ERROR MemoryControllerSPI::CreateReadMessageReRAMFujitsu(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize)
-{
-    if (IsInvalidAddress(address, 10 /*TODO*/))
-        return MemoryErrorHandling::MEM_INVALID_ADDRESS;
-
-    if (!sendBufferSize || *sendBufferSize < 4)
-        return MemoryErrorHandling::MEM_BUFFER_TO_SMALL;
-
-    uint8_t initialize_write_data[] = {ReRAM_READ, static_cast<uint8_t>(((address >> 16) & 0xFF)),
-                                       static_cast<uint8_t>(((address >> 8) & 0xFF)),
-                                       static_cast<uint8_t>(((address >> 0) & 0xFF))};
-
-    memcpy(sendBuffer, initialize_write_data, sizeof initialize_write_data);
-    *sendBufferSize = 4;
-
-    return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
 /**

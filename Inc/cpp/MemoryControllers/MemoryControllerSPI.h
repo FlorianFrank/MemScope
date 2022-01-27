@@ -15,7 +15,7 @@
 class MemoryControllerSPI : public MemoryController
 {
 public:
-    explicit MemoryControllerSPI(SPIWrapper *interfaceWrapper);
+    explicit MemoryControllerSPI(SPIWrapper *interfaceWrapper, MemoryModule &memoryModule);
 
     enum
     {
@@ -31,6 +31,7 @@ public:
         ReRAM_READ = (uint8_t) 0x03,
         /** Write Memory Code */
         ReRAM_WRITE = (uint8_t) 0x02,
+
         ReRAM_PD        = (uint8_t) 0x09,       // TODO CHECK
         /** Ultra Deep Power Down */
         ReRAM_UDPD = (uint8_t) 0x79,
@@ -75,7 +76,7 @@ public:
     static uint8_t StatusRegisterToUint8(MemoryStatusRegister &memoryStatusRegister);
     static void PrintStatusRegister(MemoryStatusRegister reg);
 
-    MEM_ERROR SetWriteEnableLatch(bool checkRegister);
+    MEM_ERROR SetWriteEnableLatch(bool checkRegister, uint32_t timeoutInMs);
     MEM_ERROR Reset_WriteEnableLatch();
     uint32_t PollWriteInProgressRegister(uint32_t timeoutCycles);
     MEM_ERROR SetPowerDown();
@@ -84,20 +85,10 @@ public:
     MEM_ERROR SetSleepMode();
     MEM_ERROR EraseChip();
 
-
-    // Memory specific functions
-    static MEM_ERROR CreateWriteMessageReRAMAdesto(uint32_t address, uint8_t valueToWrite, uint8_t *returnSendBuffer, uint16_t *sendBufferSize);
-    static MEM_ERROR CreateReadMessageReRAMAdesto(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize);
-
-    static MEM_ERROR CreateReadMessageReRAMFujitsu(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize);
-    static MEM_ERROR CreateWriteMessageReRAMFujitsu(uint32_t address, uint8_t valueToWrite, uint8_t *sendBuffer, uint16_t *sendBufferSize);
-
     // Helper functions
     MEM_ERROR SendSPICommand(SPI_Commands spiCMD, uint8_t *retValue, bool response);
 
 private:
     SPIWrapper *m_SPIWrapper;
 };
-
-
 #endif //MEMORY_TESTING_FW_MEMORYCONTROLLERSPI_H
