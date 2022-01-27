@@ -49,6 +49,7 @@ MEM_ERROR UARTWrapper::Initialize()
  * @param timeout a timeout must be specified when using blocking functions.
  * @return MEM_ERROR if no error occured otherwise return an error code.
  */
+#if STM32
 MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     if(!data || !size)
@@ -64,6 +65,12 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+#else
+MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
+{
+    return MemoryErrorHandling::MEM_INTERFACE_NOT_FOUND;
+}
+#endif
 
 /**
  * @brief This function implements the function to receive data from the previously initialized UART interface.
@@ -72,6 +79,7 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
  * @param timeout a timeout must be specified when using blocking functions.
  * @return MEM_ERROR if no error occured otherwise return an error code.
  */
+#if STM32
 MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     HAL_StatusTypeDef ret = HAL_UART_Receive(&m_UARTHandle->m_UARTHandle, data, *size, timeout);
@@ -82,6 +90,12 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+#else
+MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
+{
+    return MemoryErrorHandling::MEM_INTERFACE_NOT_FOUND;
+}
+#endif
 
 #if STM32
 /**
