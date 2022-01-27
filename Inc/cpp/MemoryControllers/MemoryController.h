@@ -40,7 +40,7 @@ using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 class MemoryController
 {
 public:
-    explicit MemoryController(InterfaceWrapper *interfaceWrapper, uint32_t memorySize);
+    explicit MemoryController(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule);
     virtual ~MemoryController();
 
     virtual MEM_ERROR Initialize();
@@ -70,12 +70,13 @@ public:
     MEM_ERROR FillWithZerosAndVerifyRead();
     MEM_ERROR FillWithOnes();
     MEM_ERROR FillMemoryWithAscendingValues();
-    MEM_ERROR FillMemoryWithAscendingValuesAndVerifyRead(uint8_t *buffer, uint32_t *buffLen, const uint32_t *arguments);
+    MEM_ERROR FillMemoryWithAscendingValuesAndVerifyRead(uint32_t *buffLen, const uint32_t *arguments);
     MEM_ERROR FillMemoryWithAlternatingZeroAndOne();
     MEM_ERROR FillMemoryWithAlternatingOneAndZero();
 
-protected:
     static bool IsInvalidAddress(uint32_t address, uint32_t size);
+
+protected:
 
     // helper functions
     void InitCounter();
@@ -106,7 +107,7 @@ protected:
     uint32_t flipped_one;
     uint32_t flipped_zero;
 
-    uint32_t m_MemorySize;
+    MemoryModule& m_MemoryModule;
 };
 
 #endif /* __MEMORY_CONTROL_H */
