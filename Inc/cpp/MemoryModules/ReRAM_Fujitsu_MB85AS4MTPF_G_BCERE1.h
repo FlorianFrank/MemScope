@@ -20,6 +20,9 @@ public:
 
     MEM_ERROR Initialize() override;
 
+    MEM_ERROR CreateWriteMessage(uint32_t address, uint8_t valueToWrite, uint8_t *returnSendBuffer, uint16_t *sendBufferSize) override;
+    MEM_ERROR CreateReadMessage(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize) override;
+
 private:
     SPIWrapper* m_SPIWrapper;
 };
