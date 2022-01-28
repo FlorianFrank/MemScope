@@ -5,6 +5,7 @@
 #ifndef MEMORY_TESTING_FW_DEVICEDEFINES_H
 #define MEMORY_TESTING_FW_DEVICEDEFINES_H
 #include "cpp/MemoryErrorHandling.h"
+#include <cstdint>
 
 #if STM32
 #include <stm32f4xx_hal_gpio.h>
@@ -38,9 +39,41 @@ typedef GPIO_TypeDef* GPIOBank;
 #define  IO_PIN_13      GPIO_PIN_13
 #define  IO_PIN_14      GPIO_PIN_14
 #define  IO_PIN_15      GPIO_PIN_15
-#define  IO_PIN_ALL         GPIO_PIN_ALL
+#define  IO_PIN_ALL     GPIO_PIN_ALL
 #define  IO_PIN_UNDEFINED   0x00
 #else
+
+#define  IO_BANK_UNDEFINED  0
+
+#define  IO_BANK_A          IO_BANK_UNDEFINED
+#define  IO_BANK_B          IO_BANK_UNDEFINED
+#define  IO_BANK_C          IO_BANK_UNDEFINED
+#define  IO_BANK_D          IO_BANK_UNDEFINED
+#define  IO_BANK_E          IO_BANK_UNDEFINED
+#define  IO_BANK_F          IO_BANK_UNDEFINED
+#define  IO_BANK_G          IO_BANK_UNDEFINED
+#define  IO_BANK_H          IO_BANK_UNDEFINED
+#define  IO_BANK_I          IO_BANK_UNDEFINED
+
+
+#define  IO_PIN_1       1
+#define  IO_PIN_2       2
+#define  IO_PIN_3       3
+#define  IO_PIN_4       4
+#define  IO_PIN_5       5
+#define  IO_PIN_6       6
+#define  IO_PIN_7       7
+#define  IO_PIN_8       8
+#define  IO_PIN_9       9
+#define  IO_PIN_10      10
+#define  IO_PIN_11      11
+#define  IO_PIN_12      12
+#define  IO_PIN_13      13
+#define  IO_PIN_14      14
+#define  IO_PIN_15      15
+#define  IO_PIN_ALL     16
+#define  IO_PIN_UNDEFINED   0x00
+
 typedef int GPIOBank;
 #endif // STM32
 
@@ -75,5 +108,4 @@ private:
     GPIOBank m_GPIOBank;
     uint32_t m_GPIOPin;
 };
-
 #endif // MEMORY_TESTING_FW_DEVICEDEFINES_H
