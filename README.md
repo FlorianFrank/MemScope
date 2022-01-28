@@ -1,6 +1,23 @@
-# STM_Measurement_Firmware
+Installation {#mainpage}
+=========
 
-## Run in CLion
+## 1. Overall description
+
+This library provides C++ functionallity which is used to communicate with different types of memories to test them according to PUF behavior. 
+There exists wrappers for all device specific functions like initialization functions for interfaces like UART or SPI. 
+It is also possible to dynamically add memory modules to the library. 
+
+![STM32F429](../../../doc/STM32f429.png)
+
+
+## 2. Installation
+
+### 2.1 Compile on Command Line
+
+1. Run ./compile_fw_STM32F4.sh to build for a STM32F4 board
+2. The 
+
+### 2.1 Run in CLion
 1. Check this [official post](https://www.jetbrains.com/help/clion/embedded-development.html#new-project)
     about STM32CubeMX projects in CLion (Do not need the OpenOCD + STM32CubeMX plugin).
 2. Git clone this project.
