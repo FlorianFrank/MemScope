@@ -75,7 +75,11 @@
         case MEM_GPIO_PIN_ALREADY_IN_USE:
             return "GPIO Pin already in use";
         case MEM_UNSUPPORTED_BAUDRATE:
-            return "Baudrate not supported"
+            return "Baudrate not supported";
+        case MEM_BIT_LEN_NOT_SUPPORTED:
+            return "Bit len not supported";
+        case MEM_FUNCTION_NOT_IMPLEMENTED:
+            return "Function not implemented";
     }
     return "Unknown error";
 }
