@@ -2,25 +2,27 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#include "cpp/Devices/STM32F429Wrapper.h"
+#include "cpp/Devices/DeviceWrapper.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 #include "cpp/TimeMeasurement.h"
 
 #include "io_pin_defines.h"
 
 #if STM32
+#if STM32F429xx
+#include "cpp/Devices/STM32F429Wrapper.h"
 extern "C" {
 #include "SystemFiles/spi.h"
 #include <stm32f4xx_hal_spi.h>
 }
+#endif // STM32F429xx
 #endif // STM32
 
 
 SPIWrapper::SPIWrapper(const char *interfaceName, Mode spiMode, BaudratePrescaler prescaler, ClockPhase clockPhase,
                        ClockPoloarity clockPolarity)
 {
-    m_SPIHandle = new SPIHandle();
-    m_SPIHandle->m_InterfaceName = interfaceName;
+    m_SPIHandle = static_cast<SPIHandle *>(malloc(sizeof(SPIHandle)));
     m_SPIHandle->m_Prescaler = prescaler;
     m_SPIHandle->m_ClockPhase = clockPhase;
     m_SPIHandle->m_ClockPolarity = clockPolarity;
@@ -109,8 +111,9 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIHandle *spiProperties)
     return MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Init(&spiProperties->m_SPIHandle));
 }
 #else
-MEM_ERROR SPIWrapper::InitializeSPIInterface(STM32Handle *spiProperties)
+MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIHandle *spiProperties)
 {
+    m_SPIHandle = spiProperties;
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 #endif
@@ -167,8 +170,15 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutIn
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     bool retCS = ReadChipSelect();
+
+    TimeMeasurement tm{};
+    tm.ResetAndStartTimer();
     while(!retCS)
+    {
+        if(tm.GetElapsedTimeInMS())
+            return MemoryErrorHandling::MEM_HAL_TIMEOUT;
         retCS = ReadChipSelect();
+    }
 
     bool writeEnable = false;
     MEM_ERROR ret;
@@ -176,11 +186,10 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutIn
         SetChipSelect();
     else
     {
-        uint32_t timeStampStart = TimeMeasurement::ResetAndStartTimer();
         while(!writeEnable)
         {
             writeEnable = ReadChipSelect();
-            if(TimeMeasurement::TransformClockFrequencyToNs(TimeMeasurement::GetTimer() - timeStampStart) * 1e6 >= timeoutInMs)
+            if(tm.GetElapsedTimeInMS() >= timeoutInMs)
                 return MemoryErrorHandling::MEM_HAL_TIMEOUT;
         }
     }
@@ -188,8 +197,7 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutIn
         ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(
                 HAL_SPI_Transmit(&m_SPIHandle->m_SPIHandle, data, *size, timeoutInMs));
 #else
-    m_SPIHandle.StoreBuffer(data, size);
-    MEM_ERROR ret =  MemoryErrorHandling::MEM_NO_ERROR;
+  //  m_SPIHandle.StoreBuffer(data, size); TODO
 #endif // STM32
     if(m_SPIHandle->m_Mode == SPI_MASTER)
         ResetChipSelect();
@@ -209,8 +217,13 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     bool retCS = ReadChipSelect();
-    while(!retCS)
+    TimeMeasurement tm{};
+    uint32_t timeStampStart = tm.ResetAndStartTimer();
+    while(!retCS && tm.GetElapsedTimeInMS() - timeStampStart < timeoutInMs)
+    {
         retCS = ReadChipSelect();
+    }
+
 
     MEM_ERROR ret;
     if(m_SPIHandle->m_Mode == SPI_MASTER)
@@ -218,11 +231,12 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
     else
     {
         bool readEnable = false;
-        uint32_t timeStampStart = TimeMeasurement::ResetAndStartTimer();
+        TimeMeasurement tm{};
+        uint32_t timeStampStart = tm.ResetAndStartTimer();
         while(!readEnable)
         {
             readEnable = ReadChipSelect();
-            if(TimeMeasurement::TransformClockFrequencyToNs(TimeMeasurement::GetTimer() - timeStampStart) * 1e6 >= timeoutInMs)
+            if(tm.GetElapsedTimeInMS() >= timeoutInMs)
                 return MemoryErrorHandling::MEM_HAL_TIMEOUT;
         }
     }
@@ -230,7 +244,7 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
 #if STM32
         ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_SPI_Receive(&m_SPIHandle->m_SPIHandle, data, *size, timeoutInMs));
 #else
-    m_SPIHandle.ReadBuffer(data, size);
+    //m_SPIHandle.ReadBuffer(data, size); TODO
     ret = MemoryErrorHandling::MEM_NO_ERROR;
 #endif // STM32
     if(m_SPIHandle->m_Mode == SPI_MASTER)
@@ -238,10 +252,22 @@ MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeou
     return ret;
 }
 
+/**
+ * @brief This function reads the Chip Select signal if the the interface is used in slave mode.
+ * @return Returns the value of the GPIO pin.
+ */
 inline bool SPIWrapper::ReadChipSelect()
 {
 #if STM32
     return  HAL_GPIO_ReadPin(SPI5_CS_GPIO_Port, SPI5_CS_Pin) == GPIO_PIN_RESET;
 #endif // STM32
+    return false; // TODO
 }
+
+#if UNIT_TEST
+SPIWrapper::SPIWrapper(TestInterfaceWrapper& interfaceWrapper)
+{
+
+}
+#endif // UNIT_TEST
 

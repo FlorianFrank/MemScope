@@ -4,10 +4,15 @@
  */
 #ifndef STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
 #define STM_MEASUREMENT_FIRMWARE_SPIWRAPPER_H
+
 #include "InterfaceWrapper.h"
 #include "SPIProperties.h"
 #include "cpp/MemoryErrorHandling.h"
 #include "cpp/Devices/DeviceWrapper.h"
+
+#if UNIT_TEST
+#include <Tests/Inc/TestInterfaceWrapper.h>
+#endif // UNIT_TEST
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 using namespace SPIProperties;
@@ -23,6 +28,10 @@ public:
                         BaudratePrescaler prescaler = SPI_Prescaler_2,
                         ClockPhase clockPhase = SPIWrapper_CP_1_EDGE,
                         ClockPoloarity clockPolarity = SPIWrapper_CPOL_LOW);
+
+#if UNIT_TEST
+    explicit SPIWrapper(TestInterfaceWrapper& interfaceWrapper);
+#endif // UNIT_TEST
 
     ~SPIWrapper() override;
 
@@ -40,7 +49,7 @@ public:
     inline static bool ReadChipSelect();
 
 private:
-    SPIHandle* m_SPIHandle;
+    SPIHandle* m_SPIHandle{};
     MEM_ERROR InitializeSPIInterface(SPIHandle *spiProperties);
 
     DeviceWrapper* m_DeviceWrapper;
