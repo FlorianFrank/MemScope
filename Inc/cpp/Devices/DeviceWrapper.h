@@ -16,6 +16,7 @@
 class DeviceWrapper
 {
 public:
+    DeviceWrapper();
     virtual ~DeviceWrapper()= default;
 
     /**

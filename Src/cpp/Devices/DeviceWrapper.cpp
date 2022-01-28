@@ -4,6 +4,11 @@
 
 #include "cpp/Devices/DeviceWrapper.h"
 
+DeviceWrapper::DeviceWrapper()
+{
+
+}
+
 /*virtual*/ MemoryErrorHandling::MEM_ERROR DeviceWrapper::Initialize(){
     return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
 }
