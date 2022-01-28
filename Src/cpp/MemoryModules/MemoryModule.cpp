@@ -13,29 +13,17 @@ MemoryModule::MemoryModule(Type memoryType, const char *memoryLabel, Connection 
                                                                     m_ConnectionType(connectionType),
                                                                     m_BitWidth(bitWidth), m_MemorySize(memorySize),
                                                                     m_TemperatureProperties(temperatureProperties),
-                                                                    m_VoltageProperties(voltageProperties),
-                                                                    m_MemoryController(nullptr)
+                                                                    m_VoltageProperties(voltageProperties)
 {}
 
 
 MemoryModule::~MemoryModule()
 {
-    delete m_MemoryController;
 }
 
 MEM_ERROR MemoryModule::Initialize(InterfaceWrapper *interfaceWrapper)
 {
-    if(m_ConnectionType == MemoryProperties::PARALLEL)
-    {
-        m_MemoryController = new MemoryControllerParallel(interfaceWrapper);
-        return MemoryErrorHandling::MEM_NO_ERROR;
-    }
-    else if(m_ConnectionType == MemoryProperties::SPI)
-    {
-        m_MemoryController = new MemoryControllerSPI(reinterpret_cast<SPIWrapper *>(interfaceWrapper), <#initializer#>); // TODO
-        return MemoryErrorHandling::MEM_NO_ERROR;
-    }
-    return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
+    return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
 Type MemoryModule::GetMemoryType() const
@@ -73,7 +61,19 @@ const VoltageProperties &MemoryModule::GetVoltageProperties() const
     return m_VoltageProperties;
 }
 
-MemoryController *MemoryModule::GetMemoryController() const
+
+MEM_ERROR MemoryModule::Initialize()
 {
-    return m_MemoryController;
+    return MemoryErrorHandling::MEM_MEMORY_NOT_SUPPORTED;
+}
+
+MEM_ERROR MemoryModule::CreateWriteMessage(uint32_t address, uint8_t valueToWrite, uint8_t *returnSendBuffer,
+                                           uint16_t *sendBufferSize)
+{
+    return MemoryErrorHandling::MEM_MEMORY_NOT_SUPPORTED; // TODO parallele speicher
+}
+
+MEM_ERROR MemoryModule::CreateReadMessage(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize)
+{
+    return MemoryErrorHandling::MEM_MEMORY_NOT_SUPPORTED; // TODO parallele speicher
 }

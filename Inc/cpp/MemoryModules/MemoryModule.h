@@ -22,12 +22,14 @@ class MemoryModule
 {
 public:
     MemoryModule() = delete;
-    virtual MEM_ERROR Initialize() = 0;
+    virtual MEM_ERROR Initialize();
+
+    virtual MEM_ERROR CreateWriteMessage(uint32_t address, uint8_t valueToWrite, uint8_t *returnSendBuffer, uint16_t *sendBufferSize);
+    virtual MEM_ERROR CreateReadMessage(uint32_t address, uint8_t *sendBuffer, uint16_t *sendBufferSize);
 
 protected:
     MemoryModule(Type memoryType, const char *memoryLabel, Connection connectionType, uint8_t bitWidth,
                  uint32_t memorySize, TemperatureProperties temperatureProperties, VoltageProperties voltageProperties);
-
     virtual ~MemoryModule();
 
     MEM_ERROR Initialize(InterfaceWrapper *interfaceWrapper);
@@ -47,9 +49,7 @@ public:
 
     const VoltageProperties &GetVoltageProperties() const;
 
-    MemoryController *GetMemoryController() const;
-
-private:
+protected:
     Type m_MemoryType;
     std::string m_MemoryLabel;
     Connection m_ConnectionType;
@@ -57,6 +57,5 @@ private:
     uint32_t m_MemorySize;
     TemperatureProperties m_TemperatureProperties;
     VoltageProperties m_VoltageProperties;
-    MemoryController *m_MemoryController;
 };
 #endif //MEMORY_TESTING_FW_MEMORYMODULE_H
