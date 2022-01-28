@@ -1,14 +1,17 @@
 #include <gtest/gtest.h>
-#include "cpp/MemoryControllerWrappers/MemoryControllerSPI.h"
+#include <cpp/MemoryControllers/MemoryControllerSPI.h>
 #include "cpp/MemoryErrorHandling.h"
+
+#include "cpp/MemoryModules/ReRAM_ADESTO_RM25C512C_LTAI_T.h"
+#include "cpp/MemoryModules/ReRAM_Fujitsu_MB85AS4MTPF_G_BCERE1.h"
 
 TEST(MemoryControllerTestSPI, TestWriteAdesto)
 {
-
     uint8_t retValue[4];
     uint16_t retSize = 4;
 
-    MEM_ERROR ret = MemoryControllerSPI::CreateWriteMessageReRAMAdesto(0x55AA, 0xFB, retValue, &retSize);
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MEM_ERROR ret = memoryModule.CreateWriteMessage(0x55AA, 0xFB, retValue, &retSize);
 
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
     EXPECT_EQ(retSize, 4);
@@ -20,11 +23,11 @@ TEST(MemoryControllerTestSPI, TestWriteAdesto)
 
 TEST(MemoryControllerTestSPI, TestWriteFujitsu)
 {
-
     uint8_t retValue[5];
     uint16_t retSize = 5;
 
-    MEM_ERROR ret = MemoryControllerSPI::CreateWriteMessageReRAMFujitsu(0x002233, 0xFB, retValue, &retSize);
+    ReRAM_Fujitsu_MB85AS4MTPF_G_BCERE1 memoryModule;
+    MEM_ERROR ret = memoryModule.CreateWriteMessage(0x002233, 0xFB, retValue, &retSize);
 
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
     EXPECT_EQ(retSize, 5);
@@ -40,8 +43,9 @@ TEST(MemoryControllerTestSPI, TestReadAdesto)
 
     uint8_t retValue[5];
     uint16_t retSize = 5;
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
 
-    MEM_ERROR ret = MemoryControllerSPI::CreateReadMessageReRAMAdesto(0x55AA, retValue, &retSize);
+    MEM_ERROR ret = memoryModule.CreateReadMessage(0x55AA, retValue, &retSize);
 
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
     EXPECT_EQ(retSize, 3);
@@ -56,7 +60,8 @@ TEST(MemoryControllerTestSPI, TestReadFujitsu)
     uint8_t retValue[5];
     uint16_t retSize = 5;
 
-    MEM_ERROR ret = MemoryControllerSPI::CreateReadMessageReRAMFujitsu(0x00AABB, retValue, &retSize);
+    ReRAM_Fujitsu_MB85AS4MTPF_G_BCERE1 memoryModule;
+    MEM_ERROR ret = memoryModule.CreateReadMessage(0x00AABB, retValue, &retSize);
 
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_NO_ERROR);
     EXPECT_EQ(retSize, 4);
@@ -70,9 +75,9 @@ TEST(MemoryControllerTestSPI, TestReadFujitsu)
 
 TEST(MemoryControllerTestSPI, TestWrite8BitWord)
 {
-    TestInterfaceWrapper testInterfaceWrapper;
-    SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    SPIWrapper spiWrapper("SPI1");
+    RERAM_ADESTO_RM25C512C_LTAI_T reramAdestoRm25C512CLtaiT;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, reramAdestoRm25C512CLtaiT);
     MEM_ERROR err = memoryControllerSpi.Write16BitWord(0, 0);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
 
@@ -86,18 +91,21 @@ TEST(MemoryControllerTestSPI, TestInvalidArgument)
 {
     uint8_t retValue[3];
     uint16_t retSize = 3;
-    MEM_ERROR ret = MemoryControllerSPI::CreateWriteMessageReRAMAdesto(0x55AA, 0xFB, retValue, &retSize);
+
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+
+    MEM_ERROR ret = memoryModule.CreateWriteMessage(0x55AA, 0xFB, retValue, &retSize);
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_BUFFER_TO_SMALL);
 
-    ret = MemoryControllerSPI::CreateWriteMessageReRAMAdesto(0xAAAAAAAA, 0xFB, retValue, &retSize);
+    ret = memoryModule.CreateWriteMessage(0xAAAAAAAA, 0xFB, retValue, &retSize);
     EXPECT_EQ(ret,MemoryErrorHandling::MEM_INVALID_ADDRESS);
 }
 
 TEST(MemoryControllerTestSPI, TestInvalidWriteReadCommands)
 {
-    TestInterfaceWrapper testInterfaceWrapper;
-    SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    SPIWrapper spiWrapper("SPI1");
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
     MEM_ERROR err = memoryControllerSpi.Write16BitWord(0, 0);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_INVALID_COMMAND);
 
@@ -110,13 +118,13 @@ TEST(MemoryControllerTestSPI, TestInvalidWriteReadCommands)
 TEST(MemoryControllerTestSPI, ParseStatusRegister)
 {
     uint8_t registerValue = 0x9D; // 10011101
-    MemoryControllerSPI::MemoryStatusRegister memoryStatusRegister = MemoryControllerSPI::ParseStatusRegister(registerValue);
+    MemoryControllerSPI::MemoryStatusRegister memoryStatusRegister = MemoryControllerSPI::Uint8ToStatusRegister(registerValue);
 
-    EXPECT_EQ(memoryStatusRegister.write_in_progress_bit, 1);
-    EXPECT_EQ(memoryStatusRegister.write_enable_bit, 0);
-    EXPECT_EQ(memoryStatusRegister.block_protection_bits, 3);
-    EXPECT_EQ(memoryStatusRegister.auto_power_down_enable, 0);
-    EXPECT_EQ(memoryStatusRegister.wp_enable_Pin, 1);
+    EXPECT_EQ(memoryStatusRegister.WriteInProgressBit, 1);
+    EXPECT_EQ(memoryStatusRegister.WriteEnableBit, 0);
+    EXPECT_EQ(memoryStatusRegister.BlockProtectionBits, 3);
+    EXPECT_EQ(memoryStatusRegister.AutoPowerDownEnable, 0);
+    EXPECT_EQ(memoryStatusRegister.WriteProtectPin, 1);
 }
 
 TEST(MemoryControllerTestSPI, SendSPIWriteTest)
@@ -124,8 +132,9 @@ TEST(MemoryControllerTestSPI, SendSPIWriteTest)
     uint32_t address = 0xAABB;
 
     TestInterfaceWrapper testInterfaceWrapper{};
-    SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    SPIWrapper spiWrapper("SPI1");
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
 
     MEM_ERROR ret = memoryControllerSpi.Write8BitWord(address, 0xFF);
     EXPECT_EQ(ret, MemoryErrorHandling::MEM_NO_ERROR);
@@ -148,8 +157,9 @@ TEST(MemoryControllerTestSPI, Write8BitWordError)
     uint32_t address = 0xAAAAAAAA;
 
     TestInterfaceWrapper testInterfaceWrapper{};
-    SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    SPIWrapper spiWrapper("SPI1");
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
 
 
     MEM_ERROR ret = memoryControllerSpi.Write8BitWord(address, 0xAA);
@@ -161,8 +171,9 @@ TEST(MemoryControllerTestSPI, SetWriteEnableLatch)
     TestInterfaceWrapper testInterfaceWrapper{};
     SPIWrapper spiWrapper(testInterfaceWrapper);
 
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
-    MEM_ERROR err = memoryControllerSpi.Set_WriteEnableLatch(false);
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
+    MEM_ERROR err = memoryControllerSpi.SetWriteEnableLatch(false, 0);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 
     uint8_t buffer[2];
@@ -178,7 +189,8 @@ TEST(MemoryControllerTestSPI, TestResetWriteEnableLatch)
 {
     TestInterfaceWrapper testInterfaceWrapper{};
     SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
     MEM_ERROR err = memoryControllerSpi.Reset_WriteEnableLatch();
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 
@@ -195,9 +207,11 @@ TEST(MemoryControllerTestSPI, ReadStatusRegister)
 {
     TestInterfaceWrapper testInterfaceWrapper{};
     SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
     MemoryControllerSPI::MemoryStatusRegister statusRegister;
-    MEM_ERROR err = memoryControllerSpi.ReadStatusRegister(&statusRegister);
+    MEM_ERROR err = memoryControllerSpi.ReadStatusRegister(statusRegister);
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 
     uint8_t buffer[2];
@@ -213,7 +227,10 @@ TEST(MemoryControllerTestSPI, TestResumeFromPowerDown)
 {
     TestInterfaceWrapper testInterfaceWrapper{};
     SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
     MEM_ERROR err = memoryControllerSpi.ResumeFromPowerDown();
     EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 
@@ -229,8 +246,11 @@ TEST(MemoryControllerTestSPI, TestSetUltraDeepPowerDown)
 {
     TestInterfaceWrapper testInterfaceWrapper{};
     SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
     MEM_ERROR err = memoryControllerSpi.SetUltraDeepPowerDown();
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 
     uint8_t buffer[2];
     uint16_t bufferLen = 2;
@@ -244,8 +264,11 @@ TEST(MemoryControllerTestSPI, TestSleepMode)
 {
     TestInterfaceWrapper testInterfaceWrapper{};
     SPIWrapper spiWrapper(testInterfaceWrapper);
-    MemoryControllerSPI memoryControllerSpi(&spiWrapper);
+
+    RERAM_ADESTO_RM25C512C_LTAI_T memoryModule;
+    MemoryControllerSPI memoryControllerSpi(&spiWrapper, memoryModule);
     MEM_ERROR err = memoryControllerSpi.SetSleepMode();
+    EXPECT_EQ(err, MemoryErrorHandling::MEM_NO_ERROR);
 
     uint8_t buffer[2];
     uint16_t bufferLen = 2;
