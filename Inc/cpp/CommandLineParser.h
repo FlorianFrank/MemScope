@@ -10,9 +10,11 @@
 #include "CommandDefines.h"
 #include <cstdint>
 
+#if STM32
 extern "C" {
 #include <stm32f4xx_hal_uart.h>
 }
+#endif // STM32
 
 class CommandLineParser
 {

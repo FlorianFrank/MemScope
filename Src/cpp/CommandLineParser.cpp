@@ -2,9 +2,9 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-#include <string.h>
+#include <cstring>
 #include <cstdio>
-#include "cpp/MemoryController.h"
+#include "cpp/MemoryControllers/MemoryController.h"
 #include "cpp/CommandLineParser.h"
 
 
@@ -45,7 +45,7 @@
 };
 
 
-CommandLineParser::CommandLineParser (MemoryController *memoryController, InterfaceWrappers *inputInterface)
+CommandLineParser::CommandLineParser (MemoryController *memoryController, InterfaceWrapper *inputInterface)
 {
     m_InterfaceWrapper = inputInterface;
 }
@@ -97,11 +97,6 @@ MEM_ERROR CommandLineParser::executeCommand(uint8_t *inBuff, uint32_t *inBuffLen
             // they will be set in the function
             m_WriteMode = 0x7;
           //  return m_MemoryController->WriteAddressRange();TODO
-        case GET_PERFORMANCE_MEASURES:
-            // no write operation will be performed in this method
-            // reset the counter for statistical analysis
-            //m_WriteMode = 0xFF;
-            return m_MemoryController->GetProbabilityOfFlippedOnesAndZeros(outBuff, outBuffLen);
         case GET_ADDRESS:
             // no write operation will be performed in this method
             // reset the counter for statistical analysis
