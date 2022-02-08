@@ -1,3 +1,12 @@
 [submodule "stm32_usb_lib"]
 	path = stm32_usb_lib
 	url = https://git.fim.uni-passau.de/frankfl/stm32_usb_lib.git
+[submodule "FlashTool/Qt/STM32FlashTool/thirdparty/qmllogging"]
+	path = FlashTool/Qt/STM32FlashTool/thirdparty/qmllogging
+	url = git@github.com:amrayn/qmllogging.git
+[submodule "doxygen-awesome-css"]
+	path = doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
+[submodule "doc/doxygen-awesome-css"]
+	path = doc/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
