@@ -35,7 +35,7 @@ void TimeMeasurement::StarTimer()
 {
 #if STM32
     // resolution in clock cycles
-    *((volatile uint32_t*)0xE0001000) = 0x40000001  // Enable CYCCNT register
+    *((volatile uint32_t*)0xE0001000) = 0x40000001;  // Enable CYCCNT register
     m_StartTimer = *((volatile uint32_t*)0xE0001004);
 #else
     // Resolution in nanoseconds
