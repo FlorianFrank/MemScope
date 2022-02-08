@@ -1,9 +1,13 @@
-cmake_minimum_required(VERSION 2.9)
+cmake_minimum_required(VERSION 3.1)
 
-#set(STM32 1)
+set(STM32 1)
 set(UNIT_TESTING 1)
 set(ProgramName "Memory_Testing_FW")
+set(LibraryName "STMFirmware")
+
 option(BUILD_DOCUMENTATION "Build documentation" OFF)
+option(BUILD_EXECUTABLE "Build Executable" OFF)
+option(BUILD_LIB "Build library" ON)
 
 # Variables
 #set(BoardName  "stm32f429")
@@ -15,11 +19,11 @@ option(BUILD_DOCUMENTATION "Build documentation" OFF)
 #-DBoardName="stm32f429"  -DBoardClass=STM32F4 -DCPU=cortex-m4 -DFPUType=hard -DFPUSpecification=fpv4-sp-d16 -Dspecs=rdimon.specs
 
 if(STM32)
-	set(FullProgramName "${ProgramName}.elf")
+	set(ExecutableName "${ProgramName}.elf")
 	set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/toolchain.cmake")
 	add_definitions(-DSTM32F429xx=1 -DSTM32=1)
 else()
-		set(FullProgramName "${ProgramName}")
+		set(ExecutableName "${ProgramName}")
 endif()
 
 project(${ProgramName} CXX C ASM)
@@ -67,16 +71,37 @@ file(GLOB_RECURSE DriverFiles
 endif() # STM32
 
 if(STM32)
-add_executable(${FullProgramName} ${ProjectFiles} ${MainFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+	if(BUILD_EXECUTABLE)
+		add_executable(${ExecutableName} ${ProjectFiles} ${MainFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+	endif()
+
+	if(BUILD_LIB)
+		add_library(${LibraryName} ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+	endif()
 
 	if("${specs}" STREQUAL "rdimon.specs" )
 		message("Enable rdimon.specs")
 		add_definitions(-DRDMON_SPECS=1)
-		target_link_libraries(${FullProgramName} c rdimon) # STM32_USB_Lib TODO
+		if(BUILD_EXECUTABLE)
+			target_link_libraries(${ExecutableName} c rdimon) # STM32_USB_Lib TODO
+		endif()
+
+		if(BUILD_LIB)
+			target_link_libraries(${LibraryName} c rdimon) # STM32_USB_Lib TODO
+		endif()
+
 	endif() # disable syscalls.c
 else()
-	add_executable(${FullProgramName} ${ProjectFiles} ${MainFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
-endif() # STM32
+	if(BUILD_EXECUTABLE)
+		add_executable(${ExecutableName} ${ProjectFiles} ${MainFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+	endif()
+
+	if(BUILD_LIB)
+		add_executable(${LibraryName} ${ProjectFiles} ${StartupFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+	endif()
+
+
+	endif() # STM32
 
 
 if (USB_LIB)
@@ -96,29 +121,44 @@ set(BIN_FILE ${BuildFolder}/${ProgramName}.bin)
 
 if(STM32)
 # Generate the hex and binary files
-set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
-add_custom_command(TARGET ${ProgramName}.elf POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${ProgramName}.elf> ${HEX_FILE}
-        COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${ProgramName}.elf> ${BIN_FILE}
-        COMMENT "Building ${HEX_FILE} \nBuilding ${BIN_FILE}")
+	if(BUILD_EXECUTABLE)
+		set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
+		add_custom_command(TARGET ${ProgramName}.elf POST_BUILD
+				COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${ProgramName}.elf> ${HEX_FILE}
+				COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${ProgramName}.elf> ${BIN_FILE}
+				COMMENT "Building ${HEX_FILE} \nBuilding ${BIN_FILE}")
+	endif()
 endif()
 
-target_include_directories(${FullProgramName} PRIVATE
-		            "${CMAKE_CURRENT_SOURCE_DIR}/Inc"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc/Legacy"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${BoardClass}xx/Include"
-					"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include"
-					"${CMAKE_CURRENT_SOURCE_DIR}")
+if(BUILD_EXECUTABLE)
+	target_include_directories(${ExecutableName} PRIVATE
+						"${CMAKE_CURRENT_SOURCE_DIR}/Inc"
+						"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc"
+						"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc/Legacy"
+						"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"
+						"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"
+						"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${BoardClass}xx/Include"
+						"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include"
+						"${CMAKE_CURRENT_SOURCE_DIR}")
+	install(TARGETS ${ExecutableName} RUNTIME DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+endif()
 
-install(TARGETS ${FullProgramName} RUNTIME DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+if(BUILD_LIB)
+	target_include_directories(${LibraryName} PRIVATE
+			"${CMAKE_CURRENT_SOURCE_DIR}/Inc"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${BoardClass}xx_HAL_Driver/Inc/Legacy"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${BoardClass}xx/Include"
+			"${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include"
+			"${CMAKE_CURRENT_SOURCE_DIR}")
+	install(TARGETS ${LibraryName} RUNTIME DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+endif()
 
 
 if (UNIT_TESTING)
 #unit testing
-cmake_minimum_required(VERSION 2.8)
 
 project(MemoryControllerTest)
 
