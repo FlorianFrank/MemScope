@@ -13,14 +13,16 @@
 #include <ctime>
 //#include "usb_handler.h"
 #include <meta_data_handler.h>
-#include <cpp/MemoryController.h>
+#include <cpp/MemoryControllers/MemoryController.h>
 //#include "usb_defines.h"
 #include "cpp/MemoryTest.h"
 #include "cpp/TimeMeasurement.h"
 
+/*
 extern "C" {
 #include <stm32f4xx_hal.h>
 }
+ */
 
 // TODO entfernen anpassen, etc.
 #define ADDRESSES_TO_TEST MEM_SIZE_ADR
@@ -167,27 +169,27 @@ int MemoryTest::executeMemoryTest()
 #if MEM_ACCESS_WIDTH_BIT == 16
         m_MemoryController->Write16BitWord(i, 0xAAAA);
 #elif MEM_ACCESS_WIDTH_BIT == 8
-        Write8BitWord(i, 0xaa);
+//        Write8BitWord(i, 0xaa); TODO
 #endif
 
         // Some memory chips need a delay here
-        HAL_Delay(1);
+        //HAL_Delay(1); TODO
 
 #if MEM_ACCESS_WIDTH_BIT == 16
         uint16_t value = 0;
         m_MemoryController->Read16BitWord(i, &value);
 #elif MEM_ACCESS_WIDTH_BIT == 8
         uint8_t value = 0;
-        Read8BitWord(i, &value);
+    //    Read8BitWord(i, &value); TODO
 #endif
-        printf("%d Value 0x%x\n", i, value);
+        printf("%d Value 0x%x\n", i, 5); // TODO
     }
     return 0;
 }
 
 
 #if MEM_ACCESS_IF == SPI
-int MemoryTest::executeWIPPollingTestAdestoReRam()
+/*int MemoryTest::executeWIPPollingTestAdestoReRam()
 {
     USB_MS_Handle *usbHandle = calloc(1, sizeof(USB_MS_Handle));
 
@@ -248,5 +250,5 @@ int MemoryTest::executeWIPPollingTestAdestoReRam()
     free(measureFileName);
     free(pollingBuffer);
     return 0;
-}
+}*/
 #endif // MEM_ACCESS_IF == SPI
