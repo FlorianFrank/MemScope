@@ -5,7 +5,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-int main();
+
+extern "C" int entry_function();
+
+
 
 #endif /* MAIN_H */
 
