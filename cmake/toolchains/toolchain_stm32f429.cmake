@@ -24,6 +24,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
 get_filename_component(ARM_TOOLCHAIN_DIR ${BINUTILS_PATH} DIRECTORY)
 # Without that flag CMake is not able to pass test compilation check
 if (${CMAKE_VERSION} VERSION_EQUAL "3.6.0" OR ${CMAKE_VERSION} VERSION_GREATER "3.6")
