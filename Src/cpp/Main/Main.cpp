@@ -6,16 +6,17 @@
 #include <cpp/Devices/STM32F429Wrapper.h>
 #include <cpp/MemoryModules/FRAM_Rohm_MR48V256CTAZAARL.h>
 #include <cpp/MemoryControllers/MemoryControllerParallel.h>
-#include "cpp/Main/Main.h"
+#include "cpp/Main/Main.hpp"
+
 
 
 bool running = true;
-
 
 /**
   * @brief  The application entry point.
   * @retval int
   */
+
 int main()
 {
 

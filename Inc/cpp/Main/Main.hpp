@@ -6,8 +6,15 @@
 #define MAIN_H
 
 
-extern "C" int entry_function();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+extern int main();
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* MAIN_H */
