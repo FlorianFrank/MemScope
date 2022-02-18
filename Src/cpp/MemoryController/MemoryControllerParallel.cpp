@@ -10,19 +10,61 @@ extern "C" {
 }
 #endif // STM32
 
-MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule)
-        : MemoryController(interfaceWrapper, memoryModule)
+MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule,
+                                                   DeviceWrapper &deviceWrapper)
+        : MemoryController(deviceWrapper, interfaceWrapper, memoryModule)
 {
 }
 
 MEM_ERROR MemoryControllerParallel::Initialize()
 {
+
+    auto initializePins =  [this] (const std::vector<GPIOPin>& gpioList) -> MEM_ERROR {
+        MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
+        for (const auto& pin : gpioList)
+        {
+            ret = m_DeviceWrapper.InitializeGPIOPin(pin, GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
+                                                    {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+            if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+              return ret;
+        }
+        return ret;
+    };
+
+    MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
+    ret = initializePins(m_Properties.GetAddressLinesList());
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = initializePins(m_Properties.GetDataLinesList());
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetWE(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetCS(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetLB(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetUB(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetOE(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        return ret;
+
 #if STM32
     MX_FMC_Init();
 #endif // STM32
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
-
 
 /**
  * @brief This function writes a 8 bit value to the passed address.

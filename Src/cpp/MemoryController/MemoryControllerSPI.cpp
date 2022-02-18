@@ -8,8 +8,9 @@
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
 
-MemoryControllerSPI::MemoryControllerSPI(SPIWrapper *interfaceWrapper, MemoryModule &memoryModule) : MemoryController(
-        interfaceWrapper, memoryModule), m_SPIWrapper(interfaceWrapper)
+MemoryControllerSPI::MemoryControllerSPI(DeviceWrapper &deviceWrapper, SPIWrapper *interfaceWrapper,
+                                         MemoryModule &memoryModule) : MemoryController(
+        deviceWrapper, interfaceWrapper, memoryModule), m_SPIWrapper(interfaceWrapper)
 {
     if(m_MemoryModule.GetConnectionType() != MemoryProperties::SPI)
     {

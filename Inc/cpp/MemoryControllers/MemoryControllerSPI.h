@@ -15,7 +15,8 @@
 class MemoryControllerSPI : public MemoryController
 {
 public:
-    explicit MemoryControllerSPI(SPIWrapper *interfaceWrapper, MemoryModule &memoryModule);
+    explicit MemoryControllerSPI(DeviceWrapper &deviceWrapper, SPIWrapper *interfaceWrapper,
+                                 MemoryModule &memoryModule);
 
     enum
     {

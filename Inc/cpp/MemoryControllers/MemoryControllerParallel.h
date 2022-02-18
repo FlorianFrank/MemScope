@@ -5,7 +5,9 @@
 #ifndef MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H
 #define MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H
 
+#include <cpp/Devices/DeviceWrapper.h>
 #include "MemoryController.h"
+#include "cpp/MemoryControllers/MemoryControllerParallelProperties.h"
 
 /**
  * @brief This class is used to read and write to memory modules with a parallel connection.
@@ -14,7 +16,8 @@
 class MemoryControllerParallel : public MemoryController
 {
 public:
-    explicit MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule);
+    explicit MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule,
+                                      DeviceWrapper &deviceWrapper);
 
     MEM_ERROR Initialize() override;
 
@@ -25,5 +28,8 @@ public:
     MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value) override;
 
     MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) override;
+
+private:
+    MemoryControllerParallelProperties m_Properties;
 };
 #endif //MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H
