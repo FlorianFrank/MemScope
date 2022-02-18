@@ -25,6 +25,9 @@ public:
     MemoryErrorHandling::MEM_ERROR DeInitialize() override;
     MemoryErrorHandling::MEM_ERROR InitializeHardwareInterface(std::string &interfaceName) override;
 
+    MemoryErrorHandling::MEM_ERROR
+    InitializeGPIOPin(GPIOPin pin, GPIOMode mode, GPIOState initialState, GPIOPin alternate) override;
+
 private:
 
     MemoryErrorHandling::MEM_ERROR InitializeDefaultGPIOSettings();
@@ -38,7 +41,7 @@ private:
 
     __attribute__((unused)) MemoryErrorHandling::MEM_ERROR DeInitializeSPI5();
 
-    MemoryErrorHandling::MEM_ERROR InitializeGPIOPin(GPIOPin gpioPin, GPIO_PinState gpioPinState, uint32_t mode, uint32_t pull, uint32_t speed, uint32_t alternate);
+    MemoryErrorHandling::MEM_ERROR InitializeGPIOPinDeviceSpecific(const GPIOPin& gpioPin, GPIO_PinState gpioPinState, uint32_t mode, uint32_t pull, uint32_t speed, uint32_t alternate);
     MemoryErrorHandling::MEM_ERROR DeInitializeGPIOPin(const GPIOPin &gpioPin);
 
     __attribute__((unused)) MemoryErrorHandling::MEM_ERROR InitializeGPIOBank(GPIOBank gpioBank);
