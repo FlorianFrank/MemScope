@@ -5,6 +5,7 @@
 #ifndef MEMORY_TESTING_FW_DEVICE_WRAPPER_H
 #define MEMORY_TESTING_FW_DEVICE_WRAPPER_H
 #include "cpp/MemoryErrorHandling.h"
+#include "DeviceDefines.h"
 
 #include <string> // std::string
 
@@ -41,5 +42,10 @@ public:
      * @return MEM_NO_ERROR if no error occurred.
      */
     virtual MemoryErrorHandling::MEM_ERROR InitializeHardwareInterface(std::string& interfaceName);
+
+    virtual MemoryErrorHandling::MEM_ERROR
+    InitializeGPIOPin(GPIOPin pin, GPIOMode mode, GPIOState initialState, GPIOPin alternate);
+
+    virtual MemoryErrorHandling::MEM_ERROR DeinitializeGPIOPin(GPIOPin pin);
 };
 #endif //MEMORY_TESTING_FW_DEVICE_WRAPPER_H

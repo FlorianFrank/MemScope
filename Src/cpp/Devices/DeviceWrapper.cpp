@@ -22,3 +22,14 @@ DeviceWrapper::DeviceWrapper()
 {
     return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
 }
+
+/*virtual*/ MemoryErrorHandling::MEM_ERROR
+DeviceWrapper::InitializeGPIOPin(GPIOPin pin, GPIOMode mode, GPIOState initialState, GPIOPin alternate)
+{
+    return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
+}
+
+MemoryErrorHandling::MEM_ERROR DeviceWrapper::DeinitializeGPIOPin(GPIOPin pin)
+{
+    return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
+}
