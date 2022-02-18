@@ -5,6 +5,7 @@
 #ifndef MEMORY_TESTING_FW_MEMORYCONTROLLER_H
 #define MEMORY_TESTING_FW_MEMORYCONTROLLER_H
 
+#include <cpp/Devices/DeviceWrapper.h>
 #include "cpp/MemoryErrorHandling.h"
 #include "cpp/TimeMeasurement.h"
 #include "io_pin_defines.h"
@@ -40,7 +41,8 @@ using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 class MemoryController
 {
 public:
-    explicit MemoryController(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule);
+    explicit MemoryController(DeviceWrapper &deviceWrapper, InterfaceWrapper *interfaceWrapper,
+                              MemoryModule &memoryModule);
     virtual ~MemoryController();
 
     virtual MEM_ERROR Initialize();
@@ -83,12 +85,12 @@ protected:
 
     void InitArguments();
 
-    uint8_t write_mode;
-    uint16_t len;
-    char STRING_BUFFER[STRING_BUFFER_SIZE];
-    TimeMeasurement m_timeMeasurement;
+    uint8_t write_mode{};
+    uint16_t len{};
+    char STRING_BUFFER[STRING_BUFFER_SIZE]{};
+    TimeMeasurement m_timeMeasurement{};
 
-    uint32_t m_MMIOStartAddress;
+    uint32_t m_MMIOStartAddress{};
     InterfaceWrapper *m_InterfaceWrapper;
 
     // commands
@@ -102,12 +104,13 @@ protected:
 
     // probability counter
 // 1 MB RAM => 1 million 1's and 0's possible => uint32_t
-    uint32_t total_one;
-    uint32_t total_zero;
-    uint32_t flipped_one;
-    uint32_t flipped_zero;
+    uint32_t total_one{};
+    uint32_t total_zero{};
+    uint32_t flipped_one{};
+    uint32_t flipped_zero{};
 
     MemoryModule& m_MemoryModule;
+    DeviceWrapper& m_DeviceWrapper;
 };
 
 #endif /* __MEMORY_CONTROL_H */

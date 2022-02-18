@@ -13,11 +13,12 @@ extern "C" {
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 
-MemoryController::MemoryController(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule)
+MemoryController::MemoryController(DeviceWrapper &deviceWrapper, InterfaceWrapper *interfaceWrapper,
+                                   MemoryModule &memoryModule)
         : write_mode(0xFF), len(0), STRING_BUFFER(""),
           m_MMIOStartAddress(MEMORY_BANK_ADDRESS),
           srambp(nullptr), total_one(0), total_zero(0),
-          flipped_one(0), flipped_zero(0), m_MemoryModule(memoryModule)
+          flipped_one(0), flipped_zero(0), m_MemoryModule(memoryModule), m_DeviceWrapper(deviceWrapper)
 {
     m_InterfaceWrapper = interfaceWrapper;
 }
