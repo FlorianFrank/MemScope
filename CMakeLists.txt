@@ -6,6 +6,10 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/device_specific_defines.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/file_list.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_documentation.cmake)
 
+option(BUILD_FOR_STM32 "BUILD STM32" ON)
+option(BUILD_FOR_STM32F429 "BUILD STM32F429" ON)
+
+
 project(${EXEC_NAME} CXX C ASM)
 
 #
@@ -15,7 +19,7 @@ function(build_lib_exe type build_name)
     if (${type} STREQUAL "exec")
         message("Build executable")
         build_lib_exe("lib" ${LIB_NAME})
-        add_executable(${build_name} ${StartUpFile} ${MainFilesCPP} )
+        add_executable(${build_name} ${ProjectFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile} ${MainFilesCPP} )
         target_link_libraries(${build_name}  ${LIB_NAME})
     else ()
         message("Build library")
