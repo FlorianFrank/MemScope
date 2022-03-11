@@ -162,6 +162,23 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
+void UARTWrapper::SendData(vector<uint8_t> msg, uint32_t timeout) {
+  // TODO: timeout
+  uint8_t *p_msg = &msg[0];
+  printf("%d msg size\n", msg.size());
+  HAL_UART_Transmit(&m_UARTHandle->m_UARTHandle, p_msg, msg.size(), timeout);
+}
+
+vector<uint8_t> UARTWrapper::ReceiveToIdle(uint16_t size, uint32_t timeout) {
+  // TODO: timeout
+  uint8_t data[size];
+  uint16_t real_size;
+  HAL_UARTEx_ReceiveToIdle(&m_UARTHandle->m_UARTHandle, data, size, &real_size, timeout);
+  vector<uint8_t> r(data, data + real_size);
+  return r;
+}
+
+
 
 #else
 /**

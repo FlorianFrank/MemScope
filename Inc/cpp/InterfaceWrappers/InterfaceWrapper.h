@@ -7,7 +7,10 @@
 #include "cpp/MemoryErrorHandling.h"
 #include "io_pin_defines.h"
 
+#include <vector>
 #include <cstdint> // uint8_t, uint16_t, uint32_t
+
+using namespace std;
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
@@ -43,5 +46,9 @@ public:
      * @return MEM_ERROR if no error occured otherwise return an error code.
      */
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
+
+    // TODO: InterfaceWrapper should be a abstract class
+    vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout) {};
+    void SendData(vector<uint8_t> msg, uint32_t timeout) {};
 };
 #endif //MEMORY_TESTING_FW_INTERFACEWRAPPER_H
