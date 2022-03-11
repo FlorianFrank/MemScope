@@ -26,7 +26,7 @@ int main()
 #endif
     FRAM_Rohm_MR48V256CTAZAARL fram;
 
-    MemoryControllerParallel memoryController(nullptr, fram);
+    MemoryControllerParallel memoryController(nullptr, fram, device);
     memoryController.Initialize();
 
     printf("START\n");

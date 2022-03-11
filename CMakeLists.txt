@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
+set(DEP_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 # include helper cmake files
 include(${CMAKE_CURRENT_SOURCE_DIR}/settings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/device_specific_defines.cmake)
