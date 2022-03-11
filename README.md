@@ -36,3 +36,43 @@ It is also possible to dynamically add memory modules to the library.
        -DBoardName="stm32f429" -DBoardClass=STM32F4 -DCPU=cortex-m4 -DFPUType=hard -DFPUSpecification=fpv4-sp-d16 -Dspecs=rdimon.specs   
        to Cmake options → click Apply and Ok
 6. Build & Debug (test with flash_leds function in gpio.c file).
+
+## 3. Use CXX_implementation as dependency library
+
+1. add git submoudle, run
+```
+git submodule add git@git.fim.uni-passau.de:frankfl/stm_measurement_firmware.git 
+```
+2. change submodule branch to CXX_implementation, edit .gitmodules file
+```
+[submodule "stm_measurement_firmware"]
+	path = stm_measurement_firmware
+	url = git@git.fim.uni-passau.de:frankfl/stm_measurement_firmware.git
+	branch = CXX_implementation
+```
+3. update git submodule, run
+```
+git submodule update --remote
+```
+
+4. add the following part to your CMakeLists.txt
+```
+cmake_minimum_required(VERSION 3.1)
+
+# IMPORTANT: set DEP_ROOT_DIR to access cmake files
+set(DEP_ROOT_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/stm_measurement_firmware)
+
+include(${DEP_ROOT_DIR}/settings.cmake)
+include(${DEP_ROOT_DIR}/cmake/device_specific_defines.cmake)
+include(${DEP_ROOT_DIR}/cmake/file_list.cmake)
+
+# IMPORTANT: project must be after includes
+project(you_project CXX C ASM)
+
+add_executable(you_project.elf main.cpp ${ProjectFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
+target_include_directories(you_project.elf PUBLIC ${include_dirs})
+```
+
+5. set board config file, edit OpenOCD(run/debug) configurations
+   The red part is set to `/yourproject/stm_measurement_firmware/OpenOCDConfig/stm32f429disc1.cfg`
+   ![](https://i.imgur.com/bSz7Pl6.png)
