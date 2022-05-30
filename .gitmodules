@@ -10,3 +10,6 @@
 [submodule "stm_flash_tool"]
 	path = stm_flash_tool
 	url = git@github.com:FlorianFrank/stm_flash_tool.git
+[submodule "stm32_usb_lib"]
+	path = stm32_usb_lib
+	url = git@github.com:FlorianFrank/stm32_usb_lib.git
