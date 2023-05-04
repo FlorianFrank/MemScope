@@ -1554,7 +1554,7 @@ uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 }
 
 /**
-  * @brief  Return Host Current Frame number
+  * @brief  Return Host Current Frame_old number
   * @param  USBx  Selected device
   * @retval current frame number
   */

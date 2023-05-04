@@ -11,6 +11,9 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/build_documentation.cmake)
 option(BUILD_FOR_STM32 "BUILD STM32" ON)
 option(BUILD_FOR_STM32F429 "BUILD STM32F429" ON)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 project(${EXEC_NAME} CXX C ASM)
 
@@ -27,7 +30,8 @@ function(build_lib_exe type build_name)
         message("Build library")
         add_library(${build_name} ${ProjectFiles} ${MiddlewareFiles} ${DriverFiles} ${StartUpFile})
     endif()
-
+    #message(${build_name})
+    #message(${include_dirs})
     target_include_directories(${build_name} PUBLIC ${include_dirs})
     install(TARGETS ${build_name} RUNTIME DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/${INSTALL_DIR}")
 
@@ -36,6 +40,8 @@ function(build_lib_exe type build_name)
     else ()
         target_link_libraries(${build_name} ${USB_LIB})
     endif ()
+
+
 endfunction()
 
 

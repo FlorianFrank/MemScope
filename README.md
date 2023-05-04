@@ -76,3 +76,20 @@ target_include_directories(you_project.elf PUBLIC ${include_dirs})
 5. set board config file, edit OpenOCD(run/debug) configurations
    The red part is set to `/yourproject/stm_measurement_firmware/OpenOCDConfig/stm32f429disc1.cfg`
    ![](https://i.imgur.com/bSz7Pl6.png)
+
+### 4. Set a unique device ID
+
+This part explains the steps required to set and control your STM32F429-Disc board via the framework. 
+
+Step 1: 
+Ensure that the STM board is properly connected to your computer. 
+
+Step 2:
+We assume that you have already cloned this repository and your IDE is open in order to modify the payload to make the STM unique.
+    •  Here’s a command line  “st-info –serial” that fetch the serial number of the connected STM board. Hint: at the first time connect only board by board in order to recognize board’s serial number.
+      
+    • Open main.hpp and modify the payload.
+      string idn_payload = "{\"name\":\"STM32F429-Discovery\", 	\"serial\":\"0670FF353138524E43084854\", \"owner\":\"your_name\"}";
+
+step 3: 
+Build/debug or flash your STM board via clion.

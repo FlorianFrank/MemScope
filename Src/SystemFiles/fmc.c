@@ -22,12 +22,15 @@
 #include "SystemFiles/fmc.h"
 #include "io_pin_defines.h"
 #include "error_handler.h"
-
+#include <stdio.h>
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
 SRAM_HandleTypeDef hsram1;
+
+extern uint32_t globalDataSetupTime;
+extern uint32_t globalAddressSetupTime;
 
 /* FMC initialization function */
 void MX_FMC_Init(void)
@@ -63,9 +66,11 @@ void MX_FMC_Init(void)
   hsram1.Init.ContinuousClock = FMC_CONTINUOUS_CLOCK_SYNC_ONLY;
   hsram1.Init.PageSize = FMC_PAGE_SIZE_NONE;
   /* Timing */
-  Timing.AddressSetupTime = 15;
+  //Timing.AddressSetupTime = 15;
+  Timing.AddressSetupTime = globalAddressSetupTime;
   Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 100;
+  //Timing.DataSetupTime = 100;
+  Timing.DataSetupTime = globalDataSetupTime;
   Timing.BusTurnAroundDuration = 15;
   Timing.CLKDivision = 16;
   Timing.DataLatency = 17;
@@ -81,6 +86,7 @@ void MX_FMC_Init(void)
 
   /* USER CODE END FMC_Init 2 */
 }
+
 
 static uint32_t FMC_Initialized = 0;
 

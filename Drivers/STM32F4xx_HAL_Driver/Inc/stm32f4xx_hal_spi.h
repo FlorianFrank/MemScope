@@ -397,7 +397,7 @@ typedef  void (*pSPI_CallbackTypeDef)(SPI_HandleTypeDef *hspi); /*!< pointer to 
   *            @arg SPI_FLAG_MODF: Mode fault flag
   *            @arg SPI_FLAG_OVR: Overrun flag
   *            @arg SPI_FLAG_BSY: Busy flag
-  *            @arg SPI_FLAG_FRE: Frame format error flag
+  *            @arg SPI_FLAG_FRE: Frame_old format error flag
   * @retval The new state of __FLAG__ (TRUE or FALSE).
   */
 #define __HAL_SPI_GET_FLAG(__HANDLE__, __FLAG__) ((((__HANDLE__)->Instance->SR) & (__FLAG__)) == (__FLAG__))
@@ -502,7 +502,7 @@ typedef  void (*pSPI_CallbackTypeDef)(SPI_HandleTypeDef *hspi); /*!< pointer to 
   *            @arg SPI_FLAG_MODF: Mode fault flag
   *            @arg SPI_FLAG_OVR: Overrun flag
   *            @arg SPI_FLAG_BSY: Busy flag
-  *            @arg SPI_FLAG_FRE: Frame format error flag
+  *            @arg SPI_FLAG_FRE: Frame_old format error flag
   * @retval SET or RESET.
   */
 #define SPI_CHECK_FLAG(__SR__, __FLAG__) ((((__SR__) & ((__FLAG__) & SPI_FLAG_MASK)) == \

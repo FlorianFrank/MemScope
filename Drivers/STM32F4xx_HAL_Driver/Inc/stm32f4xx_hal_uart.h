@@ -244,7 +244,7 @@ typedef  void (*pUART_RxEventCallbackTypeDef)(struct __UART_HandleTypeDef *huart
 #define HAL_UART_ERROR_NONE              0x00000000U   /*!< No error            */
 #define HAL_UART_ERROR_PE                0x00000001U   /*!< Parity error        */
 #define HAL_UART_ERROR_NE                0x00000002U   /*!< Noise error         */
-#define HAL_UART_ERROR_FE                0x00000004U   /*!< Frame error         */
+#define HAL_UART_ERROR_FE                0x00000004U   /*!< Frame_old error         */
 #define HAL_UART_ERROR_ORE               0x00000008U   /*!< Overrun error       */
 #define HAL_UART_ERROR_DMA               0x00000010U   /*!< DMA transfer error  */
 #if (USE_HAL_UART_REGISTER_CALLBACKS == 1)
@@ -530,7 +530,7 @@ typedef  void (*pUART_RxEventCallbackTypeDef)(struct __UART_HandleTypeDef *huart
   *            @arg UART_IT_RXNE: Receive Data register not empty interrupt
   *            @arg UART_IT_IDLE: Idle line detection interrupt
   *            @arg UART_IT_PE:   Parity Error interrupt
-  *            @arg UART_IT_ERR:  Error interrupt(Frame error, noise error, overrun error)
+  *            @arg UART_IT_ERR:  Error interrupt(Frame_old error, noise error, overrun error)
   * @retval None
   */
 #define __HAL_UART_ENABLE_IT(__HANDLE__, __INTERRUPT__)   ((((__INTERRUPT__) >> 28U) == UART_CR1_REG_INDEX)? ((__HANDLE__)->Instance->CR1 |= ((__INTERRUPT__) & UART_IT_MASK)): \
@@ -550,7 +550,7 @@ typedef  void (*pUART_RxEventCallbackTypeDef)(struct __UART_HandleTypeDef *huart
   *            @arg UART_IT_RXNE: Receive Data register not empty interrupt
   *            @arg UART_IT_IDLE: Idle line detection interrupt
   *            @arg UART_IT_PE:   Parity Error interrupt
-  *            @arg UART_IT_ERR:  Error interrupt(Frame error, noise error, overrun error)
+  *            @arg UART_IT_ERR:  Error interrupt(Frame_old error, noise error, overrun error)
   * @retval None
   */
 #define __HAL_UART_DISABLE_IT(__HANDLE__, __INTERRUPT__)  ((((__INTERRUPT__) >> 28U) == UART_CR1_REG_INDEX)? ((__HANDLE__)->Instance->CR1 &= ~((__INTERRUPT__) & UART_IT_MASK)): \

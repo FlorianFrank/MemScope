@@ -2423,7 +2423,7 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
       __HAL_SPI_CLEAR_MODFFLAG(hspi);
     }
 
-    /* SPI Frame error interrupt occurred ------------------------------------*/
+    /* SPI Frame_old error interrupt occurred ------------------------------------*/
     if (SPI_CHECK_FLAG(itflag, SPI_FLAG_FRE) != RESET)
     {
       SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_FRE);

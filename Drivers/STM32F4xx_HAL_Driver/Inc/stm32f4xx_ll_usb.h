@@ -302,7 +302,7 @@ typedef struct
   * @}
   */
 
-/** @defgroup USB_LL_CORE_Frame_Interval USB Low Layer Core Frame Interval
+/** @defgroup USB_LL_CORE_Frame_Interval USB Low Layer Core Frame_old Interval
   * @{
   */
 #define DCFG_FRAME_INTERVAL_80                 0U

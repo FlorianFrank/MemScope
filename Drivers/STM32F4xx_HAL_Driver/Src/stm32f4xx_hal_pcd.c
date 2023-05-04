@@ -1502,7 +1502,7 @@ __weak void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 }
 
 /**
-  * @brief  USB Start Of Frame callback.
+  * @brief  USB Start Of Frame_old callback.
   * @param  hpcd PCD handle
   * @retval None
   */

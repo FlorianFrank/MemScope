@@ -1103,7 +1103,7 @@ HAL_StatusTypeDef HAL_UART_UnRegisterRxEventCallback(UART_HandleTypeDef *huart)
     (#) In Non-Blocking mode transfers, possible errors are split into 2 categories.
         Errors are handled as follows :
        (+) Error is considered as Recoverable and non blocking : Transfer could go till end, but error severity is
-           to be evaluated by user : this concerns Frame Error, Parity Error or Noise Error in Interrupt mode reception .
+           to be evaluated by user : this concerns Frame_old Error, Parity Error or Noise Error in Interrupt mode reception .
            Received character is then retrieved and stored in Rx buffer, Error code is set to allow user to identify error type,
            and HAL_UART_ErrorCallback() user callback is executed. Transfer is kept ongoing on UART side.
            If user wants to abort it, Abort services should be called by user.
@@ -1504,7 +1504,7 @@ HAL_StatusTypeDef HAL_UART_DMAPause(UART_HandleTypeDef *huart)
   dmarequest = HAL_IS_BIT_SET(huart->Instance->CR3, USART_CR3_DMAR);
   if ((huart->RxState == HAL_UART_STATE_BUSY_RX) && dmarequest)
   {
-    /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+    /* Disable RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
     CLEAR_BIT(huart->Instance->CR1, USART_CR1_PEIE);
     CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -1540,7 +1540,7 @@ HAL_StatusTypeDef HAL_UART_DMAResume(UART_HandleTypeDef *huart)
     /* Clear the Overrun flag before resuming the Rx transfer*/
     __HAL_UART_CLEAR_OREFLAG(huart);
 
-    /* Re-enable PE and ERR (Frame error, noise error, overrun error) interrupts */
+    /* Re-enable PE and ERR (Frame_old error, noise error, overrun error) interrupts */
     SET_BIT(huart->Instance->CR1, USART_CR1_PEIE);
     SET_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -1861,7 +1861,7 @@ HAL_StatusTypeDef HAL_UARTEx_ReceiveToIdle_DMA(UART_HandleTypeDef *huart, uint8_
 */
 HAL_StatusTypeDef HAL_UART_Abort(UART_HandleTypeDef *huart)
 {
-  /* Disable TXEIE, TCIE, RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+  /* Disable TXEIE, TCIE, RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
   CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_TXEIE | USART_CR1_TCIE));
   CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -2001,7 +2001,7 @@ HAL_StatusTypeDef HAL_UART_AbortTransmit(UART_HandleTypeDef *huart)
 */
 HAL_StatusTypeDef HAL_UART_AbortReceive(UART_HandleTypeDef *huart)
 {
-  /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+  /* Disable RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
   CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
   CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -2064,7 +2064,7 @@ HAL_StatusTypeDef HAL_UART_Abort_IT(UART_HandleTypeDef *huart)
 {
   uint32_t AbortCplt = 0x01U;
 
-  /* Disable TXEIE, TCIE, RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+  /* Disable TXEIE, TCIE, RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
   CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_TXEIE | USART_CR1_TCIE));
   CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -2274,7 +2274,7 @@ HAL_StatusTypeDef HAL_UART_AbortTransmit_IT(UART_HandleTypeDef *huart)
 */
 HAL_StatusTypeDef HAL_UART_AbortReceive_IT(UART_HandleTypeDef *huart)
 {
-  /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+  /* Disable RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
   CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
   CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -2500,7 +2500,7 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
         /* In Normal mode, end DMA xfer and HAL UART Rx process*/
         if (huart->hdmarx->Init.Mode != DMA_CIRCULAR)
         {
-          /* Disable PE and ERR (Frame error, noise error, overrun error) interrupts */
+          /* Disable PE and ERR (Frame_old error, noise error, overrun error) interrupts */
           CLEAR_BIT(huart->Instance->CR1, USART_CR1_PEIE);
           CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -2539,7 +2539,7 @@ void HAL_UART_IRQHandler(UART_HandleTypeDef *huart)
         /* Disable the UART Parity Error Interrupt and RXNE interrupts */
         CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
 
-        /* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
+        /* Disable the UART Error Interrupt: (Frame_old error, noise error, overrun error) */
         CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
         /* Rx process is completed, restore huart->RxState to Ready */
@@ -3036,7 +3036,7 @@ static void UART_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
   {
     huart->RxXferCount = 0U;
 
-    /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+    /* Disable RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
     CLEAR_BIT(huart->Instance->CR1, USART_CR1_PEIE);
     CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -3171,7 +3171,7 @@ static HAL_StatusTypeDef UART_WaitOnFlagUntilTimeout(UART_HandleTypeDef *huart, 
     {
       if ((Timeout == 0U) || ((HAL_GetTick() - Tickstart) > Timeout))
       {
-        /* Disable TXE, RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts for the interrupt process */
+        /* Disable TXE, RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts for the interrupt process */
         CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE | USART_CR1_TXEIE));
         CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -3214,7 +3214,7 @@ HAL_StatusTypeDef UART_Start_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pDat
   /* Enable the UART Parity Error Interrupt */
   __HAL_UART_ENABLE_IT(huart, UART_IT_PE);
 
-  /* Enable the UART Error Interrupt: (Frame error, noise error, overrun error) */
+  /* Enable the UART Error Interrupt: (Frame_old error, noise error, overrun error) */
   __HAL_UART_ENABLE_IT(huart, UART_IT_ERR);
 
   /* Enable the UART Data Register not empty Interrupt */
@@ -3269,7 +3269,7 @@ HAL_StatusTypeDef UART_Start_Receive_DMA(UART_HandleTypeDef *huart, uint8_t *pDa
   /* Enable the UART Parity Error Interrupt */
   SET_BIT(huart->Instance->CR1, USART_CR1_PEIE);
 
-  /* Enable the UART Error Interrupt: (Frame error, noise error, overrun error) */
+  /* Enable the UART Error Interrupt: (Frame_old error, noise error, overrun error) */
   SET_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
   /* Enable the DMA transfer for the receiver request by setting the DMAR bit
@@ -3300,7 +3300,7 @@ static void UART_EndTxTransfer(UART_HandleTypeDef *huart)
   */
 static void UART_EndRxTransfer(UART_HandleTypeDef *huart)
 {
-  /* Disable RXNE, PE and ERR (Frame error, noise error, overrun error) interrupts */
+  /* Disable RXNE, PE and ERR (Frame_old error, noise error, overrun error) interrupts */
   CLEAR_BIT(huart->Instance->CR1, (USART_CR1_RXNEIE | USART_CR1_PEIE));
   CLEAR_BIT(huart->Instance->CR3, USART_CR3_EIE);
 
@@ -3596,7 +3596,7 @@ static HAL_StatusTypeDef UART_Receive_IT(UART_HandleTypeDef *huart)
       /* Disable the UART Parity Error Interrupt */
       __HAL_UART_DISABLE_IT(huart, UART_IT_PE);
 
-      /* Disable the UART Error Interrupt: (Frame error, noise error, overrun error) */
+      /* Disable the UART Error Interrupt: (Frame_old error, noise error, overrun error) */
       __HAL_UART_DISABLE_IT(huart, UART_IT_ERR);
 
       /* Rx process is completed, restore huart->RxState to Ready */

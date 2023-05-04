@@ -33,12 +33,13 @@
 extern SRAM_HandleTypeDef hsram1;
 
 /* USER CODE BEGIN Private defines */
-
+extern FMC_NORSRAM_TimingTypeDef Timing;
 /* USER CODE END Private defines */
 
 void MX_FMC_Init(void);
 void HAL_SRAM_MspInit(SRAM_HandleTypeDef* hsram);
 void HAL_SRAM_MspDeInit(SRAM_HandleTypeDef* hsram);
+void MX_FMC_Init_dataSetupTime(int d);
 
 /* USER CODE BEGIN Prototypes */
 

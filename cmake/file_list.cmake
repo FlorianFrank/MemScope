@@ -7,7 +7,10 @@ file(GLOB ProjectFiles
         "${DEP_ROOT_DIR}/Src/cpp/Devices/*.cpp"
         "${DEP_ROOT_DIR}/Src/cpp/InterfaceWrappers/*.cpp"
         "${DEP_ROOT_DIR}/Inc/cpp/MemoryModules/*.h"
-        "${DEP_ROOT_DIR}/Src/cpp/MemoryModules/*.cpp")
+        "${DEP_ROOT_DIR}/Src/cpp/MemoryModules/*.cpp"
+        "${DEP_ROOT_DIR}/Inc/cpp/uart_frame_protocol/*.h"
+        "${DEP_ROOT_DIR}/Src/cpp/uart_frame_protocol/*.cpp")
+
 
 set(MainFilesCPP
         "${DEP_ROOT_DIR}/Src/cpp/Main/Main.cpp"
