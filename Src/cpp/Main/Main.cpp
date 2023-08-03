@@ -153,11 +153,14 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
             uint8_t retValue = 0x00;
 
             if(keyValues["testType"] == "reliabilityTest"){
-                globalDataSetupTime = 15;
+                //globalDataSetupTime = 15;
                 globalAddressSetupTime = 10;
                 device.Initialize();
                 MemoryControllerParallel memoryController(nullptr, fram, device);
                 memoryController.Initialize();
+
+                stringstream ss(keyValues["dataSetupTime"]);
+                ss >> globalDataSetupTime;
 
                 MX_FMC_Init();
 
@@ -167,7 +170,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
                 for (uint32_t i = startAddress; i < stopAddress; i++)
                 {
                     printf("inside for loop  %u \n", i);
-                    memoryController.Write8BitWord(i, 0x55);
+                    memoryController.Write8BitWord(i, initialValue);
                 }
                 HAL_UART_Transmit(&huart1, end_writing_frame_buffer, end_writing_frame_bytes.size(),100);
 
@@ -179,11 +182,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
                 for (uint32_t i = startAddress ; i < stopAddress; i++)
                 {
-                    //memoryController.Read8BitWord(i, &retValue);
+                    memoryController.Read8BitWord(i, &retValue);
                     printf("%x;%x\n", i , retValue);
+
                     vector<uint32_t> data;
-                    if(retValue != 0x55)
-                    {
+                    if(retValue != initialValue){
                         data = {0x00};
                     }else{
                         data = {0x01};
@@ -193,7 +196,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
                     raw_frame.push_back(0xab);
                     raw_frame.push_back(0xef);
                     raw_frame.push_back(data.size());
-                    raw_frame.insert(raw_frame.end(), data.begin(), data.end());
+                    raw_frame.push_back(retValue);
                     raw_frame.push_back(0xe1);
                     raw_frame.push_back(0xe2);
                     uint8_t *raw_frame_buffer = &raw_frame[0];
@@ -234,7 +237,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
                 for (uint32_t i = startAddress; i < stopAddress; i++){
                     memoryController.Read8BitWord(i, &retValue);
-                    printf("%x;%x\n", i , retValue);
+                    //printf("%x;%x\n", i , retValue);
                     vector<uint32_t> data;
                     if(retValue != 0x55){
                         data = {0x00};
@@ -246,7 +249,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
                     raw_frame.push_back(0xab);
                     raw_frame.push_back(0xef);
                     raw_frame.push_back(data.size());
-                    raw_frame.insert(raw_frame.end(), data.begin(), data.end());
+                    raw_frame.push_back(retValue);
                     raw_frame.push_back(0xe1);
                     raw_frame.push_back(0xe2);
                     uint8_t *raw_frame_buffer = &raw_frame[0];

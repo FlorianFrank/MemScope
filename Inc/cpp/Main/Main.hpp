@@ -18,7 +18,21 @@ extern "C" {
 #endif
 #define STM32_UUID ((uint32_t *)0x1FFF7A10)
 extern int main();
-extern string idn_payload = "{\"name\":\"STM32F429-Discovery\", \"serial\":\"670FF353138524E43084854\", \"owner\":\"elkhayari\", \"externalMemory\":\"FRAM R2\"}";
+// Reading STM32F429 unique device ID, The UUID is stored in memory at address 0x1FFF7A10
+uint32_t idPart1 = STM32_UUID[0];
+uint32_t idPart2 = STM32_UUID[1];
+uint32_t idPart3 = STM32_UUID[2];
+
+// Convert idPartX variables to string
+std::string idPart1Str = std::to_string(idPart1);
+std::string idPart2Str = std::to_string(idPart2);
+std::string idPart3Str = std::to_string(idPart3);
+
+// Concatenate idPartXStr variables to form the UUID
+std::string UUID = idPart1Str + "-" + idPart2Str + "-" + idPart3Str;
+
+
+extern string idn_payload = "{\"name\":\"STM32F429-Discovery\", \"serial\":\"670FF353138524E43084854\", \"owner\":\"elkhayari\", \"device_label\":\"stm-board-2\", \"externalMemory\":\"FRAM R2\" , \"UUID\":\"" + UUID + "\"}";
 
 extern string WRITING_STATE = "WRITING";
 extern string END_WRITING_STATE = "END WRITING";
