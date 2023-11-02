@@ -11,6 +11,7 @@
 #include <SystemFiles/fmc.h>
 #include "cpp/uart_frame_protocol/Frame.h"
 #include "cpp/uart_frame_protocol/JsonParser.h"
+#include "cpp/MemoryControllers/MemoryController.h"
 
 bool running = true;
 
@@ -26,7 +27,7 @@ uint32_t globalAddressSetupTime ;
   * @brief  The application entry point.
   * @retval int
   */
-#define RxBuffer_SIZE   400
+#define RxBuffer_SIZE   600
 
 // Buffers:
 uint8_t RxBuffer[RxBuffer_SIZE];  // RxBuffer is where the DMA is going to copy the data
@@ -47,14 +48,10 @@ FRAM_Rohm_MR48V256CTAZAARL fram;
 int main(){
 
 #if STM32
-    //STM32F429Wrapper device;
+    STM32F429Wrapper device;
     device.Initialize();
 #endif
-    //FRAM_Rohm_MR48V256CTAZAARL fram;
-
-    //MemoryControllerParallel memoryController(nullptr, fram, device);
-    //memoryController.Initialize();
-
+    FRAM_Rohm_MR48V256CTAZAARL fram;
 
     /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
     HAL_Init();
@@ -112,6 +109,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
     uint32_t startAddress ;
     uint32_t stopAddress ;
     uint8_t initialValue;
+    uint8_t initialValue_1;
+
+    uint32_t rowOffset ;
+    uint32_t hammeringIterations ;
 
     if(huart == &huart1) {
         cout << "RECEIVE " << endl;
@@ -126,15 +127,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
         auto keyValues = JsonParser::parse(jsonString);
 
 
-
-
-
-        //device.Initialize();
-        MemoryControllerParallel memoryController(nullptr, fram, device);
-        memoryController.Initialize();
-
         if (keyValues["HEADER"] == "*IDN?") {
             Frame frame(idn_payload);
+            cout <<  idn_payload << endl;
             vector<uint8_t> TxIDN = frame.getBytes();
             uint8_t *raw_frame_buffer = &TxIDN[0];
             hal_status = HAL_UART_Transmit(&huart1, raw_frame_buffer, TxIDN.size(), 100);
@@ -153,7 +148,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
             uint8_t retValue = 0x00;
 
             if(keyValues["testType"] == "reliabilityTest"){
-                //globalDataSetupTime = 15;
+                globalDataSetupTime = 15;
                 globalAddressSetupTime = 10;
                 device.Initialize();
                 MemoryControllerParallel memoryController(nullptr, fram, device);
@@ -161,6 +156,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
                 stringstream ss(keyValues["dataSetupTime"]);
                 ss >> globalDataSetupTime;
+                cout << ">>> WRITE/READ with DataSetupTime: " << globalDataSetupTime << endl;
 
                 MX_FMC_Init();
 
@@ -169,7 +165,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
                 for (uint32_t i = startAddress; i < stopAddress; i++)
                 {
-                    printf("inside for loop  %u \n", i);
+                    //printf("inside for loop  %u \n", i);
                     memoryController.Write8BitWord(i, initialValue);
                 }
                 HAL_UART_Transmit(&huart1, end_writing_frame_buffer, end_writing_frame_bytes.size(),100);
@@ -178,12 +174,13 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
                 printf("START READING\n");
 
                 //fram.GetMemorySize()
+                //printf("%u", fram.GetMemorySize());
                 HAL_UART_Transmit(&huart1, reading_frame_buffer, reading_frame_bytes.size(),100);
 
                 for (uint32_t i = startAddress ; i < stopAddress; i++)
                 {
                     memoryController.Read8BitWord(i, &retValue);
-                    printf("%x;%x\n", i , retValue);
+                    //printf("%x;%x\n", i , retValue);
 
                     vector<uint32_t> data;
                     if(retValue != initialValue){
@@ -213,8 +210,10 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
                 HAL_UART_Transmit(&huart1, writing_frame_buffer, writing_frame_bytes.size(),100);
 
-                globalAddressSetupTime = 10;
                 globalDataSetupTime = 15;
+                device.Initialize();
+                MemoryControllerParallel memoryController(nullptr, fram, device);
+                memoryController.Initialize();
 
                 /* FMC initialization */
                 MX_FMC_Init();
@@ -226,29 +225,23 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 
                 HAL_UART_Transmit(&huart1, end_writing_frame_buffer, end_writing_frame_bytes.size(),100);
 
-                //globalDataSetupTime = stoi(keyValues["dataSetupTime"]);
                 stringstream ss(keyValues["dataSetupTime"]);
                 ss >> globalDataSetupTime;
                 cout << ">>> READING with reduced DataSetupTime: " << globalDataSetupTime << endl;
+
                 MX_FMC_Init();
 
                 HAL_UART_Transmit(&huart1, reading_frame_buffer, reading_frame_bytes.size(),100);
-                // fram.GetMemorySize()
 
                 for (uint32_t i = startAddress; i < stopAddress; i++){
                     memoryController.Read8BitWord(i, &retValue);
-                    //printf("%x;%x\n", i , retValue);
-                    vector<uint32_t> data;
-                    if(retValue != 0x55){
-                        data = {0x00};
-                    }else{
-                        data = {0x01};
-                    }
+                    printf("Address:: %x, Value: %x\n", i, retValue);
+
                     // build a frame
                     vector<uint8_t> raw_frame;
                     raw_frame.push_back(0xab);
                     raw_frame.push_back(0xef);
-                    raw_frame.push_back(data.size());
+                    raw_frame.push_back(sizeof(retValue));
                     raw_frame.push_back(retValue);
                     raw_frame.push_back(0xe1);
                     raw_frame.push_back(0xe2);
@@ -263,9 +256,160 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
             else if(keyValues["testType"] == "writeLatencyTest"){
                 // TODO
                 printf("*** START Write Latency Test ***\n\n");
+
+                initialValue_1 = stoi(keyValues["initialValue_1"], nullptr, 16);
+                printf("> Initial Value 1 = %x\n", initialValue_1);
+
+                // Default Parameters
+                globalAddressSetupTime = 10;
+                globalDataSetupTime = 100;
+
+                device.Initialize();
+                MemoryControllerParallel memoryController(nullptr, fram, device);
+                memoryController.Initialize();
+
+                /* FMC initialization with default params*/
+                MX_FMC_Init();
+
+                /* Fill under normal conditions */
+                for (uint32_t i = startAddress ; i < stopAddress ; i++)
+                {
+                    memoryController.Write8BitWord(i, initialValue_1);
+                }
+
+                /* Read memory and verify write operations */
+                for (uint32_t i = startAddress; i < stopAddress; i++){
+                    memoryController.Read8BitWord(i, &retValue);
+                    vector<uint32_t> data;
+                    if(retValue != initialValue_1){
+                        data = {0x00};
+                    }else{
+                        data = {0x01};
+                    }
+                }
+
+                //HAL_UART_Transmit(&huart1, end_writing_frame_buffer, end_writing_frame_bytes.size(),100);
+
+                stringstream ss(keyValues["dataSetupTime"]);
+                ss >> globalDataSetupTime;
+                cout << ">>> READING with reduced DataSetupTime: " << globalDataSetupTime << endl;
+                MX_FMC_Init();
+
+                // Fill the memory under reduced data setup time
+                HAL_UART_Transmit(&huart1, end_writing_frame_buffer, end_writing_frame_bytes.size(),100);
+
+                for (uint32_t i = startAddress ; i < stopAddress ; i++)
+                {
+                    memoryController.Write8BitWord(i, initialValue);
+                }
+
+                /* read under normal data setup time */
+                // Default Parameters
+                globalAddressSetupTime = 10;
+                globalDataSetupTime = 100;
+
+                /* FMC initialization with default params*/
+                MX_FMC_Init();
+
+                HAL_UART_Transmit(&huart1, reading_frame_buffer, reading_frame_bytes.size(),100);
+
+                for (uint32_t i = startAddress; i < stopAddress; i++){
+                    memoryController.Read8BitWord(i, &retValue);
+
+                    // build a frame
+                    vector<uint8_t> raw_frame;
+                    raw_frame.push_back(0xab);
+                    raw_frame.push_back(0xef);
+                    raw_frame.push_back(sizeof(retValue));
+                    raw_frame.push_back(retValue);
+                    raw_frame.push_back(0xe1);
+                    raw_frame.push_back(0xe2);
+                    uint8_t *raw_frame_buffer = &raw_frame[0];
+
+                    HAL_UART_Transmit(&huart1, raw_frame_buffer, raw_frame.size(), 100);
+                }
+
+
             }else if(keyValues["testType"] == "rowHammingTest"){
                 // TODO
                 printf("*** START Row Hamming Test ***\n\n");
+                initialValue_1 = stoi(keyValues["initialValue_1"], nullptr, 16);
+                stringstream ss_rowOffset(keyValues["rowOffset"]);
+                ss_rowOffset >> rowOffset;
+
+                stringstream ss_hamIterations(keyValues["HammeringIterations"]);
+                ss_hamIterations >> hammeringIterations;
+
+                printf("initial value_1 %x \n", initialValue_1);
+                printf("initial value %x \n", initialValue);
+
+                cout << ">>> rowOffset: " << rowOffset << endl;
+                cout << ">>> hammeringIterations: " << hammeringIterations << endl;
+
+                // fill the memory with initial_value_1 and reduced data setup time
+                stringstream ss_dst(keyValues["dataSetupTime"]);
+                ss_dst >> globalDataSetupTime;
+
+                device.Initialize();
+                MemoryControllerParallel memoryController(nullptr, fram, device);
+                memoryController.Initialize();
+
+                /* FMC initialization with default params*/
+                MX_FMC_Init();
+
+                /* Fill under normal conditions */
+                for (uint32_t i = startAddress ; i < stopAddress ; i++)
+                {
+                    memoryController.Write8BitWord(i, initialValue_1);
+                }
+
+                /* Read memory and verify write operations */
+                for (uint32_t i = startAddress; i < stopAddress; i++){
+                    memoryController.Read8BitWord(i, &retValue);
+                    vector<uint32_t> data;
+                    if(retValue != initialValue_1){
+                        data = {0x00};
+                    }else{
+                        data = {0x01};
+                    }
+                }
+
+                // hammer on the rows
+                for (int iteration = 0; iteration < hammeringIterations; ++iteration) {
+                    for (uint32_t i = startAddress; i < stopAddress; i += 2 * rowOffset) {
+                        int endAddress = i + rowOffset;
+                        if (endAddress > stopAddress) {
+                            endAddress = stopAddress;
+                        }
+                        for (uint32_t writeAddress = i; writeAddress < endAddress; ++writeAddress) {
+                            memoryController.Write8BitWord(writeAddress, initialValue);
+                        }
+                    }
+                }
+
+                // Default Parameters
+                globalDataSetupTime = 100;
+                cout << ">>> READING with reduced DataSetupTime: " << globalDataSetupTime << endl;
+                MX_FMC_Init();
+
+                for (uint32_t i = startAddress; i < stopAddress; i++) {
+                        memoryController.Read8BitWord(i, &retValue);
+                    // build a frame
+                        vector<uint8_t> raw_frame;
+                        raw_frame.push_back(0xab);
+                        raw_frame.push_back(0xef);
+                        raw_frame.push_back(sizeof(retValue));
+                        raw_frame.push_back(retValue);
+                        raw_frame.push_back(0xe1);
+                        raw_frame.push_back(0xe2);
+                        uint8_t *raw_frame_buffer = &raw_frame[0];
+                        HAL_UART_Transmit(&huart1, raw_frame_buffer, raw_frame.size(), 100);
+                }
+
+                HAL_UART_Transmit(&huart1, end_reading_frame_buffer,end_reading_frame_bytes.size() , 100);
+
+                // if no exit
+
             }else{
                 printf("*** Test Not Defined ***\n\n");
             }

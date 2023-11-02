@@ -66,8 +66,8 @@ void MX_FMC_Init(void)
   hsram1.Init.ContinuousClock = FMC_CONTINUOUS_CLOCK_SYNC_ONLY;
   hsram1.Init.PageSize = FMC_PAGE_SIZE_NONE;
   /* Timing */
-  //Timing.AddressSetupTime = 15;
-  Timing.AddressSetupTime = globalAddressSetupTime;
+  Timing.AddressSetupTime = 15;
+  //Timing.AddressSetupTime = globalAddressSetupTime;
   Timing.AddressHoldTime = 15;
   //Timing.DataSetupTime = 100;
   Timing.DataSetupTime = globalDataSetupTime;

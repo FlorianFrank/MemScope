@@ -32,7 +32,8 @@ std::string idPart3Str = std::to_string(idPart3);
 std::string UUID = idPart1Str + "-" + idPart2Str + "-" + idPart3Str;
 
 
-extern string idn_payload = "{\"name\":\"STM32F429-Discovery\", \"serial\":\"670FF353138524E43084854\", \"owner\":\"elkhayari\", \"device_label\":\"stm-board-2\", \"externalMemory\":\"FRAM R2\" , \"UUID\":\"" + UUID + "\"}";
+
+extern string idn_payload = "{\"name\":\"STM32F429-Discovery\",\"owner\":\"elkhayari\", \"device_label\":\"stm-board-2\", \"externalMemory\":\"FRAM R2\" , \"serial\":\"" + UUID + "\"}";
 
 extern string WRITING_STATE = "WRITING";
 extern string END_WRITING_STATE = "END WRITING";
