@@ -34,7 +34,7 @@ public:
 
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
-    void SendData(vector<uint8_t> msg, uint32_t timeout);
+    void SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout);
     vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout);
 
 private:

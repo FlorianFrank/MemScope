@@ -3,7 +3,7 @@
  * @copyright University of Passau - Chair of computer engineering
  */
 #include "cpp/InterfaceWrappers/UARTWrapper.h"
-
+#include "Logger.h"
 UARTWrapper::UARTWrapper(const char* interfaceName, uint32_t baudrate, Mode mode, WordLength wordLen,
                                                   Parity parity, UART_StopBits stopBits)
 {
@@ -83,11 +83,20 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
 MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout)
 {
     HAL_StatusTypeDef ret = HAL_UART_Receive(&m_UARTHandle->m_UARTHandle, data, *size, timeout);
-    if(ret == HAL_BUSY)
+    if(ret == HAL_BUSY){
+        Logger::log(LogLevel::ERROR, "UART Receive is busy. Unable to process request.");
         return MemoryErrorHandling::MEM_HAL_BUSY;
-    if (ret == HAL_ERROR)
+    }
+    if (ret == HAL_ERROR){
+        Logger::log(LogLevel::ERROR, "UART Receive encountered an I/O error.");
         return MemoryErrorHandling::MEM_IO_ERROR;
+    }
+    if (ret == HAL_TIMEOUT) {
+        Logger::log(LogLevel::WARNING, "UART Receive operation timed out.");
+        return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+    }
 
+    Logger::log(LogLevel::INFO, "Data received successfully, size: %d bytes.", *size);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 #else
@@ -104,6 +113,8 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeo
  */
 MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
 {
+    Logger::log(LogLevel::DEBUG, "Initialize UART on STM32F429 Interface: %s Baudrate: %d",
+                m_UARTHandle->m_InterfaceName,  m_UARTHandle->m_Baudrate);
     int elemCtr = 0;
     bool interfaceFound = false;
     for(const AvailableUARTProperties& availPorts: m_AvailableUARTPorts)
@@ -111,16 +122,23 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
         if(availPorts.GetName() == uartProperties->m_InterfaceName)
         {
             uartProperties->m_UARTHandle.Instance = m_AvailableUARTPorts[elemCtr].GetUARTHandle();
+            Logger::log(LogLevel::DEBUG, "Interface %s detected", m_UARTHandle->m_InterfaceName);
             interfaceFound = true;
-            if(uartProperties->m_Baudrate < availPorts.GetMinBaudrate() || uartProperties->m_Baudrate > availPorts.GetMaxBaudrate())
+            if (uartProperties->m_Baudrate < availPorts.GetMinBaudrate() ||
+                uartProperties->m_Baudrate > availPorts.GetMaxBaudrate()) {
+                Logger::log(LogLevel::ERROR, "Baudrate %d not supported", m_UARTHandle->m_Baudrate);
                 return MemoryErrorHandling::MEM_UNSUPPORTED_BAUDRATE;
+            }
+
             break;
         }
         elemCtr++;
     }
 
-    if(!interfaceFound)
+    if (!interfaceFound) {
+        Logger::log(LogLevel::ERROR, "Interface %s not found", m_UARTHandle->m_InterfaceName);
         return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;
+    }
 
 
     uartProperties->m_UARTHandle.Init.BaudRate = uartProperties->m_Baudrate;
@@ -134,7 +152,7 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     else if (uartProperties->m_WordLength == UARTWrapper_WORD_LENGTH_9)
         uartProperties->m_UARTHandle.Init.WordLength = UART_WORDLENGTH_9B;
 
-    if(uartProperties->m_StopBits == UARTWrapper_STOP_BITS_1)
+    if (uartProperties->m_StopBits == UARTWrapper_STOP_BITS_1)
         uartProperties->m_UARTHandle.Init.StopBits = UART_STOPBITS_1;
     else if(uartProperties->m_StopBits == UARTWrapper_STOP_BITS_2)
         uartProperties->m_UARTHandle.Init.StopBits = UART_STOPBITS_2;
@@ -156,24 +174,52 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     uartProperties->m_UARTHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     uartProperties->m_UARTHandle.Init.OverSampling = UART_OVERSAMPLING_16;
     uartProperties->m_UARTHandle.gState = HAL_UART_STATE_RESET;
-    if (HAL_UART_Init(&uartProperties->m_UARTHandle) != HAL_OK)
+    if (HAL_UART_Init(&uartProperties->m_UARTHandle) != HAL_OK) {
+        Logger::log(LogLevel::ERROR, "HAL_UART_Init failed!");
         return MemoryErrorHandling::MEM_HAL_INTERNAL_ERROR;
-
+    }
+    Logger::log(LogLevel::DEBUG, "Interface %s initialized", m_UARTHandle->m_InterfaceName);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-void UARTWrapper::SendData(vector<uint8_t> msg, uint32_t timeout) {
-  // TODO: timeout
-  uint8_t *p_msg = &msg[0];
-  printf("%d msg size\n", msg.size());
-  HAL_UART_Transmit(&m_UARTHandle->m_UARTHandle, p_msg, msg.size(), timeout);
+void UARTWrapper::SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout) {
+    Logger::log(LogLevel::INFO, "Send data: %s", msg);
+
+    // Transmit the data over UART
+    auto returnValue = HAL_UART_Transmit(&m_UARTHandle->m_UARTHandle, msg, msg_len, timeout);
+    switch(returnValue)
+    {
+        case HAL_BUSY:
+            Logger::log(LogLevel::ERROR, "UART Transmit is busy. Unable to process request.");
+            break;
+        case HAL_ERROR:
+            Logger::log(LogLevel::ERROR, "UART Transmit encountered an I/O error.");
+            break;
+        case HAL_TIMEOUT:
+            Logger::log(LogLevel::WARNING, "UART Transmit operation timed out.");
+
+    }
 }
 
 vector<uint8_t> UARTWrapper::ReceiveToIdle(uint16_t size, uint32_t timeout) {
   // TODO: timeout
-  uint8_t data[size];
+  uint8_t data[512] ;// TODO size
   uint16_t real_size;
-  HAL_UARTEx_ReceiveToIdle(&m_UARTHandle->m_UARTHandle, data, size, &real_size, timeout);
+    Logger::log(LogLevel::DEBUG, "Waiting for data to receive");
+    switch (HAL_UARTEx_ReceiveToIdle(&m_UARTHandle->m_UARTHandle, data, size, &real_size, timeout)) {
+        case HAL_OK:
+            Logger::log(LogLevel::DEBUG, "Received %d of data ", real_size);
+            break;
+        case HAL_ERROR:
+            Logger::log(LogLevel::ERROR, "HAL_UARTEx_ReceiveToIdle returned an error");
+            break;
+        case HAL_BUSY:
+            Logger::log(LogLevel::WARNING, "Interface busy");
+            break;
+        case HAL_TIMEOUT:
+            Logger::log(LogLevel::WARNING, "Interface timeout occured");
+            break;
+    }
   vector<uint8_t> r(data, data + real_size);
   return r;
 }
