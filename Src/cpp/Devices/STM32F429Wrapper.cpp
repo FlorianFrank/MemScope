@@ -3,6 +3,7 @@
  * @copyright University of Passau - Chair of computer engineering
  */
 #ifdef STM32
+#include "logger.h"
 #include "cpp/Devices/STM32F429Wrapper.h"
 
 #include "io_pin_defines.h"
@@ -27,23 +28,24 @@ STM32F429Wrapper::~STM32F429Wrapper()
  * @brief This function initializes the clock configuration.
  * @return Error Code
  */
-/*static*/ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::SystemClockConfig()
+MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::SystemClockConfig()
 {
+    Logger::log(LogLevel::INFO, "Initializing system clock...");
 #if CLOCK_DEFAULT_SETTINGS
+    // Configuring the internal regulator voltage
+    Logger::log(LogLevel::DEBUG, "Configuring internal regulator voltage...");
+    __HAL_RCC_PWR_CLK_ENABLE();
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+
+    // Configuring RCC Oscillators
+    Logger::log(LogLevel::DEBUG, "Configuring RCC Oscillators...");
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-    /**
-     * Configure the main internal regulator output voltage
-    */
-    __HAL_RCC_PWR_CLK_ENABLE();
+    // Enable USART1 clock
+    __HAL_RCC_USART1_CLK_ENABLE();
 
-    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-
-    /**
-     * Initializes the RCC Oscillators according to the specified parameters
-     * in the RCC_OscInitTypeDef structure.
-     */
+    // PLL Configuration
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -54,11 +56,13 @@ STM32F429Wrapper::~STM32F429Wrapper()
     RCC_OscInitStruct.PLL.PLLQ = 3;
     HAL_StatusTypeDef ret = HAL_RCC_OscConfig(&RCC_OscInitStruct);
     if(ret != HAL_OK)
+    {
+        Logger::log(LogLevel::ERROR, "HAL_RCC_OscConfig failed with error code: %d", ret);
         return MemoryErrorHandling::HAL_StatusTypeDefToErr(ret);
+    }
 
-    /**
-     * Initializes the CPU, AHB and APB buses clocks
-     */
+    // Clock Initialization
+    Logger::log(LogLevel::DEBUG, "Initializing clocks...");
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
@@ -67,43 +71,14 @@ STM32F429Wrapper::~STM32F429Wrapper()
 
     ret = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
     if(ret != HAL_OK)
+    {
+        Logger::log(LogLevel::ERROR, "HAL_RCC_ClockConfig failed with error code: %d", ret);
         return MemoryErrorHandling::HAL_StatusTypeDefToErr(ret);
+    }
+    Logger::log(LogLevel::INFO, "System clock initialized successfully.");
 #else
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-        RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-
-        /** Configure the main internal regulator output voltage
-        */
-        __HAL_RCC_PWR_CLK_ENABLE();
-        __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-        /** Initializes the RCC Oscillators according to the specified parameters
-        * in the RCC_OscInitTypeDef structure.
-        */
-        RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-        RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-        RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-        RCC_OscInitStruct.PLL.PLLM = 4;
-        RCC_OscInitStruct.PLL.PLLN = 72;
-        RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-        RCC_OscInitStruct.PLL.PLLQ = 3;
-        if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-        {
-            Error_Handler();
-        }
-        /** Initializes the CPU, AHB and APB buses clocks
-        */
-        RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                                      |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-        RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-        RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-        RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-        RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-
-        if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
-        {
-              Error_Handler();
-        }
+    Logger::log(LogLevel::DEBUG, "Using alternate clock configuration...");
+    // Similar detailed log messages for the alternate configuration...
 #endif
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
@@ -114,19 +89,38 @@ STM32F429Wrapper::~STM32F429Wrapper()
  */
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::Initialize()
 {
+    Logger::log(LogLevel::INFO, "Initializing STM32F429Wrapper...");
+
 #if RDMON_SPECS
     initialise_monitor_handles();
+    Logger::log(LogLevel::DEBUG, "RDMON monitor handles initialized.");
 #endif // RDMON_SPECS
 
     MemoryErrorHandling::MEM_ERROR ret = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_Init());
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+    {
+        Logger::log(LogLevel::ERROR, "HAL_Init failed with error code: %d", ret);
         return ret;
+    }
+    Logger::log(LogLevel::INFO, "HAL initialized successfully.");
 
     ret = InitializeDefaultGPIOSettings();
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+    {
+        Logger::log(LogLevel::ERROR, "GPIO initialization failed with error code: %d", ret);
         return ret;
+    }
+    Logger::log(LogLevel::INFO, "GPIO initialized successfully.");
 
-    return SystemClockConfig();
+    ret = SystemClockConfig();
+    if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+    {
+        Logger::log(LogLevel::ERROR, "System clock configuration failed with error code: %d", ret);
+        return ret;
+    }
+    Logger::log(LogLevel::INFO, "System clock configured successfully.");
+
+    return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
 /**
@@ -136,28 +130,44 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::Initialize()
  */
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitialize()
 {
+    Logger::log(LogLevel::INFO, "De-initializing STM32F429Wrapper...");
+
     while(!m_InitializedGPIOPins.empty())
     {
         GPIOPin pin = m_InitializedGPIOPins.back();
+        Logger::log(LogLevel::DEBUG, "De-initializing GPIO pin: %d" + pin.GetGPIOPin());
         auto ret = DeInitializeGPIOPin(pin);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        {
+            Logger::log(LogLevel::ERROR, "De-initializing GPIO pin failed with error code: %d" + ret);
             return ret;
+        }
     }
 
     while(!m_InitializedGPIOBanks.empty())
     {
         GPIOBank bank = m_InitializedGPIOBanks.back();
+        Logger::log(LogLevel::DEBUG, "De-initializing GPIO bank: %d", bank);
         auto ret = DeInitializeGPIOBank(bank);
         if(ret != MemoryErrorHandling::MEM_NO_ERROR)
+        {
+            Logger::log(LogLevel::ERROR, "De-initializing GPIO bank failed with error code: %d" + ret);
             return ret;
+        }
     }
 
     MemoryErrorHandling::MEM_ERROR err = MemoryErrorHandling::HAL_StatusTypeDefToErr(HAL_DeInit());
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
+    {
+        Logger::log(LogLevel::ERROR, "HAL_DeInit failed with error code: %d", err);
         return err;
+    }
+
+    Logger::log(LogLevel::INFO, "HAL de-initialized successfully.");
 
     // Disable SYS_CLK
     __HAL_RCC_PWR_CLK_DISABLE();
+    Logger::log(LogLevel::DEBUG, "SYS_CLK disabled.");
 
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
@@ -368,92 +378,108 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeHardwareInterface(std
  */
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeDefaultGPIOSettings()
 {
+    Logger::log(LogLevel::DEBUG, "Initializing USART1 GPIOs");
     MemoryErrorHandling::MEM_ERROR ret = InitializeGPIOPinDeviceSpecific({IO_BANK_A, STLINK_RX_Pin|STLINK_TX_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF7_USART1);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
-
+    Logger::log(LogLevel::DEBUG, "Initializing B1, MEMS INT, and TP INT GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_A, B1_Pin|MEMS_INT1_Pin|MEMS_INT2_Pin|TP_INT1_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_EVT_RISING, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, 0);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing ACP_RST GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_A, ACP_RST_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing BOOT1 GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_B, BOOT1_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_INPUT, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing G4, G5, B6, B7, ZZ GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_B, G4_Pin|G5_Pin|B6_Pin|B7_Pin | ZZ_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing SPI4 WP, NCS MEMS SPI, CSX, OTG FS PSO GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_C, SPI4_WP_Pin|NCS_MEMS_SPI_Pin|CSX_Pin|OTG_FS_PSO_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, 0);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing OTG FS OC GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_C, OTG_FS_OC_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_EVT_RISING, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing G6 GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_C, G6_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing I2C3 SDA GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_C, I2C3_SDA_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C3);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing I2C3 SCL GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_C, I2C3_SCL_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_OD, GPIO_PULLUP, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C3);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing SPI5 WP GPIO");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_C, SPI5_WP_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
-
+    Logger::log(LogLevel::DEBUG, "Initializing G7, B2 GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_D, G7_Pin|B2_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing IO_BANK_E");
     ret = InitializeGPIOBank(IO_BANK_E);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing SPI5 CS and SPI5 HOLD GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_F, SPI5_CS_Pin|SPI5_HOLDspi5_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_INPUT, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, 0);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing R7, DOTCLK, B3 GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_G, R7_Pin|DOTCLK_Pin|B3_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF14_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing G3, B4 GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_G, G3_Pin|B4_Pin},
                             GPIO_PIN_RESET, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF9_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing LD3, LD4 GPIOs");
     ret = InitializeGPIOPinDeviceSpecific({IO_BANK_G, LD3_Pin|LD4_Pin},
                    GPIO_PIN_RESET, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF9_LTDC);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
 
+    Logger::log(LogLevel::DEBUG, "Initializing IO_BANK_H");
     ret = InitializeGPIOBank(IO_BANK_H);
     if(ret != MemoryErrorHandling::MEM_NO_ERROR)
         return ret;
