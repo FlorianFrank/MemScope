@@ -2,54 +2,60 @@
  * @author Florian Frank
  * @copyright University of Passau - Chair of computer engineering
  */
-
-#include <cpp/Devices/STM32F429Wrapper.h>
-#include <cpp/MemoryModules/FRAM_Rohm_MR48V256CTAZAARL.h>
-#include <cpp/MemoryControllers/MemoryControllerParallel.h>
 #include "cpp/Main/Main.hpp"
+#include "cpp/JSONParser.h"
+#include <cpp/Devices/STM32F429Wrapper.h>
+#include <cpp/InterfaceWrappers/UARTWrapper.h>
+#include <cpp/MemoryControllers/MemoryControllerParallel.h>
+#include <cpp/MemoryModules/FRAM_Rohm_MR48V256CTAZAARL.h>
+#include "cpp/MemoryTest.h"
 
+#include <string.h>
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_uart.h"
 
+// Global Flags and Data
+bool isRunning = true;
+bool isCallbackReceived = false;
+std::string receivedCallbackData;
 
-bool running = true;
+// Callback Function
+void onCommandReceived(std::string &data) {
+    receivedCallbackData = data;
+    isCallbackReceived = true;
+}
 
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-
-int main()
-{
-
+int main() {
 #if STM32
     STM32F429Wrapper device;
     device.Initialize();
 #endif
-    FRAM_Rohm_MR48V256CTAZAARL fram;
 
+    FRAM_Rohm_MR48V256CTAZAARL fram;
     MemoryControllerParallel memoryController(nullptr, fram, device);
     memoryController.Initialize();
 
-    printf("START\n");
-    for (uint32_t i = 0; i < fram.GetMemorySize(); i++)
-    {
-        memoryController.Write8BitWord(i, 0xFF);
-        HAL_Delay(1);
+    auto uartWrapper = std::make_unique<UARTWrapper>(
+            "USART1", 115200, UARTWrapper_TRANSMIT_RECEIVE,
+            UARTWrapper_WORD_LENGTH_8, UARTWrapper_NO_PARITY,
+            UARTWrapper_STOP_BITS_1, UART_MODE_INTERRUPT
+    );
+    uartWrapper->Initialize();
+    uartWrapper->RegisterReceiveCallback(onCommandReceived);
+    uartWrapper->ReceiveData(nullptr, nullptr, NON_BLOCKING, 0);
 
+    PUFConfiguration config;
+    MemoryTest test;
+
+    // Main Loop
+    while (isRunning) {
+        if (isCallbackReceived) {
+            parse_json(receivedCallbackData.c_str(), &config);
+            isCallbackReceived = false;
+            static MemoryErrorHandling::MEM_ERROR MemoryTestFactory(MemoryTest **memoryTest, MemoryController *memoryController, TimeMeasurement *timeMeasurement);
+
+        }
+
+        HAL_Delay(250);  // 250 ms delay
     }
-
-    printf("START READING\n");
-
-    uint8_t retValue = 0x00;
-    for (uint32_t i = 0; i < fram.GetMemorySize(); i++)
-    {
-        memoryController.Read8BitWord(i, &retValue);
-    }
-
-    int ctr = 0;
-    if(retValue != 0xFF)
-    {
-        ctr++;
-    }
-
-    printf("CTR %d\n", ctr);
 }

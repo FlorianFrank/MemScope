@@ -30,6 +30,10 @@ namespace UARTProperties
         UARTWrapper_TRANSMIT, UARTWrapper_RECEIVE, UARTWrapper_TRANSMIT_RECEIVE
     };
 
+    enum UART_InterruptMode {
+        UART_MODE_BLOCKING, UART_MODE_INTERRUPT, UART_MODE_DMA
+    };
+
     /**
      * @brief Enum to select the word length of the interface.
      */
@@ -62,7 +66,7 @@ namespace UARTProperties
     };
 
 #if STM32
-    typedef struct __UART_HandleTypeDef UARTInstance;
+    typedef UART_HandleTypeDef UARTInstance;
 #else
     typedef uint32_t UARTInstance;
 #endif // STM32
@@ -73,13 +77,17 @@ namespace UARTProperties
      */
     struct UARTHandle
     {
-        UARTInstance m_UARTHandle;
+        UARTInstance* m_UARTHandle;
         const char *m_InterfaceName;
         uint32_t m_Baudrate;
         Mode m_Mode;
         WordLength m_WordLength;
         Parity m_Parity;
         UART_StopBits m_StopBits;
+        UART_InterruptMode m_InterruptMode;
+        uint8_t* rx_buffer;
+        uint32_t rx_index;
+        std::string m_ReturnBuffer;
     };
 
     /**

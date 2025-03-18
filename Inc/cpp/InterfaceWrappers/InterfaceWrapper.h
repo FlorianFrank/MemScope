@@ -6,11 +6,17 @@
 #define MEMORY_TESTING_FW_INTERFACEWRAPPER_H
 #include "cpp/MemoryErrorHandling.h"
 #include "io_pin_defines.h"
+#include "UARTProperties.h"
+
 
 #include <vector>
 #include <cstdint> // uint8_t, uint16_t, uint32_t
 
 using namespace std;
+
+enum BlockingMode {
+    BLOCKING, NON_BLOCKING
+};
 
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
@@ -45,7 +51,7 @@ public:
      * @param timeout a timeout must be specified when using blocking functions.
      * @return MEM_ERROR if no error occured otherwise return an error code.
      */
-    virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
+    virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) = 0;
 
     // TODO: InterfaceWrapper should be a abstract class
     vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout) {};

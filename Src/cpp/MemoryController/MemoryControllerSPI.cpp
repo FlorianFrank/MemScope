@@ -76,7 +76,7 @@ MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t address, uint8_t *readValue
 
     uint8_t retData[2];
     uint16_t retDataSize = 2;
-    err = m_SPIWrapper->ReceiveData(retData, &retDataSize, 1000);
+    err = m_SPIWrapper->ReceiveData(retData, &retDataSize, BLOCKING, 1000);
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
 
@@ -338,7 +338,7 @@ MEM_ERROR MemoryControllerSPI::SendSPICommand(SPI_Commands spiCMD, uint8_t *retV
     MEM_ERROR err = m_SPIWrapper->SendData(&cmd, &size, 10);
     size = 1;
     if(response || err != MemoryErrorHandling::MEM_NO_ERROR)
-        m_SPIWrapper->ReceiveData(retValue, &size, 10);
+        m_SPIWrapper->ReceiveData(retValue, &size, BLOCKING, 10);
     return err;
 
 }

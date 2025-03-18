@@ -211,7 +211,7 @@ MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutIn
  * @param timeoutInMs timeoutInMs in ms when using blocking functions.
  * @return MEM_NO_ERROR if execution was successful.
  */
-MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs)
+MEM_ERROR SPIWrapper::ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeoutInMs)
 {
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;

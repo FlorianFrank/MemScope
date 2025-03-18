@@ -26,7 +26,7 @@ public:
 
     MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
 
-    MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) override;
 
 };
 #endif //STM_MEASUREMENT_FIRMWARE_USBWRAPPER_H
