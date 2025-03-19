@@ -5,13 +5,12 @@
 #include <regex>
 
 
-std::string extract_function_name(const std::string &input) {
-    std::regex re("::(\\w+)");
-    std::smatch match;
-    if (std::regex_search(input, match, re) && match.size() > 1) {
-        return match.str(1);
+std::string getFilenameFromPath(const std::string& fullPath) {
+    size_t pos = fullPath.find_last_of("/\\");
+    if (pos != std::string::npos) {
+        return fullPath.substr(pos + 1);
     }
-    return "";
+    return fullPath;  // No slashes found, return the original string
 }
 
 /*static*/ void Logger::log(LogLevel level, const char *file, int line, const char *format, ...) {
@@ -48,7 +47,7 @@ std::string extract_function_name(const std::string &input) {
             break;
     }
 
-    printf("%s:%d ", extract_function_name(file).c_str(), line);
+    printf("%s:%d ", getFilenameFromPath(file).c_str(), line);
 
     va_list args;
     va_start(args, format);

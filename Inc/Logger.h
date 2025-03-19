@@ -21,5 +21,5 @@ public:
      * @param format Format string.
      * @param ... Additional arguments.
      */
-    static void log(LogLevel level, const char* format, ...);
+    static void log(LogLevel level, const char* file, int line, const char* format, ...);
 };
