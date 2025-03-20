@@ -20,6 +20,8 @@ public:
                                       DeviceWrapper &deviceWrapper);
 
     MEM_ERROR Initialize() override;
+    MEM_ERROR SetTimingParameters(PUFConfiguration &pufConfig) override;
+
 
     MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) override;
 
@@ -30,6 +32,7 @@ public:
     MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value) override;
 
 private:
+    bool m_initialized = false;
     MemoryControllerParallelProperties m_Properties;
 };
 #endif //MEMORY_TESTING_FW_MEMORYCONTROLLERPARALLEL_H

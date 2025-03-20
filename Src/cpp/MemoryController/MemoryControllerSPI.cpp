@@ -7,6 +7,11 @@
 #include "cpp/MemoryControllers/MemoryControllerSPI.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
+MEM_ERROR MemoryControllerSPI::SetTimingParameters(PUFConfiguration &pufConfig){
+    // TODO currently not supported
+    return MEM_ERROR::MEM_NO_ERROR;
+}
+
 
 MemoryControllerSPI::MemoryControllerSPI(DeviceWrapper &deviceWrapper, SPIWrapper *interfaceWrapper,
                                          MemoryModule &memoryModule) : MemoryController(

@@ -36,7 +36,11 @@ extern SRAM_HandleTypeDef hsram1;
 
 /* USER CODE END Private defines */
 
-void MX_FMC_Init(void);
+
+void MX_FMC_Init(
+        uint16_t addressSetupTime, uint16_t addressHoldTime, uint16_t dataSetupTime,
+        uint16_t busTurnAroundDuration, uint16_t clkDivision, uint16_t dataLatency
+        );
 void HAL_SRAM_MspInit(SRAM_HandleTypeDef* hsram);
 void HAL_SRAM_MspDeInit(SRAM_HandleTypeDef* hsram);
 

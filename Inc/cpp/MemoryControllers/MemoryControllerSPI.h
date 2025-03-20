@@ -85,6 +85,8 @@ public:
     MEM_ERROR SetUltraDeepPowerDown();
     MEM_ERROR SetSleepMode();
     MEM_ERROR EraseChip();
+    MEM_ERROR SetTimingParameters(PUFConfiguration &pufConfig) override;
+
 
     // Helper functions
     MEM_ERROR SendSPICommand(SPI_Commands spiCMD, uint8_t *retValue, bool response);

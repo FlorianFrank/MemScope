@@ -11,6 +11,7 @@
 #include "io_pin_defines.h"
 #include "cpp/InterfaceWrappers/InterfaceWrapper.h"
 #include "cpp/MemoryModules/MemoryModule.h"
+#include "cpp/JSONParser.h"
 
 /* see fmc.c
  * FMC_NORSRAM_BANK1 = 0x60000000
@@ -53,18 +54,10 @@ public:
     virtual MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value);
     virtual MEM_ERROR Read16BitWord(uint32_t adr, uint16_t *value);
 
-
-    MEM_ERROR WriteSingleValue(uint32_t address, uint8_t value);
-    MEM_ERROR WriteSingleValue(uint32_t address, uint16_t value);
-
-    MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t value);
     MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t value);
-    MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t address));
     MEM_ERROR FillMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t address));
 
     MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t expectedValue);
-    MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t expectedValue);
-    MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint8_t(*dataFunction)(uint32_t address));
     MEM_ERROR VerifyMemoryArea(uint32_t startAddress, uint32_t endAddress, uint16_t(*dataFunction)(uint32_t address));
 
 
@@ -76,7 +69,13 @@ public:
     MEM_ERROR FillMemoryWithAlternatingZeroAndOne();
     MEM_ERROR FillMemoryWithAlternatingOneAndZero();
 
+    virtual MEM_ERROR SetTimingParameters(PUFConfiguration &pufConfig);
+
     static bool IsInvalidAddress(uint32_t address, uint32_t size);
+
+    inline MemoryModule& getMemoryModule() const{
+        return m_MemoryModule;
+    }
 
 protected:
 

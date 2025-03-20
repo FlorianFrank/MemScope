@@ -30,7 +30,8 @@
 SRAM_HandleTypeDef hsram1;
 
 /* FMC initialization function */
-void MX_FMC_Init(void)
+void MX_FMC_Init(uint16_t addressSetupTime, uint16_t addressHoldTime, uint16_t dataSetupTime,
+                 uint16_t busTurnAroundDuration, uint16_t clkDivision, uint16_t dataLatency)
 {
   /* USER CODE BEGIN FMC_Init 0 */
 
@@ -63,12 +64,12 @@ void MX_FMC_Init(void)
   hsram1.Init.ContinuousClock = FMC_CONTINUOUS_CLOCK_SYNC_ONLY;
   hsram1.Init.PageSize = FMC_PAGE_SIZE_NONE;
   /* Timing */
-  Timing.AddressSetupTime = 15;
-  Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 100;
-  Timing.BusTurnAroundDuration = 15;
-  Timing.CLKDivision = 16;
-  Timing.DataLatency = 17;
+  Timing.AddressSetupTime = addressSetupTime;
+  Timing.AddressHoldTime = addressHoldTime;
+  Timing.DataSetupTime = dataSetupTime;
+  Timing.BusTurnAroundDuration = busTurnAroundDuration;
+  Timing.CLKDivision = clkDivision;
+  Timing.DataLatency = dataLatency;
   Timing.AccessMode = FMC_ACCESS_MODE_A;
   /* ExtTiming */
 
