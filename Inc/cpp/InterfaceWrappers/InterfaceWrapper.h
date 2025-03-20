@@ -54,7 +54,9 @@ public:
     virtual MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) = 0;
 
     // TODO: InterfaceWrapper should be a abstract class
-    vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout) {};
+    std::vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout) {
+        return std::vector<uint8_t>();
+    };
     void SendData(vector<uint8_t> msg, uint32_t timeout) {};
 };
 #endif //MEMORY_TESTING_FW_INTERFACEWRAPPER_H

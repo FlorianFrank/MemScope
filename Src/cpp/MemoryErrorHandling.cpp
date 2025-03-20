@@ -30,12 +30,12 @@
     }
 }
 
-/*static*/ const char * MemoryErrorHandling::MemErrorToString(MEM_ERROR errorCode)
+/*static*/ const char * MemoryErrorHandling::memErrorToString(MEM_ERROR errorCode)
 {
     switch (errorCode)
     {
         case MEM_NO_ERROR:
-            return "No Error occured";
+            return "No Error occurred";
         case MEM_REGISTER_NOT_SET:
             return "Register could not be written";
         case MEM_UNKNOWN_ERROR:
@@ -80,6 +80,8 @@
             return "Bit len not supported";
         case MEM_FUNCTION_NOT_IMPLEMENTED:
             return "Function not implemented";
+        case EXPERIMENT_NOT_SUPORTED:
+            return "Experiment not supported";
     }
     return "Unknown error";
 }

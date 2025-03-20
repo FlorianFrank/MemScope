@@ -33,11 +33,12 @@ public:
         MEM_MEMORY_CONTROLLER_NOT_SPECIFIED = 19,
         MEM_GPIO_PIN_ALREADY_IN_USE = 20,
         MEM_UNSUPPORTED_BAUDRATE = 21,
-        MEM_FUNCTION_NOT_IMPLEMENTED = 22
+        MEM_FUNCTION_NOT_IMPLEMENTED = 22,
+        EXPERIMENT_NOT_SUPORTED = 23
     } typedef MEM_ERROR;
 
     static MEM_ERROR HAL_StatusTypeDefToErr(int status);
-    static const char * MemErrorToString(MEM_ERROR errorCode);
+    static const char * memErrorToString(MEM_ERROR errorCode);
 };
 
 

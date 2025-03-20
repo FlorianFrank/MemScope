@@ -22,6 +22,7 @@ class MemoryModule
 {
 public:
     MemoryModule() = delete;
+    virtual ~MemoryModule();
     virtual MEM_ERROR Initialize();
 
     virtual MEM_ERROR CreateWriteMessage(uint32_t address, uint8_t valueToWrite, uint8_t *returnSendBuffer, uint16_t *sendBufferSize);
@@ -30,7 +31,6 @@ public:
 protected:
     MemoryModule(Type memoryType, const char *memoryLabel, Connection connectionType, uint8_t bitWidth,
                  uint32_t memorySize, TemperatureProperties temperatureProperties, VoltageProperties voltageProperties);
-    virtual ~MemoryModule();
 
     MEM_ERROR Initialize(InterfaceWrapper *interfaceWrapper);
 

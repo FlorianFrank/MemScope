@@ -11,7 +11,8 @@
 #include <cpp/InterfaceWrappers/UARTWrapper.h>
 #include <cpp/MemoryControllers/MemoryControllerParallel.h>
 #include <cpp/MemoryModules/FRAM_Rohm_MR48V256CTAZAARL.h>
-#include "cpp/MemoryTest.h"
+#include "cpp/Experiments/MemoryExperiment.h"
+#include "cpp/Experiments/RowHammering.h"
 #include "Logger.h"
 #include "general_defines.h"
 
@@ -47,14 +48,14 @@ MEM_ERROR setupUARTInterface(std::unique_ptr<UARTWrapper> &uartWrapper) {
 
     auto retCode = uartWrapper->Initialize();
     if (retCode != MemoryErrorHandling::MEM_NO_ERROR) {
-        Logger::log(LogLevel::ERROR, "UART initialization failed: %s", MemoryErrorHandling::memErrorToString(retCode));
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "UART initialization failed: %s", MemoryErrorHandling::memErrorToString(retCode));
         return retCode;
     }
 
     uartWrapper->RegisterReceiveCallback(onCommandReceived);
     retCode = uartWrapper->ReceiveData(nullptr, nullptr, NON_BLOCKING, 0);
     if (retCode != MemoryErrorHandling::MEM_NO_ERROR) {
-        Logger::log(LogLevel::ERROR, "UART receive setup failed: %s", MemoryErrorHandling::memErrorToString(retCode));
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "UART receive setup failed: %s", MemoryErrorHandling::memErrorToString(retCode));
     }
     return retCode;
 }
@@ -71,25 +72,24 @@ int main() {
 
     FRAM_Rohm_MR48V256CTAZAARL fram;
     MemoryControllerParallel memoryController(nullptr, fram, device);
-    memoryController.Initialize();
 
     std::unique_ptr<UARTWrapper> uartWrapper;
     auto ret = setupUARTInterface(uartWrapper);
     if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
-        Logger::log(LogLevel::INFO, "Exiting program due to UART setup failure.");
+        Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Exiting program due to UART setup failure.");
         return 0;
     }
 
     PUFConfiguration config;
-    MemoryTest test;
-
     while (isRunning) {
         if (isCallbackReceived) {
             parse_json(receivedCallbackData.c_str(), &config);
             isCallbackReceived = false;
-            //static MemoryErrorHandling::MEM_ERROR MemoryTestFactory(
-            //      MemoryTest **memoryTest, MemoryController *memoryController,
-            //      TimeMeasurement *timeMeasurement);
+            MemoryExperiment *experiment;
+            MemoryExperiment::MemoryTestFactory(&experiment, memoryController, config);
+            experiment->init();
+            experiment->running();
+            experiment->done();
         }
 
         HAL_Delay(MAIN_LOOP_DELAY);
