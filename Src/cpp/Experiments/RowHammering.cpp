@@ -6,10 +6,13 @@
 #include "cpp/MemoryControllers/MemoryController.h"
 
 
+#include <string.h>
+
 #define DEBUG_ENABLE 1
 
-RowHammering::RowHammering(MemoryController &memoryController, PUFConfiguration &pufConfig) : MemoryExperiment(
-        memoryController, pufConfig) {
+RowHammering::RowHammering(MemoryController &memoryController, PUFConfiguration &pufConfig,
+                           InterfaceWrapper &interfaceWrapper) : MemoryExperiment(
+        memoryController, pufConfig, interfaceWrapper) {
 }
 
 MemoryErrorHandling::MEM_ERROR RowHammering::init() {
@@ -39,20 +42,25 @@ MemoryErrorHandling::MEM_ERROR RowHammering::running() {
                 pufValue);
 
     // Outer loop iterates over the segments to which row hammering should be applied
-    for (uint32_t startAddrRange = startAddress; startAddrRange <= endAddress+1; startAddrRange += (2 * hammeringDistance)) {
+    for (uint32_t startAddrRange = startAddress;
+         startAddrRange <= endAddress + 1; startAddrRange += (2 * hammeringDistance)) {
         // Dynamically adjust the hammering distance to cover the last segment
-        uint32_t hammerDistDynamic = (startAddrRange + 2 * hammeringDistance > (endAddress+1)) ? (endAddress+1) - startAddrRange : hammeringDistance;
+        uint32_t hammerDistDynamic = (startAddrRange + 2 * hammeringDistance > (endAddress + 1)) ? (endAddress + 1) -
+                                                                                                   startAddrRange
+                                                                                                 : hammeringDistance;
         // Perform hammering iterations for the current range
         for (uint32_t iteration = 0; iteration < hammeringIterations; iteration++) {
             for (uint32_t addressOffset = 0; addressOffset < hammerDistDynamic; addressOffset++) {
                 if (bitWidth == 8) {
 #ifdef DEBUG_ENABLE
-                    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Hammer 0x%x", startAddrRange + addressOffset);
+                    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Hammer 0x%x",
+                                startAddrRange + addressOffset);
 #endif
                     m_MemoryController.Write8BitWord(startAddrRange + addressOffset, pufValue);
                 } else if (bitWidth == 16) {
 #ifdef DEBUG_ENABLE
-                    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Hammer 0x%x", startAddrRange + addressOffset);
+                    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Hammer 0x%x",
+                                startAddrRange + addressOffset);
 #endif
                     m_MemoryController.Write16BitWord(startAddrRange + addressOffset, pufValue);
                 }
@@ -73,6 +81,18 @@ MemoryErrorHandling::MEM_ERROR RowHammering::done() {
     auto hammeringDistance = m_PUFConfiguration.rowHammeringConfig.hammeringDistance;
     auto bitWidth = m_MemoryController.getMemoryModule().GetBitWidth();
 
+    char sendDataBuf[128];
+
+    auto sendData = [&sendDataBuf](InterfaceWrapper &interfaceWrapper, uint16_t addr, uint16_t returnValue) {
+        int actualSize = snprintf(sendDataBuf, 128, "0x%x, 0x%0x, 0x%0x\n", addr, returnValue, addr + returnValue);
+        if (actualSize > 0) {
+            uint16_t size = actualSize;
+            interfaceWrapper.SendData(reinterpret_cast<uint8_t *>(sendDataBuf), &size, 1000, false);
+        } else {
+            Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "snprintf returned error %s", strerror(errno));
+        }
+    };
+
     for (uint32_t startAddrRange = startAddress + hammeringDistance;
          startAddrRange <= endAddress + 1; startAddrRange += (2 * hammeringDistance)) {
         for (uint32_t addressOffset = 0; addressOffset < hammeringDistance; addressOffset++) {
@@ -83,12 +103,14 @@ MemoryErrorHandling::MEM_ERROR RowHammering::done() {
                 Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Read from 0x%x", startAddrRange + addressOffset);
 #endif
                 m_MemoryController.Read8BitWord(startAddrRange + addressOffset, &returnValue);
+                sendData(m_InterfaceWrapper, startAddrRange + addressOffset, returnValue);
             } else if (bitWidth == 16) {
                 uint16_t returnValue;
 #ifdef DEBUG_ENABLE
                 Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Read from 0x%x", startAddrRange + addressOffset);
 #endif
                 m_MemoryController.Read16BitWord(startAddrRange + addressOffset, &returnValue);
+                sendData(m_InterfaceWrapper, startAddrRange + addressOffset,returnValue);
             }
         }
     }
