@@ -7,7 +7,7 @@
 #include "cpp/MemoryControllers/MemoryControllerSPI.h"
 #include "cpp/InterfaceWrappers/SPIWrapper.h"
 
-MEM_ERROR MemoryControllerSPI::SetTimingParameters(PUFConfiguration &pufConfig){
+MEM_ERROR MemoryControllerSPI::SetTimingParameters(std::map<std::string, uint16_t> &timingParameters){
     // TODO currently not supported
     return MEM_ERROR::MEM_NO_ERROR;
 }
@@ -44,7 +44,7 @@ MEM_ERROR MemoryControllerSPI::Write8BitWord(uint32_t address, uint8_t valueToWr
         return ret;
 
     SPIWrapper::SetWriteProtect();
-    err = m_SPIWrapper->SendData(sendBuffer, &sendBufferLen, 10000);
+    err = m_SPIWrapper->SendData(sendBuffer, &sendBufferLen, 10000, true);
     SPIWrapper::ResetWriteProtect();
 
     if (err != MemoryErrorHandling::MEM_NO_ERROR)
@@ -73,7 +73,7 @@ MEM_ERROR MemoryControllerSPI::Read8BitWord(uint32_t address, uint8_t *readValue
         return err;
 
     SPIWrapper::SetWriteProtect();
-    err = m_SPIWrapper->SendData(readData, &lenReadData, 1000);
+    err = m_SPIWrapper->SendData(readData, &lenReadData, 1000, true);
     SPIWrapper::ResetWriteProtect();
     if(err != MemoryErrorHandling::MEM_NO_ERROR)
         return err;
@@ -340,7 +340,7 @@ MEM_ERROR MemoryControllerSPI::SendSPICommand(SPI_Commands spiCMD, uint8_t *retV
 
     auto cmd = (uint8_t)spiCMD;
     uint16_t size = 1;
-    MEM_ERROR err = m_SPIWrapper->SendData(&cmd, &size, 10);
+    MEM_ERROR err = m_SPIWrapper->SendData(&cmd, &size, 10, true);
     size = 1;
     if(response || err != MemoryErrorHandling::MEM_NO_ERROR)
         m_SPIWrapper->ReceiveData(retValue, &size, BLOCKING, 10);

@@ -20,7 +20,7 @@ public:
                                       DeviceWrapper &deviceWrapper);
 
     MEM_ERROR Initialize() override;
-    MEM_ERROR SetTimingParameters(PUFConfiguration &pufConfig) override;
+    MEM_ERROR SetTimingParameters(std::map<std::string, uint16_t> &timingParameters) override;
 
 
     MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value) override;

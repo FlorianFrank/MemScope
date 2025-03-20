@@ -13,6 +13,8 @@
 #include "cpp/MemoryModules/MemoryModule.h"
 #include "cpp/JSONParser.h"
 
+#include <map>
+
 /* see fmc.c
  * FMC_NORSRAM_BANK1 = 0x60000000
  * FMC_NORSRAM_BANK2 = 0x64000000
@@ -69,7 +71,7 @@ public:
     MEM_ERROR FillMemoryWithAlternatingZeroAndOne();
     MEM_ERROR FillMemoryWithAlternatingOneAndZero();
 
-    virtual MEM_ERROR SetTimingParameters(PUFConfiguration &pufConfig);
+    virtual MEM_ERROR SetTimingParameters(std::map<std::string, uint16_t> &timingParameters);
 
     static bool IsInvalidAddress(uint32_t address, uint32_t size);
 

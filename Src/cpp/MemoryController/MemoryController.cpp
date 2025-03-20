@@ -340,6 +340,6 @@ MEM_ERROR MemoryController::Read16BitWord(uint32_t adr, uint16_t *value) {
     return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
 }
 
-MEM_ERROR MemoryController::SetTimingParameters(PUFConfiguration &pufConfig){
+MEM_ERROR MemoryController::SetTimingParameters(std::map<std::string, uint16_t> &timingParameters){
     return MemoryErrorHandling::MEM_MEMORY_CONTROLLER_NOT_SPECIFIED;
 }

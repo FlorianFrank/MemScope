@@ -85,7 +85,7 @@ public:
     MEM_ERROR SetUltraDeepPowerDown();
     MEM_ERROR SetSleepMode();
     MEM_ERROR EraseChip();
-    MEM_ERROR SetTimingParameters(PUFConfiguration &pufConfig) override;
+    MEM_ERROR SetTimingParameters(std::map<std::string, uint16_t> &timingParameters) override;
 
 
     // Helper functions

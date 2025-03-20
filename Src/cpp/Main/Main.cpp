@@ -43,7 +43,7 @@ MEM_ERROR setupUARTInterface(std::unique_ptr<UARTWrapper> &uartWrapper) {
     uartWrapper = std::make_unique<UARTWrapper>(
             DEFAULT_UART_PORT, DEFAULT_BAUDRATE, UARTWrapper_TRANSMIT_RECEIVE,
             UARTWrapper_WORD_LENGTH_8, UARTWrapper_NO_PARITY,
-            UARTWrapper_STOP_BITS_1, UART_MODE_INTERRUPT
+            UARTWrapper_STOP_BITS_1, UART_MODE_INTERRUPT, 64
     );
 
     auto retCode = uartWrapper->Initialize();
@@ -71,7 +71,7 @@ int main() {
 #endif
 
     FRAM_Rohm_MR48V256CTAZAARL fram;
-    MemoryControllerParallel memoryController(nullptr, fram, device);
+    std::unique_ptr<MemoryController> memoryController = std::make_unique<MemoryControllerParallel>(MemoryControllerParallel(nullptr, fram, device));
 
     std::unique_ptr<UARTWrapper> uartWrapper;
     auto ret = setupUARTInterface(uartWrapper);
@@ -86,7 +86,7 @@ int main() {
             parse_json(receivedCallbackData.c_str(), &config);
             isCallbackReceived = false;
             MemoryExperiment *experiment;
-            MemoryExperiment::MemoryTestFactory(&experiment, memoryController, config);
+            MemoryExperiment::MemoryTestFactory(&experiment, *memoryController, config, *uartWrapper);
             experiment->init();
             experiment->running();
             experiment->done();

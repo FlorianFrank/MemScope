@@ -5,6 +5,34 @@
 #include "cpp/MemoryControllers/MemoryControllerParallel.h"
 #include "Logger.h"  // Include the Logger header for logging functionality
 
+
+
+/*-- SRAM GPIOs Configuration --------------------------------------------------*/
+/*
++-------------------+------------------+-------------------+
+| PD14 <-> FMC_D0   | PF0  <-> FMC_A0  | PE0  <-> FMC_NBL0 |
+| PD15 <-> FMC_D1   | PF1  <-> FMC_A1  | PE1  <-> FMC_NBL1 |
+| PD0  <-> FMC_D2   | PF2  <-> FMC_A2  | PD4  <-> FMC_NOE  |
+| PD1  <-> FMC_D3   | PF3  <-> FMC_A3  | PD5  <-> FMC_NWE  |
+| PE7  <-> FMC_D4   | PF4  <-> FMC_A4  | PD7  <-> FMC_NE1  |
+| PE8  <-> FMC_D5   | PF5  <-> FMC_A5  |-------------------+
+| PE9  <-> FMC_D6   | PF12 <-> FMC_A6  |
+| PE10 <-> FMC_D7   | PF13 <-> FMC_A7  |
+| PE11 <-> FMC_D8   | PF14 <-> FMC_A8  |
+| PE12 <-> FMC_D9   | PF15 <-> FMC_A9  |
+| PE13 <-> FMC_D10  | PG0  <-> FMC_A10 |
+| PE14 <-> FMC_D11  | PG1  <-> FMC_A11 |
+| PE15 <-> FMC_D12  | PG2  <-> FMC_A12 |
+| PD8  <-> FMC_D13  | PG3  <-> FMC_A13 |
+| PD9  <-> FMC_D14  | PG4  <-> FMC_A14 |
+| PD10 <-> FMC_D15  | PG5  <-> FMC_A15 |
++-------------------| PD11 <-> FMC_A16 |
+                    | PD12 <-> FMC_A17 |
+                    | PD13 <-> FMC_A18 |
+                    | PE3  <-> FMC_A19 |
+                    +------------------+
+*/
+
 #ifdef STM32
 extern "C" {
 #include <SystemFiles/fmc.h>
@@ -83,7 +111,7 @@ MEM_ERROR MemoryControllerParallel::Initialize()
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerParallel::SetTimingParameters(PUFConfiguration &pufConfig){
+MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, uint16_t> &timingParameters){
     if(m_initialized){
         Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitialize SRAM controller");
         HAL_SRAM_DeInit(&hsram1);
@@ -91,12 +119,46 @@ MEM_ERROR MemoryControllerParallel::SetTimingParameters(PUFConfiguration &pufCon
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initialize SRAM controller with new timing parameters");
 #if STM32
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initializing FMC (STM32).");
-    uint16_t addressSetupTime = 15;
-    uint16_t addressHoldTime = 15;
-    uint16_t dataSetupTime = 100;
-    uint16_t busTurnAroundDuration = 15;
-    uint16_t clkDivision = 16;
-    uint16_t dataLatency = 17;
+
+    auto getTimingParameter = [&timingParameters](const char* value){
+        auto pos = timingParameters.find(value);
+        if (pos != timingParameters.end()) {
+            return static_cast<int>(pos->second);
+        } else {
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Parameter %s not found!", value);
+            return -1;
+        }
+    };
+
+    int addressSetupTime =  getTimingParameter("addressSetupTime");
+    if(addressSetupTime == -1)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    int addressHoldTime =  getTimingParameter("addressHoldTime");
+    if(addressHoldTime == -1)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    int dataSetupTime =  getTimingParameter("dataSetupTime");
+    if(dataSetupTime == -1)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    int busTurnAroundDuration =  getTimingParameter("busTurnAroundDuration");
+    if(busTurnAroundDuration == -1)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    int clkDivision =  getTimingParameter("clkDivision");
+    if(clkDivision == -1)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    int dataLatency = getTimingParameter("clkDivision");
+    if (dataLatency == -1)
+        return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
+
+    Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
+                "Configure FMC with following parameters (addressSetupTime: 0x%0x, addressHoldTime: 0x%0x, "
+                "dataSetupTime: 0x%0x, busTurnAroundDuration: 0x%0x, clkDivision: 0x%0x, dataLatency: 0x%0x)",
+                addressSetupTime, addressHoldTime, dataSetupTime, busTurnAroundDuration, clkDivision, dataLatency);
+
     MX_FMC_Init(addressSetupTime, addressHoldTime, dataSetupTime, busTurnAroundDuration, clkDivision, dataLatency);
     m_initialized = true;
 #endif // STM32
@@ -136,7 +198,7 @@ MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
  */
 MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
 {
-    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Reading 8-bit value from address: 0x%08X", adr);
+//    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Reading 8-bit value from address: 0x%08X", adr);
 
     if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Invalid address: 0x%08X", adr);
