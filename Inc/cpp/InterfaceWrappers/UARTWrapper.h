@@ -30,7 +30,8 @@ public:
                          WordLength wordLen = UARTWrapper_WORD_LENGTH_8,
                          Parity parity = UARTWrapper_NO_PARITY,
                          UART_StopBits stopBits = UARTWrapper_STOP_BITS_1,
-                         UART_InterruptMode interruptMode = UART_MODE_BLOCKING);
+                         UART_InterruptMode interruptMode = UART_MODE_BLOCKING,
+                         uint16_t buffering = 0);
 
     ~UARTWrapper() override;
 
@@ -38,13 +39,13 @@ public:
 
     MEM_ERROR Initialize() override;
 
-    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout, bool forceFlush) override;
 
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) override;
 
     void RegisterReceiveCallback(void (*receiveCallback)(std::string &str));
 
-    void SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout);
+    void SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout, bool forceFlush);
     std::vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout);
 
     void (*m_ReceiveCallbackFunction)(std::string &str);
@@ -54,5 +55,8 @@ private:
 
     UARTHandle *m_UARTHandle;
     std::vector<AvailableUARTProperties> m_AvailableUARTPorts;
+    uint16_t m_BufferingSize;
+    uint8_t* m_Buffer;
+    uint16_t m_BufferIdx;
 };
 #endif //STM_MEASUREMENT_FIRMWARE_UARTWRAPPER_H

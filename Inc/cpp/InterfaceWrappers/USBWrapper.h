@@ -24,7 +24,7 @@ public:
 
     void USBCDCRXCallback(uint8_t *Buf, uint32_t len);
 
-    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) override;
+    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout, bool forceFlush=true) override;
 
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) override;
 

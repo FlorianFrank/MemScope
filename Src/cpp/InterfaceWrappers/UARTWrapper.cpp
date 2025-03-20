@@ -20,7 +20,7 @@
 /*static*/ std::map<std::string, UARTWrapper*> UARTWrapper::uartWrapperInstances = {};
 
 UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode, WordLength wordLen,
-                         Parity parity, UART_StopBits stopBits, UART_InterruptMode interruptMode) {
+                         Parity parity, UART_StopBits stopBits, UART_InterruptMode interruptMode, uint16_t buffering) {
     m_UARTHandle = new UARTHandle;
     m_UARTHandle->m_UARTHandle = new UARTInstance;
     m_UARTHandle->rx_buffer = new uint8_t[256];
@@ -34,6 +34,12 @@ UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode
     m_UARTHandle->rx_index = 0;
     m_ReceiveCallbackFunction = nullptr;
     m_UARTHandle->m_ReturnBuffer = "";
+    m_BufferingSize = buffering;
+    m_BufferIdx = 0;
+    if(buffering > 0)
+        m_Buffer = new uint8_t[buffering];
+    else
+        m_Buffer = nullptr;
 #if STM32F429xx
     m_AvailableUARTPorts = {{USART1, "USART1", 9600, 2000000, {IO_BANK_A, IO_PIN_10}, {IO_BANK_A,         IO_PIN_9}},
                             {USART2, "USART2", 9600, 2000000, {IO_BANK_D, IO_PIN_5},  {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED}},
@@ -75,23 +81,70 @@ MEM_ERROR UARTWrapper::Initialize() {
  * @return MEM_ERROR if no error occured otherwise return an error code.
  */
 #if STM32
-MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout)
-{
-    if(!data || !size)
+const char* ErrorCodeToString(uint32_t errorCode) {
+    switch (errorCode) {
+        case HAL_UART_ERROR_NONE: return "No Error";
+        case HAL_UART_ERROR_PE: return "Parity Error";
+        case HAL_UART_ERROR_NE: return "Noise Error";
+        case HAL_UART_ERROR_FE: return "Frame Error";
+        case HAL_UART_ERROR_ORE: return "Overrun Error";
+        case HAL_UART_ERROR_DMA: return "DMA Transfer Error";
+        default: return "Unknown Error";
+    }
+}
+
+MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout, bool forceFlush) {
+    if (!data || !size)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    HAL_StatusTypeDef ret = HAL_UART_Transmit(reinterpret_cast<UART_HandleTypeDef*>(m_UARTHandle->m_UARTHandle), data, *size, timeout);
-    if(ret == HAL_BUSY)
-        return MemoryErrorHandling::MEM_HAL_BUSY;
-    if (ret == HAL_ERROR)
-        return MemoryErrorHandling::MEM_IO_ERROR;
-    if (ret == HAL_TIMEOUT)
-        return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+    int inBuffIdx = 0;
+    uint16_t sizeTmp = *size;
 
+    while (inBuffIdx < sizeTmp) {
+        if ((m_BufferingSize - m_BufferIdx) >= (sizeTmp - inBuffIdx)) {
+            memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], (sizeTmp - inBuffIdx));
+            m_BufferIdx += (sizeTmp - inBuffIdx);
+            inBuffIdx += (sizeTmp - inBuffIdx);
+        } else {
+            int remainingSpace = m_BufferingSize - m_BufferIdx;
+            memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], remainingSpace);
+            m_BufferIdx = m_BufferingSize;
+            inBuffIdx += remainingSpace;
+        }
+
+        if (m_BufferIdx == m_BufferingSize || forceFlush) {
+            uint16_t sendSize = (m_BufferingSize == 0) ? *size : m_BufferIdx;
+            auto ret = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, m_Buffer, sendSize, timeout);
+            // Start filling the buffer from the beginning starting at the next loop iteration
+            m_BufferIdx = 0;
+
+            if (ret == HAL_BUSY) {
+                Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Interface %s is busy",
+                            m_UARTHandle->m_InterfaceName);
+                return MemoryErrorHandling::MEM_HAL_BUSY;
+            }
+
+            if (ret == HAL_ERROR) {
+                UART_HandleTypeDef* handle = reinterpret_cast<UART_HandleTypeDef *>(m_UARTHandle->m_UARTHandle);
+                uint32_t errorCode = handle->ErrorCode;
+                Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Interface %s returned with an error: %s (0x%08lX)",
+                            m_UARTHandle->m_InterfaceName, ErrorCodeToString(errorCode), errorCode);
+                return MemoryErrorHandling::MEM_IO_ERROR;
+            }
+
+            if (ret == HAL_TIMEOUT) {
+                Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Interface %s caused a timeout",
+                            m_UARTHandle->m_InterfaceName);
+                return MemoryErrorHandling::MEM_HAL_TIMEOUT;
+            }
+            // actually sent size can be higher then currently passed data when there is data in the buffer remaining
+            *size += sendSize;
+        }
+    }
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 #else
-MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout) {
+MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout, bool forceFlush) {
     return MemoryErrorHandling::MEM_INTERFACE_NOT_FOUND;
 }
 #endif
@@ -241,7 +294,7 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-void UARTWrapper::SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout) {
+void UARTWrapper::SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout, bool forceFlush) {
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Send data: %s", msg);
 
     // Transmit the data over UART

@@ -37,7 +37,7 @@ public:
 
     MEM_ERROR Initialize() override;
 
-    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs) override;
+    MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs, bool forceFlush) override;
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeoutInMs) override;
 
     static void SetWriteProtect();

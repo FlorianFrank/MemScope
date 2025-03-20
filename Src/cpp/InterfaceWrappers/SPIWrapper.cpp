@@ -164,7 +164,7 @@ MEM_ERROR SPIWrapper::InitializeSPIInterface(SPIHandle *spiProperties)
  * @param timeoutInMs timeoutInMs when using blocking SPI functions.
  * @return MEM_NO_ERROR if execution was successful.
  */
-MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs)
+MEM_ERROR SPIWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeoutInMs, bool forceFlush)
 {
     if(!size || *size == 0)
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;

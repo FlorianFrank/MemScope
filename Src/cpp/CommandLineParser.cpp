@@ -123,7 +123,7 @@ MEM_ERROR CommandLineParser::executeCommand(uint8_t *inBuff, uint32_t *inBuffLen
         default:
             sprintf(m_SendBuffer, "Command not found. Type 'help' to show all valid commands.\n\n\r");
             len = strlen(m_SendBuffer);
-            m_InterfaceWrapper->SendData(reinterpret_cast<uint8_t*>(m_SendBuffer), &len, 100);
+            m_InterfaceWrapper->SendData(reinterpret_cast<uint8_t*>(m_SendBuffer), &len, 100, true);
             return ret;
     }
 }

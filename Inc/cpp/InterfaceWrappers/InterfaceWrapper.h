@@ -42,7 +42,7 @@ public:
      * @param timeout a timeout must be specified when using blocking functions.
      * @return MEM_ERROR if no error occured otherwise return an error code.
      */
-    virtual MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout) = 0;
+    virtual MEM_ERROR SendData(uint8_t *data, uint16_t *size, uint32_t timeout, bool forceFlush) = 0;
 
     /**
      * @brief This function must be implement to receive data from the interface.
