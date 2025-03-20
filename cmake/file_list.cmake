@@ -5,6 +5,7 @@ file(GLOB ProjectFiles
         "${DEP_ROOT_DIR}/Src/cpp/*.cpp"
         "${DEP_ROOT_DIR}/Src/cpp/MemoryController/*.cpp"
         "${DEP_ROOT_DIR}/Src/cpp/Devices/*.cpp"
+        "${DEP_ROOT_DIR}/Src/cpp/Experiments/*.cpp"
         "${DEP_ROOT_DIR}/Src/cpp/InterfaceWrappers/*.cpp"
         "${DEP_ROOT_DIR}/Inc/cpp/MemoryModules/*.h"
         "${DEP_ROOT_DIR}/Src/cpp/MemoryModules/*.cpp")
