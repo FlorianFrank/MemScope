@@ -1,3 +1,7 @@
+<div style="text-align: center;">
+    <img src="doc/fig/logo.png" style="width: 50%;">
+</div>
+
 Installation {#mainpage}
 =========
 
