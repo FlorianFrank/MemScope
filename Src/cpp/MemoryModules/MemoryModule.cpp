@@ -17,9 +17,7 @@ MemoryModule::MemoryModule(Type memoryType, const char *memoryLabel, Connection 
 {}
 
 
-MemoryModule::~MemoryModule()
-{
-}
+MemoryModule::~MemoryModule()= default;
 
 MEM_ERROR MemoryModule::Initialize(InterfaceWrapper *interfaceWrapper)
 {

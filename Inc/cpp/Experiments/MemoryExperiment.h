@@ -11,6 +11,8 @@
 #include "cpp/InterfaceWrappers/InterfaceWrapper.h"
 
 #include <vector>
+#include <string.h> // memcpy
+
 
 
 class MemoryController;

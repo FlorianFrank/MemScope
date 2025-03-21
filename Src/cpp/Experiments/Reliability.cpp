@@ -1,37 +1,52 @@
-//
-// Created by Florian Frank on 19.03.25.
-//
+/**
+ * @file Reliability.cpp
+ * @brief Implementation of the Reliability experiment.
+ *
+ * This experiment verifies the reliability of memory operations by initializing the memory
+ * and verifying written results after execution.
+ *
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of Computer Engineering
+ */
+
 #include "cpp/Experiments/Reliability.h"
 #include "Logger.h"
 #include "cpp/MemoryControllers/MemoryController.h"
-
-#include <string.h>
 
 Reliability::Reliability(MemoryController &memoryController, PUFConfiguration &pufConfig,
                          InterfaceWrapper &interfaceWrapper) : MemoryExperiment(
         memoryController, pufConfig, interfaceWrapper) {
 }
 
+/**
+ * @brief Initializes the Reliability experiment.
+ * @return Memory error code.
+ */
 MemoryErrorHandling::MEM_ERROR Reliability::init() {
-
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Initialize Reliability Experiment -> Initialize with default timing and value 0x%x",
                 m_PUFConfiguration.generalConfig.initValue);
     return initializeMemory();
 }
 
+/**
+ * @brief Runs the Reliability experiment.
+ * @return Memory error code.
+ */
 MemoryErrorHandling::MEM_ERROR Reliability::running() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Do not perform any action, as memory initialized in init function");
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
+/**
+ * @brief Finalizes the Reliability experiment and verifies written results.
+ * @return Memory error code.
+ */
 MemoryErrorHandling::MEM_ERROR Reliability::done() {
-
     auto startAddress = m_PUFConfiguration.generalConfig.startAddress;
     auto endAddress = m_PUFConfiguration.generalConfig.endAddress;
     auto initValue = m_PUFConfiguration.generalConfig.initValue;
-
 
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Verify written results in range [0x%x,0x%x] ",

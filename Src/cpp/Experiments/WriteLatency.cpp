@@ -1,17 +1,28 @@
-//
-// Created by Florian Frank on 19.03.25.
-//
+/**
+ * @file WriteLatency.cpp
+ * @author Florian Frank
+ * @copyright University of Passau - Chair of Computer Engineering
+ * @brief Implementation of Write Latency experiment for PUF-based memory analysis.
+ */
 #include "cpp/Experiments/WriteLatency.h"
 #include "Logger.h"
 #include "cpp/MemoryControllers/MemoryController.h"
 
-#include <string.h>
-
+/**
+ * @brief Constructor for WriteLatency experiment.
+ * @param memoryController Reference to the MemoryController.
+ * @param pufConfig Reference to the PUFConfiguration.
+ * @param interfaceWrapper Reference to the InterfaceWrapper.
+ */
 WriteLatency::WriteLatency(MemoryController &memoryController, PUFConfiguration &pufConfig,
                            InterfaceWrapper &interfaceWrapper) : MemoryExperiment(
         memoryController, pufConfig, interfaceWrapper) {
 }
 
+/**
+ * @brief Initializes memory under normal timing.
+ * @return Memory error code.
+ */
 MemoryErrorHandling::MEM_ERROR WriteLatency::init() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Initialize Write Latency Experiment -> Initialize with default timing and value 0x%x",
@@ -19,16 +30,17 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::init() {
     return initializeMemory();
 }
 
+/**
+ * @brief Writes values while intentionally violating the timing protocol.
+ * @return Memory error code.
+ */
 MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
-
     auto startAddress = m_PUFConfiguration.generalConfig.startAddress;
     auto endAddress = m_PUFConfiguration.generalConfig.endAddress;
     auto initValue = m_PUFConfiguration.generalConfig.initValue;
     auto pufValue = m_PUFConfiguration.generalConfig.pufValue;
 
-    // TODO change back to normal timing
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
-    // TODO change back to normal timing
     std::map<std::string, uint16_t> timingMap = {
             {"addressSetupTime",      m_PUFConfiguration.writeTimingConfigAdjusted.tAS},
             {"addressHoldTime",       m_PUFConfiguration.writeTimingConfigAdjusted.tAH},
@@ -38,7 +50,6 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
             {"dataLatency",           0}
     };
     m_MemoryController.SetTimingParameters(timingMap);
-
 
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Write value %0x00 with reduced timing in range [0x%x,0x%x] ", initValue, startAddress, endAddress);
@@ -53,7 +64,6 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
             Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "snprintf returned error %s", strerror(errno));
         }
     };
-
 
     for (auto address = startAddress; address < endAddress; address++) {
         if (m_MemoryController.getMemoryModule().GetBitWidth() == 8) {
@@ -75,8 +85,11 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
+/**
+ * @brief Reads values under normal timing to verify the written results.
+ * @return Memory error code.
+ */
 MemoryErrorHandling::MEM_ERROR WriteLatency::done() {
-
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
     std::map<std::string, uint16_t> timingMap = {
             {"addressSetupTime",      m_PUFConfiguration.readTimingConfigDefault.tAS},
