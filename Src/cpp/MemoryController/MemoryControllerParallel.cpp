@@ -5,16 +5,16 @@
 #include "cpp/MemoryControllers/MemoryControllerParallel.h"
 #include "Logger.h"  // Include the Logger header for logging functionality
 
-
+#include <cmath>
 
 /*-- SRAM GPIOs Configuration --------------------------------------------------*/
 /*
 +-------------------+------------------+-------------------+
 | PD14 <-> FMC_D0   | PF0  <-> FMC_A0  | PE0  <-> FMC_NBL0 |
 | PD15 <-> FMC_D1   | PF1  <-> FMC_A1  | PE1  <-> FMC_NBL1 |
-| PD0  <-> FMC_D2   | PF2  <-> FMC_A2  | PD4  <-> FMC_NOE  |
-| PD1  <-> FMC_D3   | PF3  <-> FMC_A3  | PD5  <-> FMC_NWE  |
-| PE7  <-> FMC_D4   | PF4  <-> FMC_A4  | PD7  <-> FMC_NE1  |
+| PD0  <-> FMC_D2   | PF2  <-> FMC_A2  | PD4  <-> FMC_OE  |
+| PD1  <-> FMC_D3   | PF3  <-> FMC_A3  | PD5  <-> FMC_WE  |
+| PE7  <-> FMC_D4   | PF4  <-> FMC_A4  | PG9  <-> FMC_CE  |
 | PE8  <-> FMC_D5   | PF5  <-> FMC_A5  |-------------------+
 | PE9  <-> FMC_D6   | PF12 <-> FMC_A6  |
 | PE10 <-> FMC_D7   | PF13 <-> FMC_A7  |
@@ -33,25 +33,25 @@
                     +------------------+
 */
 
+constexpr float PLL_FREQUENCY_CONFIG_PARAM = 400.0;
+
 #ifdef STM32
 extern "C" {
 #include <SystemFiles/fmc.h>
 }
+#include "cpp/Devices/STM32F429Wrapper.h"
 #endif // STM32
 
 MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWrapper, MemoryModule &memoryModule,
                                                    DeviceWrapper &deviceWrapper)
-        : MemoryController(deviceWrapper, interfaceWrapper, memoryModule)
-{
+        : MemoryController(deviceWrapper, interfaceWrapper, memoryModule) {
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "MemoryControllerParallel initialized.");
 }
 
-MEM_ERROR MemoryControllerParallel::Initialize()
-{
-    auto initializePins =  [this] (const std::vector<GPIOPin>& gpioList) -> MEM_ERROR {
+MEM_ERROR MemoryControllerParallel::Initialize() {
+    auto initializePins = [this](const std::vector<GPIOPin> &gpioList) -> MEM_ERROR {
         MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
-        for (const auto& pin : gpioList)
-        {
+        for (const auto &pin: gpioList) {
             ret = m_DeviceWrapper.InitializeGPIOPin(pin, GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
                                                     {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
             if (ret != MemoryErrorHandling::MEM_NO_ERROR)
@@ -63,45 +63,50 @@ MEM_ERROR MemoryControllerParallel::Initialize()
     MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initializing address lines.");
     ret = initializePins(m_Properties.GetAddressLinesList());
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize address lines.");
         return ret;
     }
 
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initializing data lines.");
     ret = initializePins(m_Properties.GetDataLinesList());
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize data lines.");
         return ret;
     }
 
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initializing other pins (WE, CS, LB, UB, OE).");
-    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetWE(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetWE(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
+                                            {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize WE pin.");
         return ret;
     }
 
-    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetCS(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetCS(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
+                                            {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize CS pin.");
         return ret;
     }
 
-    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetLB(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetLB(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
+                                            {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize LB pin.");
         return ret;
     }
 
-    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetUB(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetUB(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
+                                            {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize UB pin.");
         return ret;
     }
 
-    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetOE(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET, {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
-    if(ret != MemoryErrorHandling::MEM_NO_ERROR) {
+    ret = m_DeviceWrapper.InitializeGPIOPin(m_Properties.GetOE(), GPIO_ALTERNATE_PUSH_PULL, GPIO_RESET,
+                                            {IO_BANK_UNDEFINED, IO_PIN_UNDEFINED});
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to initialize OE pin.");
         return ret;
     }
@@ -111,8 +116,24 @@ MEM_ERROR MemoryControllerParallel::Initialize()
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, uint16_t> &timingParameters){
-    if(m_initialized){
+/**
+ * @brief Sets the timing parameters for the SRAM controller.
+ *
+ * This function initializes the SRAM controller with the provided timing parameters.
+ * It checks the validity of each parameter and logs any errors.
+ *
+ * @param timingParameters Map containing the timing parameters with their respective values:
+ *   - "addressSetupTime": Number of HCLK cycles to configure the duration of the address setup time [0, 15].
+ *   - "addressHoldTime": Number of HCLK cycles to configure the duration of the address hold time [1, 15].
+ *   - "dataSetupTime": Number of HCLK cycles to configure the duration of the data setup time [1, 255].
+ *   - "busTurnAroundDuration": Number of HCLK cycles to configure the duration of the bus turnaround [0, 15].
+ *   - "clkDivision": Period of CLK clock output signal in HCLK cycles [2, 16].
+ *   - "dataLatency": Number of memory clock cycles before getting the first data [0, 17].
+ *
+ * @return MEM_ERROR::MEM_NO_ERROR if successful, MEM_ERROR::MEM_INVALID_ARGUMENT if any parameter is invalid.
+ */
+MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, uint16_t> &timingParameters) {
+    if (m_initialized) {
         Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitialize SRAM controller");
         HAL_SRAM_DeInit(&hsram1);
     }
@@ -120,38 +141,75 @@ MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, ui
 #if STM32
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initializing FMC (STM32).");
 
-    auto getTimingParameter = [&timingParameters](const char* value){
+    auto getTimingParameter = [&timingParameters](const char *value) {
         auto pos = timingParameters.find(value);
         if (pos != timingParameters.end()) {
-            return static_cast<int>(pos->second);
+            return static_cast<int>(std::ceil(static_cast<float>(pos->second) / (PLL_FREQUENCY_CONFIG_PARAM / PLL_FREQUENCY_MHZ)));
         } else {
             Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Parameter %s not found!", value);
             return -1;
         }
     };
 
-    int addressSetupTime =  getTimingParameter("addressSetupTime");
-    if(addressSetupTime == -1)
+    auto checkParameterRange = [](int parameter, int minParam, int maxParam, const char *paramName) {
+        if (parameter != -1 && parameter >= minParam && parameter <= maxParam) {
+            return true;
+        } else {
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__,
+                        "Setting %s failed as parameter %d is not within range [%d,%d]", paramName, parameter, minParam,
+                        maxParam);
+            return false;
+        }
+    };
+
+    /* Defines the number of HCLK cycles to configure
+     * the duration of the address setup time.
+     * This parameter can be a value between Min_Data = 0 and Max_Data = 15.
+     * @note This parameter is not used with synchronous NOR Flash memories.*/
+    int addressSetupTime = getTimingParameter("addressSetupTime");
+    if (!checkParameterRange(addressSetupTime, 0, 15, "addressSetupTime"))
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    int addressHoldTime =  getTimingParameter("addressHoldTime");
-    if(addressHoldTime == -1)
+    /* Defines the number of HCLK cycles to configure
+     * the duration of the address hold time.
+     * This parameter can be a value between Min_Data = 1 and Max_Data = 15.
+     * @note This parameter is not used with synchronous NOR Flash memories.*/
+    int addressHoldTime = getTimingParameter("addressHoldTime");
+    if (!checkParameterRange(addressHoldTime, 1, 15, "addressHoldTime"))
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    int dataSetupTime =  getTimingParameter("dataSetupTime");
-    if(dataSetupTime == -1)
+    /* DataSetupTime Defines the number of HCLK cycles to configure
+     * the duration of the data setup time.
+     * This parameter can be a value between Min_Data = 1 and Max_Data = 255.
+     * @note This parameter is used for SRAMs, ROMs and asynchronous multiplexed
+     * NOR Flash memories.*/
+    int dataSetupTime = getTimingParameter("dataSetupTime");
+    if (!checkParameterRange(dataSetupTime, 1, 255, "dataSetupTime"))
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    int busTurnAroundDuration =  getTimingParameter("busTurnAroundDuration");
-    if(busTurnAroundDuration == -1)
+    /* BusTurnAroundDuration Defines the number of HCLK cycles to configure
+     * the duration of the bus turnaround. This parameter can be a value between Min_Data = 0 and Max_Data = 15.
+     * @note This parameter is only used for multiplexed NOR Flash memories. */
+    int busTurnAroundDuration = getTimingParameter("busTurnAroundDuration");
+    if (!checkParameterRange(busTurnAroundDuration, 0, 15, "busTurnAroundDuration"))
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    int clkDivision =  getTimingParameter("clkDivision");
-    if(clkDivision == -1)
+    /* CLKDivision Defines the period of CLK clock output signal, expressed in number of
+     * HCLK cycles. This parameter can be a value between Min_Data = 2 and Max_Data = 16.
+     * @note This parameter is not used for asynchronous NOR Flash, SRAM or ROM accesses. */
+    int clkDivision = getTimingParameter("clkDivision");
+    if (!checkParameterRange(clkDivision, 2, 16, "clkDivision"))
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
-    int dataLatency = getTimingParameter("clkDivision");
-    if (dataLatency == -1)
+    /* DataLatency Defines the number of memory clock cycles to issue
+     * to the memory before getting the first data.
+     * The parameter value depends on the memory type as shown below:
+     * - It must be set to 0 in case of a CRAM
+     * - It is don't care in asynchronous NOR, SRAM or ROM accesses
+     * - It may assume a value between Min_Data = 2 and Max_Data = 17 in NOR Flash memories
+     * with synchronous burst mode enable */
+    int dataLatency = getTimingParameter("dataLatency");
+    if (!checkParameterRange(dataLatency, 0, 17, "dataLatency"))
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
 
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
@@ -173,8 +231,7 @@ MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, ui
  * @param value the value to write to the specified address.
  * @return MEM_NO_ERROR if write execution was successful. An error is returned if the address is invalid.
  */
-MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
-{
+MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value) {
     //Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Writing 8-bit value to address: 0x%08X", adr);
 
     if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
@@ -196,8 +253,7 @@ MEM_ERROR MemoryControllerParallel::Write8BitWord(uint32_t adr, uint8_t value)
  * @param ret the value which is returned after the reading operation.
  * @return MEM_NO_ERROR if read execution was successful. An error is returned if the address is invalid.
  */
-MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
-{
+MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret) {
 //    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Reading 8-bit value from address: 0x%08X", adr);
 
     if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
@@ -205,7 +261,7 @@ MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
     }
 
-    if(!ret) {
+    if (!ret) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Invalid argument: null pointer for return value.");
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
     }
@@ -225,11 +281,10 @@ MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret)
  * @param value the value to write to the specified address.
  * @return MEM_NO_ERROR if write execution was successful. An error is returned if the address is invalid.
  */
-MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
-{
+MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value) {
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Writing 16-bit value to address: 0x%08X", adr);
 
-    if(IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
+    if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Invalid address: 0x%08X", adr);
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
     }
@@ -252,16 +307,15 @@ MEM_ERROR MemoryControllerParallel::Write16BitWord(uint32_t adr, uint16_t value)
  * @param value the value to be read. Add a pointer as argument to retrieve the data.
  * @return MEM_NO_ERROR if read execution was successful. An error is returned if the address is invalid.
  */
-MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value)
-{
+MEM_ERROR MemoryControllerParallel::Read16BitWord(uint32_t adr, uint16_t *value) {
     //Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Reading 16-bit value from address: 0x%08X", adr);
 
-    if(IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
+    if (IsInvalidAddress(adr, m_MemoryModule.GetMemorySize())) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Invalid address: 0x%08X", adr);
         return MemoryErrorHandling::MEM_INVALID_ADDRESS;
     }
 
-    if(!value) {
+    if (!value) {
         Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Invalid argument: null pointer for return value.");
         return MemoryErrorHandling::MEM_INVALID_ARGUMENT;
     }
