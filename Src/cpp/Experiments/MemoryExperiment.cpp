@@ -70,14 +70,13 @@ MemoryErrorHandling::MEM_ERROR MemoryExperiment::configureMemoryController() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
     // TODO change back to normal timing
     std::map<std::string, uint16_t> timingMap = {
-            {"addressSetupTime",      0},
-            {"addressHoldTime",       0},
-            {"dataSetupTime",         1},
-            {"busTurnAroundDuration", 0},
-            {"clkDivision",           16},
-            {"dataLatency",           1}
+            {"addressSetupTime",      m_PUFConfiguration.readTimingConfigAdjusted.tAS},
+            {"addressHoldTime",       m_PUFConfiguration.readTimingConfigAdjusted.tAH},
+            {"dataSetupTime",         m_PUFConfiguration.readTimingConfigAdjusted.tPRC},
+            {"busTurnAroundDuration", 4},
+            {"clkDivision",           8},
+            {"dataLatency",           0}
     };
-
 
     m_MemoryController.SetTimingParameters(timingMap);
     return MemoryErrorHandling::MEM_ERROR::MEM_NO_ERROR;

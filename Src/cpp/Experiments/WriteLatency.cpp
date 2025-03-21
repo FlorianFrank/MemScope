@@ -27,15 +27,16 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
     auto pufValue = m_PUFConfiguration.generalConfig.pufValue;
 
     // TODO change back to normal timing
+    Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
+    // TODO change back to normal timing
     std::map<std::string, uint16_t> timingMap = {
             {"addressSetupTime",      m_PUFConfiguration.writeTimingConfigAdjusted.tAS},
             {"addressHoldTime",       m_PUFConfiguration.writeTimingConfigAdjusted.tAH},
-            {"dataSetupTime",         m_PUFConfiguration.writeTimingConfigAdjusted.tDS},
-            {"busTurnAroundDuration", m_PUFConfiguration.writeTimingConfigAdjusted.tPWD},
-            {"clkDivision",           16},
-            {"dataLatency",           m_PUFConfiguration.readTimingConfigAdjusted.tPRC}
+            {"dataSetupTime",         m_PUFConfiguration.writeTimingConfigAdjusted.tPWD},
+            {"busTurnAroundDuration", 4},
+            {"clkDivision",           8},
+            {"dataLatency",           0}
     };
-
     m_MemoryController.SetTimingParameters(timingMap);
 
 
@@ -76,21 +77,14 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
 
 MemoryErrorHandling::MEM_ERROR WriteLatency::done() {
 
-/*    uint16_t addressSetupTime = 15;
-    uint16_t addressHoldTime = 15;
-    uint16_t dataSetupTime = 100;
-    uint16_t busTurnAroundDuration = 15;
-    uint16_t clkDivision = 16;
-    uint16_t dataLatency = 17;*/
-
-    // TODO change back to normal timing
+    Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
     std::map<std::string, uint16_t> timingMap = {
             {"addressSetupTime",      m_PUFConfiguration.readTimingConfigDefault.tAS},
             {"addressHoldTime",       m_PUFConfiguration.readTimingConfigDefault.tAH},
-            {"dataSetupTime",         m_PUFConfiguration.writeTimingConfigDefault.tDS},
-            {"busTurnAroundDuration", m_PUFConfiguration.writeTimingConfigDefault.tPWD},
-            {"clkDivision",           16},
-            {"dataLatency",           m_PUFConfiguration.readTimingConfigDefault.tPRC}
+            {"dataSetupTime",         m_PUFConfiguration.readTimingConfigDefault.tPRC},
+            {"busTurnAroundDuration", 4},
+            {"clkDivision",           8},
+            {"dataLatency",           0}
     };
     m_MemoryController.SetTimingParameters(timingMap);
 

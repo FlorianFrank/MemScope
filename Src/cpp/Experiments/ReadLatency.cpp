@@ -37,12 +37,11 @@ MemoryErrorHandling::MEM_ERROR ReadLatency::done() {
     std::map<std::string, uint16_t> timingMap = {
             {"addressSetupTime",      m_PUFConfiguration.readTimingConfigAdjusted.tAS},
             {"addressHoldTime",       m_PUFConfiguration.readTimingConfigAdjusted.tAH},
-            {"dataSetupTime",         m_PUFConfiguration.writeTimingConfigDefault.tDS},
-            {"busTurnAroundDuration", m_PUFConfiguration.writeTimingConfigDefault.tPWD},
-            {"clkDivision",           16},
-            {"dataLatency",           m_PUFConfiguration.readTimingConfigAdjusted.tPRC}
+            {"dataSetupTime",         m_PUFConfiguration.readTimingConfigAdjusted.tPRC},
+            {"busTurnAroundDuration", 4},
+            {"clkDivision",           8},
+            {"dataLatency",           0}
     };
-
     m_MemoryController.SetTimingParameters(timingMap);
 
 
@@ -78,14 +77,13 @@ MemoryErrorHandling::MEM_ERROR ReadLatency::done() {
         }
     }
 
-    // TODO change back to normal timing
     std::map<std::string, uint16_t> timingMapDefault = {
             {"addressSetupTime",      m_PUFConfiguration.readTimingConfigDefault.tAS},
             {"addressHoldTime",       m_PUFConfiguration.readTimingConfigDefault.tAH},
-            {"dataSetupTime",         m_PUFConfiguration.writeTimingConfigDefault.tDS},
-            {"busTurnAroundDuration", m_PUFConfiguration.writeTimingConfigDefault.tPWD},
-            {"clkDivision",           16},
-            {"dataLatency",           m_PUFConfiguration.readTimingConfigDefault.tPRC}
+            {"dataSetupTime",         m_PUFConfiguration.readTimingConfigDefault.tPRC},
+            {"busTurnAroundDuration", 4},
+            {"clkDivision",           8},
+            {"dataLatency",           0}
     };
     m_MemoryController.SetTimingParameters(timingMapDefault);
 
