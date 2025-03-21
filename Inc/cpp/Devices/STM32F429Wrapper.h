@@ -10,6 +10,9 @@
 
 #include <list>
 
+constexpr uint32_t PLL_FREQUENCY_MHZ = 120U;
+
+
 #ifdef STM32
 /**
  * @brief This class wraps functions used by the STM32F429 board.

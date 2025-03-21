@@ -43,23 +43,28 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::SystemClockConfig()
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
     // Enable USART1 clock
+    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Enabling USART1 clock...");
     __HAL_RCC_USART1_CLK_ENABLE();
 
     // PLL Configuration
+    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Starting PLL configuration...");
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
     RCC_OscInitStruct.HSEState = RCC_HSE_ON;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
     RCC_OscInitStruct.PLL.PLLM = 4;
-    RCC_OscInitStruct.PLL.PLLN = 72;
+    RCC_OscInitStruct.PLL.PLLN = PLL_FREQUENCY_MHZ;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
     RCC_OscInitStruct.PLL.PLLQ = 3;
+    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "PLL settings: PLLM=%d, PLLN=%d, PLLP=%d, PLLQ=%d", RCC_OscInitStruct.PLL.PLLM, RCC_OscInitStruct.PLL.PLLN, RCC_OscInitStruct.PLL.PLLP, RCC_OscInitStruct.PLL.PLLQ);
+
     HAL_StatusTypeDef ret = HAL_RCC_OscConfig(&RCC_OscInitStruct);
     if(ret != HAL_OK)
     {
         Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "HAL_RCC_OscConfig failed with error code: %d", ret);
         return MemoryErrorHandling::HAL_StatusTypeDefToErr(ret);
     }
+    Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "PLL configuration completed successfully.");
 
     // Clock Initialization
     Logger::log(LogLevel::DEBUG, __FILE_NAME__, __LINE__, "Initializing clocks...");
@@ -82,6 +87,7 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::SystemClockConfig()
 #endif
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+
 
 /**
  * @brief This functions initializes the default GPIO settings and the Hardware Abstraction Layer of the STM32F429 board and sets the clock configuration.
