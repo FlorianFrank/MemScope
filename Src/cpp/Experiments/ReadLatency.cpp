@@ -65,7 +65,7 @@ MemoryErrorHandling::MEM_ERROR ReadLatency::done() {
 
     char sendDataBuf[128];
     auto sendData = [&sendDataBuf](InterfaceWrapper &interfaceWrapper, uint16_t addr, uint16_t returnValue) {
-        int actualSize = snprintf(sendDataBuf, 128, "0x%x, 0x%0x, 0x%0x\n", addr, returnValue, addr + returnValue);
+        int actualSize = snprintf(sendDataBuf, 128, "m:%x,%x,%x\n", addr, returnValue, addr + returnValue);
         if (actualSize > 0) {
             uint16_t size = actualSize;
             interfaceWrapper.SendData(reinterpret_cast<uint8_t *>(sendDataBuf), &size, 1000, false);

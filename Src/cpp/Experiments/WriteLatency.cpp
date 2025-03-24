@@ -109,15 +109,27 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::done() {
                 "Verify written results in range [0x%x,0x%x] ",
                 startAddress, endAddress, initValue);
 
+    char sendDataBuf[128];
+
+    auto sendData = [&sendDataBuf](InterfaceWrapper &interfaceWrapper, uint16_t addr, uint16_t returnValue) {
+        int actualSize = snprintf(sendDataBuf, 128, "m:%x,%x,%x\n", addr, returnValue, addr + returnValue);
+        if (actualSize > 0) {
+            uint16_t size = actualSize;
+            interfaceWrapper.SendData(reinterpret_cast<uint8_t *>(sendDataBuf), &size, 1000, false);
+        } else {
+            Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "snprintf returned error %s", strerror(errno));
+        }
+    };
+
     for (auto addr = startAddress; addr < endAddress; addr++) {
         if (m_MemoryController.getMemoryModule().GetBitWidth() == 8) {
             uint8_t readValue;
             m_MemoryController.Read8BitWord(addr, &readValue);
-            // TODO FORWARD TO INTERFACE
+            sendData(m_InterfaceWrapper, addr, readValue);
         } else if (m_MemoryController.getMemoryModule().GetBitWidth() == 16) {
             uint16_t readValue;
             m_MemoryController.Read16BitWord(addr, &readValue);
-            // TODO FORWARD TO INTERFACE
+            sendData(m_InterfaceWrapper, addr, readValue);
         } else {
             Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Bit width %d not supported",
                         m_MemoryController.getMemoryModule().GetBitWidth());

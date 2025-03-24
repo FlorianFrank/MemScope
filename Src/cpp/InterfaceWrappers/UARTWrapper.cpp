@@ -36,8 +36,10 @@ UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode
     m_UARTHandle->m_ReturnBuffer = "";
     m_BufferingSize = buffering;
     m_BufferIdx = 0;
-    if(buffering > 0)
+    if(buffering > 0) {
         m_Buffer = new uint8_t[buffering];
+        memset(m_Buffer, 0x00, buffering);
+    }
     else
         m_Buffer = nullptr;
 #if STM32F429xx
@@ -101,20 +103,24 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
     uint16_t sizeTmp = *size;
 
     while (inBuffIdx < sizeTmp) {
-        if ((m_BufferingSize - m_BufferIdx) >= (sizeTmp - inBuffIdx)) {
-            memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], (sizeTmp - inBuffIdx));
-            m_BufferIdx += (sizeTmp - inBuffIdx);
-            inBuffIdx += (sizeTmp - inBuffIdx);
-        } else {
-            int remainingSpace = m_BufferingSize - m_BufferIdx;
-            memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], remainingSpace);
-            m_BufferIdx = m_BufferingSize;
-            inBuffIdx += remainingSpace;
+        if(!forceFlush) {
+            if ((m_BufferingSize - m_BufferIdx) >= (sizeTmp - inBuffIdx)) {
+                memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], (sizeTmp - inBuffIdx));
+                m_BufferIdx += (sizeTmp - inBuffIdx);
+                inBuffIdx += (sizeTmp - inBuffIdx);
+            } else {
+                int remainingSpace = m_BufferingSize - m_BufferIdx;
+                memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], remainingSpace);
+                m_BufferIdx = m_BufferingSize;
+                inBuffIdx += remainingSpace;
+            }
+        }else{
+            inBuffIdx = sizeTmp;
         }
 
         if (m_BufferIdx == m_BufferingSize || forceFlush) {
-            uint16_t sendSize = (m_BufferingSize == 0) ? *size : m_BufferIdx;
-            auto ret = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, m_Buffer, sendSize, timeout);
+            uint16_t sendSize = (m_BufferingSize == 0 || forceFlush) ? *size : m_BufferIdx;
+            auto ret = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, (forceFlush) ? data : m_Buffer, sendSize, timeout);
             // Start filling the buffer from the beginning starting at the next loop iteration
             m_BufferIdx = 0;
 
@@ -314,8 +320,7 @@ void UARTWrapper::SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout, boo
 }
 
 vector<uint8_t> UARTWrapper::ReceiveToIdle(uint16_t size, uint32_t timeout) {
-  // TODO: timeout
-  uint8_t data[256] ;// TODO size
+  uint8_t data[MAX_BUFFER_SIZE];
   uint16_t real_size;
     Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Waiting for data to receive");
     switch (HAL_UARTEx_ReceiveToIdle(m_UARTHandle->m_UARTHandle, data, size, &real_size, timeout)) {
@@ -444,7 +449,7 @@ extern "C" void USART1_IRQHandler(void) {
                 }
             } else if (received_char == END_JSON) {
                 returnBuffer += "}\n";
-                Logger::log(LogLevel::INFO,__FILE__, __LINE__, "JSON received: %s", returnBuffer.c_str());
+               // Logger::log(LogLevel::INFO,__FILE__, __LINE__, "JSON received: %s", returnBuffer.c_str());
                 it->second->m_ReceiveCallbackFunction(returnBuffer);
                 it->second->m_ReceiveCallbackCalled = true;
             } else {
