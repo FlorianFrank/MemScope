@@ -49,6 +49,8 @@ MemoryControllerParallel::MemoryControllerParallel(InterfaceWrapper *interfaceWr
 }
 
 MEM_ERROR MemoryControllerParallel::Initialize() {
+    if(m_initialized)
+        return MemoryErrorHandling::MEM_NO_ERROR;
     auto initializePins = [this](const std::vector<GPIOPin> &gpioList) -> MEM_ERROR {
         MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
         for (const auto &pin: gpioList) {
@@ -268,7 +270,7 @@ MEM_ERROR MemoryControllerParallel::Read8BitWord(uint32_t adr, uint8_t *ret) {
 
 #if STM32
     *ret = *(__IO uint8_t *) (m_MMIOStartAddress + adr);
-    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Read 8-bit value 0x%02X from address 0x%08X", *ret, adr);
+    //Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Read 8-bit value 0x%02X from address 0x%08X", *ret, adr);
 #endif // STM32
 
     return MemoryErrorHandling::MEM_NO_ERROR;

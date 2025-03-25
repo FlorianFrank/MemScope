@@ -71,7 +71,8 @@ int main() {
 #endif
 
     FRAM_Rohm_MR48V256CTAZAARL fram;
-    std::unique_ptr<MemoryController> memoryController = std::make_unique<MemoryControllerParallel>(MemoryControllerParallel(nullptr, fram, device));
+    std::unique_ptr<MemoryController> memoryController = std::make_unique<MemoryControllerParallel>(
+            MemoryControllerParallel(nullptr, fram, device));
 
     std::unique_ptr<UARTWrapper> uartWrapper;
     auto ret = setupUARTInterface(uartWrapper);
@@ -80,29 +81,23 @@ int main() {
         return 0;
     }
 
-    char* response = "R:idn:STM32_F429_DISC1\n";
+    char *response = "R:idn:STM32_F429_DISC1\n";
     uint16_t strSize = strlen(response);
-    uartWrapper->SendData(reinterpret_cast<uint8_t*>(response), &strSize, 1000, true);
+    uartWrapper->SendData(reinterpret_cast<uint8_t *>(response), &strSize, 1000, true);
 
     PUFConfiguration config;
     while (isRunning) {
         if (isCallbackReceived) {
             auto jsonRet = parse_json(receivedCallbackData.c_str(), &config);
-            if(jsonRet == JSON_RECEIVED_CMD){
-                char* response = "R:processing\n";
-                uint16_t strSize = strlen(response);
-                uartWrapper->SendData(reinterpret_cast<uint8_t*>(response), &strSize, 1000, true);
+            if (jsonRet == JSON_RECEIVED_CMD) {
                 HAL_Delay(MAIN_LOOP_DELAY);
+                isCallbackReceived = false;
+                MemoryExperiment *experiment;
+                MemoryExperiment::MemoryTestFactory(&experiment, *memoryController, config, *uartWrapper);
+                experiment->init();
+                experiment->running();
+                experiment->done();
             }
-            isCallbackReceived = false;
-            MemoryExperiment *experiment;
-            MemoryExperiment::MemoryTestFactory(&experiment, *memoryController, config, *uartWrapper);
-            experiment->init();
-            experiment->running();
-            experiment->done();
-            char* response = "R:ready\n";
-            uint16_t strSize = strlen(response);
-            uartWrapper->SendData(reinterpret_cast<uint8_t*>(response), &strSize, 1000, true);
         }
         HAL_Delay(MAIN_LOOP_DELAY);
     }
