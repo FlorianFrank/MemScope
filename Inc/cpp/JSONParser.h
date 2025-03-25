@@ -1,14 +1,14 @@
 #pragma once
-#include <stdbool.h>
-#include <stdint.h>
+
+#include <cstdint>
 
 #define MAX_RESPONSE_SIZE 128
 
 typedef enum JSON_PARSER_STATUS {
-    JSON_STATUS_OK = 0x00,
-    JSON_PROCESSING = 0x01,
-    JSON_READY = 0x02,
-    JSON_ERROR = 0x03,
+    JSON_RECEIVED_CMD,
+    JSON_PROCESSING,
+    JSON_READY,
+    JSON_ERROR,
 } JSON_PARSER_STATUS;
 
 // Enum for data types.
@@ -157,7 +157,7 @@ typedef struct PUFConfiguration {
     RowHammeringConfig rowHammeringConfig;
 } PUFConfiguration;
 
-char* statusToString(JSON_PARSER_STATUS status);
-char* cmdToStr(Cmd cmd);
+const char * statusToString(JSON_PARSER_STATUS status);
+const char * cmdToStr(Cmd cmd);
 Cmd parseCmd(char *str);
-void parse_json(const char *inputBuffer, PUFConfiguration* config);
+JSON_PARSER_STATUS parse_json(const char *inputBuffer, PUFConfiguration* config);

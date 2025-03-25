@@ -1,15 +1,11 @@
-#include <string.h>
 #include "cpp/JSONParser.h"
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 
-#define MAX_NR_TOKENS 43
-
-char* cmdStrList[] = {"idn", "start_measurement", "stop_measurement", "status", "reset", "undefined"};
-char* statusStrList[] = {"ok", "processing", "ready", "error"};
+const char* cmdStrList[] = {"idn", "start_measurement", "stop_measurement", "status", "reset", "undefined"};
+const char* statusStrList[] = {"ok", "processing", "ready", "error"};
 
 void remove_double_quotes(const char* input, char* output) {
     int j = 0;
@@ -38,20 +34,20 @@ char *findBeginningEnd(char *retBegin, char *searchStr, size_t *nrBytes, char *o
     if (!begin1) {
         //printf("Error while parsing token " << beginning << std::endl;
         *nrBytes = 0;
-        return NULL;
+        return nullptr;
     }
     char *begin2 = begin1 + strlen(beginning) + 2;
     if (!begin2) {
         //printf("Error while parsing token " << beginning << std::endl;
         *nrBytes = 0;
-        return NULL;
+        return nullptr;
     }
     char *end1 = strstr(begin2, end);
 
     if (!end1) {
         //printf("Error while parsing token " << beginning << std::endl;
         *nrBytes = 0;
-        return NULL;
+        return nullptr;
     }
 
     memcpy(retBegin, begin2, end1 - begin2);
@@ -63,7 +59,7 @@ char *findBeginningEnd(char *retBegin, char *searchStr, size_t *nrBytes, char *o
 
 // Parses a boolean value from a string.
 bool parseBoolean(char *value) {
-    return strstr(value, "true") != NULL;
+    return strstr(value, "true") != nullptr;
 }
 
 // Parses an integer value from a string.
@@ -153,11 +149,11 @@ printConfigs(PUFConfiguration *pufConfig) {
     printf("    Hammering Distance: %x\n\n", pufConfig->rowHammeringConfig.hammeringDistance);
 }
 
-char* cmdToStr(Cmd cmd) {
+const char * cmdToStr(Cmd cmd) {
     return cmdStrList[cmd];
 }
 
-char* statusToString(JSON_PARSER_STATUS status) {
+const char * statusToString(JSON_PARSER_STATUS status) {
     return statusStrList[status];
 }
 
@@ -185,7 +181,7 @@ Cmd parseCmd(char *str) {
 }
 
 // Parses JSON data.
-void parse_json(const char *inputBuffer, PUFConfiguration *config) {
+JSON_PARSER_STATUS parse_json(const char *inputBuffer, PUFConfiguration *config) {
     char subStr[128];
     size_t nrBytes;
 
@@ -242,11 +238,11 @@ void parse_json(const char *inputBuffer, PUFConfiguration *config) {
     };
 
     int tokenCtr = 0;
-    for (int i = 0; i < MAX_NR_TOKENS; i++) {
+    for (auto & token : tokens) {
         memset(subStr, 0, 128);
-        findBeginningEnd(subStr, (char*)inputBuffer, &nrBytes, 0, tokens[i].token, "\n");
+        findBeginningEnd(subStr, (char*)inputBuffer, &nrBytes, nullptr, token.token, "\n");
         tokenCtr += 1;
-        switch (tokens[i].tokenIDN) {
+        switch (token.tokenIDN) {
             case COMMAND:
                 config->generalConfig.command = parseCmd(subStr);
                 break;
@@ -311,7 +307,7 @@ void parse_json(const char *inputBuffer, PUFConfiguration *config) {
                 break;
 
             default:
-                printf("Unrecognized token type: %u\n",  tokens[i].tokenIDN);
+                printf("Unrecognized token type: %u\n",  token.tokenIDN);
                 break;
             case T_START_ADJUSTED:
                 config->writeTimingConfigAdjusted.tStart = (uint16_t)(parseInteger(subStr));
@@ -386,4 +382,5 @@ void parse_json(const char *inputBuffer, PUFConfiguration *config) {
     }
     printf("Resulting parsed config:");
     printConfigs(config);
+    return JSON_PARSER_STATUS::JSON_RECEIVED_CMD;
 }
