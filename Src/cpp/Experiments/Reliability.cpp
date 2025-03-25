@@ -53,11 +53,11 @@ MemoryErrorHandling::MEM_ERROR Reliability::done() {
                 startAddress, endAddress, initValue);
 
     char sendDataBuf[128];
-    auto sendData = [&sendDataBuf](InterfaceWrapper &interfaceWrapper, uint16_t addr, uint16_t returnValue) {
+    auto sendData = [&sendDataBuf](InterfaceWrapper &interfaceWrapper, uint16_t addr, uint16_t returnValue, bool force) {
         int actualSize = snprintf(sendDataBuf, 128, "m:%x,%x,%x\n", addr, returnValue, addr + returnValue);
         if (actualSize > 0) {
             uint16_t size = actualSize;
-            interfaceWrapper.SendData(reinterpret_cast<uint8_t *>(sendDataBuf), &size, 1000, false);
+            interfaceWrapper.SendData(reinterpret_cast<uint8_t *>(sendDataBuf), &size, 1000, force);
         } else {
             Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "snprintf returned error %s", strerror(errno));
         }
@@ -68,12 +68,12 @@ MemoryErrorHandling::MEM_ERROR Reliability::done() {
             uint8_t readValue;
             m_MemoryController.Read8BitWord(addr, &readValue);
             if (readValue != initValue)
-                sendData(m_InterfaceWrapper, addr, readValue);
+                sendData(m_InterfaceWrapper, addr, readValue, false);
         } else if (m_MemoryController.getMemoryModule().GetBitWidth() == 16) {
             uint16_t readValue;
             m_MemoryController.Read16BitWord(addr, &readValue);
             if (readValue != initValue)
-                sendData(m_InterfaceWrapper, addr, readValue);
+                sendData(m_InterfaceWrapper, addr, readValue, false);
         } else {
             Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Bit width %d not supported",
                         m_MemoryController.getMemoryModule().GetBitWidth());
@@ -84,5 +84,6 @@ MemoryErrorHandling::MEM_ERROR Reliability::done() {
     uint16_t size = 1;
     m_InterfaceWrapper.SendData(reinterpret_cast<uint8_t *>(sendDataBuf), &size, 1000, true);
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Reading done");
+    sendMessageFinished();
     return MemoryErrorHandling::MEM_NO_ERROR;
 }

@@ -106,5 +106,6 @@ MemoryErrorHandling::MEM_ERROR ReadLatency::done() {
     m_MemoryController.SetTimingParameters(timingMapDefault);
 
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Reading done");
+    sendMessageFinished();
     return MemoryErrorHandling::MEM_NO_ERROR;
 }

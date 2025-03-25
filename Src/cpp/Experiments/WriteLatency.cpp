@@ -136,5 +136,6 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::done() {
             return MemoryErrorHandling::MEM_BIT_LEN_NOT_SUPPORTED;
         }
     }
+    sendMessageFinished();
     return MemoryErrorHandling::MEM_NO_ERROR;
 }

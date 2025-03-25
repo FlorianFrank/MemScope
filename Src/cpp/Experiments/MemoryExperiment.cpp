@@ -83,6 +83,7 @@ MemoryErrorHandling::MEM_ERROR MemoryExperiment::configureMemoryController() {
 }
 
 MemoryErrorHandling::MEM_ERROR MemoryExperiment::initializeMemory() {
+    sendProcessingStarted();
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Fill memory area [0x%x,0x%x], with value 0x%x",
                 m_PUFConfiguration.generalConfig.startAddress, m_PUFConfiguration.generalConfig.endAddress,
                 m_PUFConfiguration.generalConfig.initValue);
@@ -91,4 +92,28 @@ MemoryErrorHandling::MEM_ERROR MemoryExperiment::initializeMemory() {
                                                  static_cast<uint16_t>(m_PUFConfiguration.generalConfig.initValue) &
                                                  0xFFFF);
     return ret;
+}
+
+/**
+ * @brief Sends a processing started message over the interface.
+ *
+ * Logs the processing start and sends a predefined "R:processing" message.
+ */
+void MemoryExperiment::sendProcessingStarted() {
+    const char *processingResponse = "R:processing\n";
+    uint16_t processingSize = strlen(processingResponse);
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Config parsed -> send response %s", processingResponse);
+    m_InterfaceWrapper.SendData(reinterpret_cast<uint8_t *>(const_cast<char *>(processingResponse)), &processingSize, 1000, true);
+}
+
+/**
+ * @brief Sends a message indicating the experiment has finished.
+ *
+ * Logs the experiment completion and sends a predefined "R:ready" message.
+ */
+void MemoryExperiment::sendMessageFinished() {
+    const char *finalResponse = "R:ready\n";
+    uint16_t finalLen = strlen(finalResponse);
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Experiment done send %s", finalResponse);
+    m_InterfaceWrapper.SendData(reinterpret_cast<uint8_t *>(const_cast<char *>(finalResponse)), &finalLen, 1000, true);
 }

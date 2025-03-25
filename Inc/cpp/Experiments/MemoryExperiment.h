@@ -43,6 +43,8 @@ protected:
 
 
     MemoryErrorHandling::MEM_ERROR initializeMemory();
+    void sendProcessingStarted();
+    void sendMessageFinished();
 
     MemoryController& m_MemoryController;
     PUFConfiguration m_PUFConfiguration;

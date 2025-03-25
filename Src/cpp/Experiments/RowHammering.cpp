@@ -123,5 +123,6 @@ MemoryErrorHandling::MEM_ERROR RowHammering::done() {
         }
     }
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Reading done");
-    return MemoryErrorHandling::MEM_REGISTER_NOT_SET;
+    sendMessageFinished();
+    return MemoryErrorHandling::MEM_NO_ERROR;
 }
