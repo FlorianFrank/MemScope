@@ -37,7 +37,7 @@ UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode
     m_BufferingSize = buffering;
     m_BufferIdx = 0;
     if(buffering > 0) {
-        m_Buffer = new uint8_t[buffering];
+        m_Buffer = new uint8_t[buffering+2];
         memset(m_Buffer, 0x00, buffering);
     }
     else
@@ -101,28 +101,37 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
 
     int inBuffIdx = 0;
     uint16_t sizeTmp = *size;
+    uint16_t bufferFillBefore = m_BufferIdx;
 
     while (inBuffIdx < sizeTmp) {
-        if(!forceFlush) {
-            if ((m_BufferingSize - m_BufferIdx) >= (sizeTmp - inBuffIdx)) {
-                memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], (sizeTmp - inBuffIdx));
-                m_BufferIdx += (sizeTmp - inBuffIdx);
-                inBuffIdx += (sizeTmp - inBuffIdx);
-            } else {
-                int remainingSpace = m_BufferingSize - m_BufferIdx;
-                memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], remainingSpace);
-                m_BufferIdx = m_BufferingSize;
-                inBuffIdx += remainingSpace;
-            }
-        }else{
-            inBuffIdx = sizeTmp;
+        if ((m_BufferingSize - m_BufferIdx) >= (sizeTmp - inBuffIdx)) {
+            memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], (sizeTmp - inBuffIdx));
+            m_BufferIdx += (sizeTmp - inBuffIdx);
+            inBuffIdx += (sizeTmp - inBuffIdx);
+        } else {
+            int remainingSpace = m_BufferingSize - m_BufferIdx;
+            memcpy(&m_Buffer[m_BufferIdx], &data[inBuffIdx], remainingSpace);
+            m_BufferIdx = m_BufferingSize;
+            inBuffIdx += remainingSpace;
         }
 
         if (m_BufferIdx == m_BufferingSize || forceFlush) {
-            uint16_t sendSize = (m_BufferingSize == 0 || forceFlush) ? *size : m_BufferIdx;
-            auto ret = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, (forceFlush) ? data : m_Buffer, sendSize, timeout);
+            uint16_t sendSize = (m_BufferingSize == 0) ? *size : m_BufferIdx;
+            m_Buffer[sendSize] = '\0';
+            // Avoid starting next buffer with \n
+            if(sendSize - bufferFillBefore == (*size -1)) {
+                sendSize = sendSize + 2;
+                m_Buffer[sendSize-2] = '\n';
+                m_Buffer[sendSize-1] = '\0';
+            }else if(sendSize - bufferFillBefore < (*size -1)) {
+                printf("Add new last line");
+                sendSize = sendSize + 1;
+                m_Buffer[sendSize-1] = '\0';
+            }
+            auto ret = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, m_Buffer, sendSize, timeout);
             // Start filling the buffer from the beginning starting at the next loop iteration
             m_BufferIdx = 0;
+            memset(m_Buffer, 0x00, m_BufferingSize);
 
             if (ret == HAL_BUSY) {
                 Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Interface %s is busy",
@@ -376,27 +385,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-    printf("UART Error detected\n");
+    Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "UART Error detected\n");
 
     if (huart->Instance == USART1) {
         if (huart->ErrorCode & HAL_UART_ERROR_PE) {
-            printf("Parity Error\n");
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Parity Error\n");
         }
         if (huart->ErrorCode & HAL_UART_ERROR_NE) {
-            printf("Noise Error\n");
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Noise Error\n");
         }
         if (huart->ErrorCode & HAL_UART_ERROR_FE) {
-            printf("Frame Error\n");
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Frame Error\n");
         }
         if (huart->ErrorCode & HAL_UART_ERROR_ORE) {
             __HAL_UART_CLEAR_OREFLAG(huart);
-            printf("Overrun Error\n");
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Overrun Error\n");
         }
         if (huart->ErrorCode & HAL_UART_ERROR_DMA) {
-            printf("DMA Transfer Error\n");
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "DMA Transfer Error\n");
         }
         if (huart->ErrorCode == HAL_UART_ERROR_NONE) {
-            printf("No specific error detected\n");
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "No specific error detected\n");
         }
     }
     auto it = UARTWrapper::uartWrapperInstances.find("USART1");

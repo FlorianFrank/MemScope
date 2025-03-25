@@ -50,6 +50,7 @@ public:
 
     void (*m_ReceiveCallbackFunction)(std::string &str);
     bool m_ReceiveCallbackCalled = false;
+
 private:
     MEM_ERROR InitializeUARTDeviceSpecific(UARTHandle *uartProperties);
 
