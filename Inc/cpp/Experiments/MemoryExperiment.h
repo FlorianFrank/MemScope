@@ -42,7 +42,7 @@ protected:
                      InterfaceWrapper &interfaceWrapper);
 
 
-    MemoryErrorHandling::MEM_ERROR initializeMemory();
+    MemoryErrorHandling::MEM_ERROR initializeMemory(uint16_t initValue);
     void sendProcessingStarted();
     void sendMessageFinished();
 

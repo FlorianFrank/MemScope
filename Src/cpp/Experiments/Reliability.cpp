@@ -26,7 +26,7 @@ MemoryErrorHandling::MEM_ERROR Reliability::init() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Initialize Reliability Experiment -> Initialize with default timing and value 0x%x",
                 m_PUFConfiguration.generalConfig.initValue);
-    return initializeMemory();
+    return initializeMemory(m_PUFConfiguration.generalConfig.initValue);
 }
 
 /**

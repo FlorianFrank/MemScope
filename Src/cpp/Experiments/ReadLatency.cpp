@@ -30,8 +30,8 @@ ReadLatency::ReadLatency(MemoryController &memoryController, PUFConfiguration &p
 MemoryErrorHandling::MEM_ERROR ReadLatency::init() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
                 "Initialize Read Latency Experiment -> Initialize with default timing and value 0x%x",
-                m_PUFConfiguration.generalConfig.initValue);
-    return initializeMemory();
+                m_PUFConfiguration.generalConfig.pufValue);
+    return initializeMemory(m_PUFConfiguration.generalConfig.pufValue);
 }
 
 /**

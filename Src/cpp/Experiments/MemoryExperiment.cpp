@@ -70,9 +70,9 @@ MemoryErrorHandling::MEM_ERROR MemoryExperiment::configureMemoryController() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
     // TODO change back to normal timing
     std::map<std::string, uint16_t> timingMap = {
-            {"addressSetupTime",      m_PUFConfiguration.readTimingConfigAdjusted.tAS},
-            {"addressHoldTime",       m_PUFConfiguration.readTimingConfigAdjusted.tAH},
-            {"dataSetupTime",         m_PUFConfiguration.readTimingConfigAdjusted.tPRC},
+            {"addressSetupTime",      m_PUFConfiguration.readTimingConfigDefault.tAS},
+            {"addressHoldTime",       m_PUFConfiguration.readTimingConfigDefault.tAH},
+            {"dataSetupTime",         m_PUFConfiguration.readTimingConfigDefault.tPRC},
             {"busTurnAroundDuration", 4},
             {"clkDivision",           8},
             {"dataLatency",           0}
@@ -82,14 +82,14 @@ MemoryErrorHandling::MEM_ERROR MemoryExperiment::configureMemoryController() {
     return MemoryErrorHandling::MEM_ERROR::MEM_NO_ERROR;
 }
 
-MemoryErrorHandling::MEM_ERROR MemoryExperiment::initializeMemory() {
+MemoryErrorHandling::MEM_ERROR MemoryExperiment::initializeMemory(uint16_t initValue) {
     sendProcessingStarted();
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Fill memory area [0x%x,0x%x], with value 0x%x",
                 m_PUFConfiguration.generalConfig.startAddress, m_PUFConfiguration.generalConfig.endAddress,
                 m_PUFConfiguration.generalConfig.initValue);
     auto ret = m_MemoryController.FillMemoryArea(m_PUFConfiguration.generalConfig.startAddress,
                                                  m_PUFConfiguration.generalConfig.endAddress,
-                                                 static_cast<uint16_t>(m_PUFConfiguration.generalConfig.initValue) &
+                                                 static_cast<uint16_t>(initValue) &
                                                  0xFFFF);
     return ret;
 }
