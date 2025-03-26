@@ -46,6 +46,6 @@ public:
     virtual MemoryErrorHandling::MEM_ERROR
     InitializeGPIOPin(GPIOPin pin, GPIOMode mode, GPIOState initialState, GPIOPin alternate);
 
-    virtual MemoryErrorHandling::MEM_ERROR DeinitializeGPIOPin(GPIOPin pin);
+    virtual MemoryErrorHandling::MEM_ERROR DeInitializeGPIOPin(const GPIOPin &gpioPin);
 };
 #endif //MEMORY_TESTING_FW_DEVICE_WRAPPER_H

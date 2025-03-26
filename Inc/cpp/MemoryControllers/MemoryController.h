@@ -49,8 +49,10 @@ public:
     virtual ~MemoryController();
 
     virtual MEM_ERROR Initialize();
+    virtual MEM_ERROR Deinitialize() = 0;
 
-    // Basic Read and write functions which must be implemented by the deriving classes
+
+        // Basic Read and write functions which must be implemented by the deriving classes
     virtual MEM_ERROR Write8BitWord(uint32_t adr, uint8_t value);
     virtual MEM_ERROR Read8BitWord(uint32_t adr, uint8_t *ret);
     virtual MEM_ERROR Write16BitWord(uint32_t adr, uint16_t value);

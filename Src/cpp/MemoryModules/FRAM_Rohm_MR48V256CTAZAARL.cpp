@@ -6,7 +6,7 @@
 
 FRAM_Rohm_MR48V256CTAZAARL::FRAM_Rohm_MR48V256CTAZAARL(): MemoryModule(MemoryProperties::TYPE_FRAM,
                                                                        "FRAM_Rohm_MR48V256CTAZAARL",
-                                                                       MemoryProperties::SPI, 16, 32768,
+                                                                       MemoryProperties::PARALLEL, 8, 32768,
                                                                        {233, 358}, {3000, 3600})
 {}
 

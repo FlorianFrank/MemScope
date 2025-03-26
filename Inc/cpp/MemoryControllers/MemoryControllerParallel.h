@@ -20,6 +20,7 @@ public:
                                       DeviceWrapper &deviceWrapper);
 
     MEM_ERROR Initialize() override;
+    MEM_ERROR Deinitialize() override;
     MEM_ERROR SetTimingParameters(std::map<std::string, uint16_t> &timingParameters) override;
 
 

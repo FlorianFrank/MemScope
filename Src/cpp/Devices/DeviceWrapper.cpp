@@ -3,6 +3,7 @@
 //
 
 #include "cpp/Devices/DeviceWrapper.h"
+#include "Logger.h"
 
 DeviceWrapper::DeviceWrapper()
 {
@@ -26,10 +27,12 @@ DeviceWrapper::DeviceWrapper()
 /*virtual*/ MemoryErrorHandling::MEM_ERROR
 DeviceWrapper::InitializeGPIOPin(GPIOPin pin, GPIOMode mode, GPIOState initialState, GPIOPin alternate)
 {
+    Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Call device wrapper base class!");
     return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
 }
 
-MemoryErrorHandling::MEM_ERROR DeviceWrapper::DeinitializeGPIOPin(GPIOPin pin)
+MemoryErrorHandling::MEM_ERROR DeviceWrapper::DeInitializeGPIOPin(const GPIOPin &gpioPin)
 {
+    Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Call device wrapper base class!");
     return MemoryErrorHandling::MEM_DEVICE_NOT_SPECIFIED;
 }

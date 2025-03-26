@@ -7,6 +7,8 @@
 
 #include <cmath>
 
+#include <cstring>
+
 /*-- SRAM GPIOs Configuration --------------------------------------------------*/
 /*
 +-------------------+------------------+-------------------+
@@ -118,6 +120,50 @@ MEM_ERROR MemoryControllerParallel::Initialize() {
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
+MEM_ERROR MemoryControllerParallel::Deinitialize() {
+    auto deinitializePins = [this](const std::vector<GPIOPin> &gpioList) -> MEM_ERROR {
+        MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
+        for (const auto &pin: gpioList) {
+            ret = m_DeviceWrapper.DeInitializeGPIOPin(pin);
+            if (ret != MemoryErrorHandling::MEM_NO_ERROR)
+                return ret;
+        }
+        return ret;
+    };
+
+    MEM_ERROR ret = MemoryErrorHandling::MEM_NO_ERROR;
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitializing address lines.");
+    ret = deinitializePins(m_Properties.GetAddressLinesList());
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to deinitialize address lines.");
+        return ret;
+    }
+
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitializing data lines.");
+    ret = deinitializePins(m_Properties.GetDataLinesList());
+    if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to deinitialize data lines.");
+        return ret;
+    }
+
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitializing other pins (WE, CS, LB, UB, OE).");
+    std::vector<GPIOPin> controlPins = {m_Properties.GetWE(), m_Properties.GetCS(), m_Properties.GetLB(),
+                                        m_Properties.GetUB(), m_Properties.GetOE()};
+    for (const auto &pin : controlPins) {
+        ret = m_DeviceWrapper.DeInitializeGPIOPin(pin);
+        if (ret != MemoryErrorHandling::MEM_NO_ERROR) {
+            Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to deinitialize a control pin.");
+            return ret;
+        }
+    }
+
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "MemoryControllerParallel deinitialized successfully.");
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+extern SRAM_HandleTypeDef hsram1;
+
+
 /**
  * @brief Sets the timing parameters for the SRAM controller.
  *
@@ -131,13 +177,43 @@ MEM_ERROR MemoryControllerParallel::Initialize() {
  *   - "busTurnAroundDuration": Number of HCLK cycles to configure the duration of the bus turnaround [0, 15].
  *   - "clkDivision": Period of CLK clock output signal in HCLK cycles [2, 16].
  *   - "dataLatency": Number of memory clock cycles before getting the first data [0, 17].
+ *   Measured steps by an oscilloscope on WE, by reducing the data setup time  75.9 (value = 9) -> 67.2 -> 59.4 -> 49.4 -> 41.6 -> 33.8 -> 24.7
  *
  * @return MEM_ERROR::MEM_NO_ERROR if successful, MEM_ERROR::MEM_INVALID_ARGUMENT if any parameter is invalid.
  */
 MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, uint16_t> &timingParameters) {
     if (m_initialized) {
-        Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitialize SRAM controller");
-        HAL_SRAM_DeInit(&hsram1);
+        Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitializing SRAM controller");
+
+        auto deinitializeSRAM = [](SRAM_HandleTypeDef *hsram) {
+
+            FMC_NORSRAM_DeInit(hsram->Instance, hsram->Extended, hsram->Init.NSBank);
+
+            hsram->State = HAL_SRAM_STATE_RESET;
+
+            /* Release Lock */
+            __HAL_UNLOCK(hsram);
+
+            return HAL_OK;
+        };
+
+        auto resetFMCClocks = [](){
+            HAL_Delay(10);
+
+            Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Forcing FMC reset");
+            __HAL_RCC_FMC_FORCE_RESET();
+            Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Releasing FMC reset");
+            __HAL_RCC_FMC_RELEASE_RESET();
+            Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Disabling FMC clock");
+            __HAL_RCC_FMC_CLK_DISABLE();
+            HAL_Delay(10);
+            Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Enabling FMC clock");
+            __HAL_RCC_FMC_CLK_ENABLE();
+        };
+
+        deinitializeSRAM(&hsram1);
+        resetFMCClocks();
+        HAL_SRAM_MspInit(&hsram1);
     }
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Initialize SRAM controller with new timing parameters");
 #if STM32
@@ -146,7 +222,28 @@ MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, ui
     auto getTimingParameter = [&timingParameters](const char *value) {
         auto pos = timingParameters.find(value);
         if (pos != timingParameters.end()) {
-            return static_cast<int>(std::ceil(static_cast<float>(pos->second) / (PLL_FREQUENCY_CONFIG_PARAM / PLL_FREQUENCY_MHZ)));
+            auto timeInNs = static_cast<float>(pos->second) * 2.5; // The config file is in a granularity of 2.5 ns based on the 400 MHz clock on the FPGA
+            float periodInNs = 7.8; // We measured a clock phase of 7.8 for a PLL=120 MHz
+
+            /**
+             * Following timing is tested, for example for the CE line
+             * ds = 9  CE Phase 75.9 ns -> a config param of 30 as 75/2.5 = 30 must result in ds = 9 thereby 75 / 7.8 =9.6 -> 9.
+             * Always round down by casting to int.
+             *
+             * Measured following values with an oscilloscope
+             * 9 = 75.9 ns
+             * 8 = 67.2 ns
+             * 7 = 59.2 ns
+             * 6 = 50.3 ns
+             * 5 = 41.6 ns
+             * 4 = 33.6 ns
+             * 3 = 25.6 ns
+             * 2 = 16.7 ns
+             * 1 =
+             * 2 =
+            */
+
+            return static_cast<int>(timeInNs/periodInNs);
         } else {
             Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Parameter %s not found!", value);
             return -1;
@@ -219,8 +316,39 @@ MEM_ERROR MemoryControllerParallel::SetTimingParameters(std::map<std::string, ui
                 "dataSetupTime: 0x%0x, busTurnAroundDuration: 0x%0x, clkDivision: 0x%0x, dataLatency: 0x%0x)",
                 addressSetupTime, addressHoldTime, dataSetupTime, busTurnAroundDuration, clkDivision, dataLatency);
 
-    MX_FMC_Init(addressSetupTime, addressHoldTime, dataSetupTime, busTurnAroundDuration, clkDivision, dataLatency);
-    m_initialized = true;
+    // Configure timing parameters
+    FMC_NORSRAM_TimingTypeDef timing = {0};
+    timing.AddressSetupTime = addressSetupTime;
+    timing.AddressHoldTime = addressHoldTime;
+    timing.DataSetupTime = dataSetupTime;
+    timing.BusTurnAroundDuration = busTurnAroundDuration;
+    timing.CLKDivision = clkDivision;
+    timing.DataLatency = dataLatency;
+    timing.AccessMode = FMC_ACCESS_MODE_A;
+
+
+    hsram1.Instance = FMC_NORSRAM_DEVICE;
+    hsram1.Extended = FMC_NORSRAM_EXTENDED_DEVICE;
+    hsram1.Init.NSBank = FMC_NORSRAM_BANK2;
+    hsram1.Init.DataAddressMux = FMC_DATA_ADDRESS_MUX_DISABLE;
+    hsram1.Init.MemoryType = FMC_MEMORY_TYPE_SRAM;
+    hsram1.Init.MemoryDataWidth = FMC_NORSRAM_MEM_BUS_WIDTH_8;
+    hsram1.Init.BurstAccessMode = FMC_BURST_ACCESS_MODE_DISABLE;
+    hsram1.Init.WaitSignalPolarity = FMC_WAIT_SIGNAL_POLARITY_LOW;
+    hsram1.Init.WrapMode = FMC_WRAP_MODE_DISABLE;
+    hsram1.Init.WaitSignalActive = FMC_WAIT_TIMING_BEFORE_WS;
+    hsram1.Init.WriteOperation = FMC_WRITE_OPERATION_ENABLE;
+    hsram1.Init.WaitSignal = FMC_WAIT_SIGNAL_DISABLE;
+    hsram1.Init.ExtendedMode = FMC_EXTENDED_MODE_DISABLE;
+    hsram1.Init.AsynchronousWait = FMC_ASYNCHRONOUS_WAIT_DISABLE;
+    hsram1.Init.WriteBurst = FMC_WRITE_BURST_DISABLE;
+    hsram1.Init.ContinuousClock = FMC_CONTINUOUS_CLOCK_SYNC_ONLY;
+    hsram1.Init.PageSize = FMC_PAGE_SIZE_NONE;
+
+    if (HAL_SRAM_Init(&hsram1, &timing, NULL) != HAL_OK) {
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "HAL SRAM INIT FAILED");
+    }
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "HAL_SRAM_Init called successfully");
 #endif // STM32
     m_initialized = true;
     return MEM_ERROR::MEM_NO_ERROR;
