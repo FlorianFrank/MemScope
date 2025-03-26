@@ -24,6 +24,12 @@ MemoryControllerSPI::MemoryControllerSPI(DeviceWrapper &deviceWrapper, SPIWrappe
     m_MemoryModule.Initialize();
 }
 
+MEM_ERROR MemoryControllerSPI::Deinitialize() {
+    // TODO currently not supported
+    return MemoryErrorHandling::MEM_NO_ERROR;
+}
+
+
 /**
  * @brief Writes a single 8 bit valueToWrite to an address.
  * @param address address to write.

@@ -271,11 +271,17 @@ MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::InitializeGPIOPinDeviceSpecific
  */
 MemoryErrorHandling::MEM_ERROR STM32F429Wrapper::DeInitializeGPIOPin(const GPIOPin &gpioPin)
 {
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Deinitializing GPIO pin.");
     HAL_GPIO_DeInit(gpioPin.GetGPIOBank(), gpioPin.GetGPIOPin());
-    if(std::find(m_InitializedGPIOPins.begin(), m_InitializedGPIOPins.end(), gpioPin) != m_InitializedGPIOPins.end())
+
+    auto it = std::find(m_InitializedGPIOPins.begin(), m_InitializedGPIOPins.end(), gpioPin);
+    if (it != m_InitializedGPIOPins.end()) {
         m_InitializedGPIOPins.remove(gpioPin);
-    else
+        Logger::log(LogLevel::INFO, __FILE__, __LINE__, "GPIO pin deinitialized successfully.");
+    } else {
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Failed to deinitialize GPIO pin: not found in initialized list.");
         return MemoryErrorHandling::MEM_HAL_INTERNAL_ERROR;
+    }
 
     m_InitializedGPIOPins.erase(std::remove(m_InitializedGPIOPins.begin(), m_InitializedGPIOPins.end(), gpioPin),
                                 m_InitializedGPIOPins.end());
@@ -530,4 +536,6 @@ STM32F429Wrapper::InitializeGPIOPin(GPIOPin pin, GPIOMode mode, GPIOState initia
    return InitializeGPIOPinDeviceSpecific(pin,
                                           (initialState == GPIO_RESET) ? GPIO_PIN_RESET : GPIO_PIN_SET, stmMode, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, alternate.GetGPIOPin());
 }
+
+
 #endif // STM32

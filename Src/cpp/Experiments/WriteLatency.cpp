@@ -25,9 +25,9 @@ WriteLatency::WriteLatency(MemoryController &memoryController, PUFConfiguration 
  */
 MemoryErrorHandling::MEM_ERROR WriteLatency::init() {
     Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__,
-                "Initialize Write Latency Experiment -> Initialize with default timing and value 0x%x",
-                m_PUFConfiguration.generalConfig.initValue);
-    return initializeMemory();
+                 "Initialize Write Latency Experiment -> Initialize with default timing and value 0x%x",
+                 m_PUFConfiguration.generalConfig.initValue);
+     return initializeMemory(m_PUFConfiguration.generalConfig.initValue);
 }
 
 /**
@@ -40,7 +40,7 @@ MemoryErrorHandling::MEM_ERROR WriteLatency::running() {
     auto initValue = m_PUFConfiguration.generalConfig.initValue;
     auto pufValue = m_PUFConfiguration.generalConfig.pufValue;
 
-    Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories default timing parameters");
+    Logger::log(LogLevel::INFO, __FILE_NAME__, __LINE__, "Set the memories adjusted timing parameters");
     std::map<std::string, uint16_t> timingMap = {
             {"addressSetupTime",      m_PUFConfiguration.writeTimingConfigAdjusted.tAS},
             {"addressHoldTime",       m_PUFConfiguration.writeTimingConfigAdjusted.tAH},

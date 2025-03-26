@@ -64,6 +64,9 @@ public:
         uint8_t WriteInProgressBit;
     } typedef MemoryStatusRegister;
 
+    MEM_ERROR Deinitialize() override;
+
+
     // Basic read and write functions
     MEM_ERROR Write8BitWord(uint32_t address, uint8_t valueToWrite) override;
     MEM_ERROR Read8BitWord(uint32_t address, uint8_t *readValue) override;

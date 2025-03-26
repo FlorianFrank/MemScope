@@ -124,7 +124,6 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
                 m_Buffer[sendSize-2] = '\n';
                 m_Buffer[sendSize-1] = '\0';
             }else if(sendSize - bufferFillBefore < (*size -1)) {
-                printf("Add new last line");
                 sendSize = sendSize + 1;
                 m_Buffer[sendSize-1] = '\0';
             }
