@@ -45,6 +45,10 @@ MemoryExperiment::MemoryTestFactory(MemoryExperiment **experiment, MemoryControl
         *experiment = new WriteLatency(memoryController, pufConfiguration, interfaceWrapper);
         (*experiment)->configureMemoryController();
         experiments.push_back(*experiment);
+    } else if (pufConfiguration.generalConfig.pufType == VOLTAGE_VARIATIONS) {
+        *experiment = new VoltageVariations(memoryController, pufConfiguration, interfaceWrapper);
+        (*experiment)->configureMemoryController();
+        experiments.push_back(*experiment);
     } else {
         Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "%s",
                     MemoryErrorHandling::memErrorToString(MemoryErrorHandling::EXPERIMENT_NOT_SUPORTED));

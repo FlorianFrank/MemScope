@@ -81,6 +81,9 @@ PUFType parsePUFType(char *str) {
     if (strstr(str, "readLatency")) {
         return READ_LATENCY;
     }
+    if (strstr(str, "voltageVariations")) {
+        return VOLTAGE_VARIATIONS;
+    }
     return UNKNOWN_PUF_TEST;
 }
 
@@ -89,7 +92,10 @@ printConfigs(PUFConfiguration *pufConfig) {
     const char *pufTypeStr = (pufConfig->generalConfig.pufType == RELIABLE) ? "RELIABLE" :
                              (pufConfig->generalConfig.pufType == ROW_HAMMERING) ? "ROW HAMMERING" :
                              (pufConfig->generalConfig.pufType == WRITE_LATENCY) ? "WRITE_LATENCY" :
-                             (pufConfig->generalConfig.pufType == READ_LATENCY) ? "READ_LATENCY" : "Unknown_PUF_TEST";
+                             (pufConfig->generalConfig.pufType == READ_LATENCY) ? "READ_LATENCY" :
+                             (pufConfig->generalConfig.pufType == VOLTAGE_VARIATIONS) ? "VOLTAGE_VARIATIONS" :
+                             "Unknown_PUF_TEST";
+
     printf("\n  Command: %s\n", cmdStrList[pufConfig->generalConfig.command]);
 
     printf("  General Config: \n");

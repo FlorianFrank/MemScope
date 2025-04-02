@@ -24,7 +24,8 @@ typedef enum PUFType {
     WRITE_LATENCY = 1,
     READ_LATENCY = 2,
     ROW_HAMMERING = 3,
-    UNKNOWN_PUF_TEST = 4
+    VOLTAGE_VARIATIONS = 4,
+    UNKNOWN_PUF_TEST = 5
 } PUFType;
 
 
