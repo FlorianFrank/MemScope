@@ -7,17 +7,18 @@
 #include "stm32f4xx_hal.h"
 #include "Logger.h"
 
-#include <string.h>
-#include "string.h" // strcmp
+#include <string.h> // strcmp
 #include <utility> // std::pair
 #include <cstring> // memset
+#include <iostream>
 
 #define MAX_BUFFER_SIZE 256  // Define a suitable size for your buffer
 #define END_OF_TRANSMISSION '\n'  // Special character marking end of transmission
+constexpr const char *CONTINUE_STR = "\ncontinue";  // String only used for voltage variations
 #define END_JSON '}'  // Special character marking end of transmission
 
 
-/*static*/ std::map<std::string, UARTWrapper*> UARTWrapper::uartWrapperInstances = {};
+/*static*/ std::map<std::string, UARTWrapper *> UARTWrapper::uartWrapperInstances = {};
 
 UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode, WordLength wordLen,
                          Parity parity, UART_StopBits stopBits, UART_InterruptMode interruptMode, uint16_t buffering) {
@@ -36,11 +37,10 @@ UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode
     m_UARTHandle->m_ReturnBuffer = "";
     m_BufferingSize = buffering;
     m_BufferIdx = 0;
-    if(buffering > 0) {
-        m_Buffer = new uint8_t[buffering+2];
+    if (buffering > 0) {
+        m_Buffer = new uint8_t[buffering + 2];
         memset(m_Buffer, 0x00, buffering);
-    }
-    else
+    } else
         m_Buffer = nullptr;
 #if STM32F429xx
     m_AvailableUARTPorts = {{USART1, "USART1", 9600, 2000000, {IO_BANK_A, IO_PIN_10}, {IO_BANK_A,         IO_PIN_9}},
@@ -54,7 +54,7 @@ UARTWrapper::UARTWrapper(const char *interfaceName, uint32_t baudrate, Mode mode
 #endif // STM32F429xx
 }
 
-UARTHandle* UARTWrapper::getUARTHandle() {
+UARTHandle *UARTWrapper::getUARTHandle() {
     return m_UARTHandle;
 }
 
@@ -71,7 +71,8 @@ UARTWrapper::~UARTWrapper() {
  */
 MEM_ERROR UARTWrapper::Initialize() {
     Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Initializing UART interface: %s", m_UARTHandle->m_InterfaceName);
-    uartWrapperInstances.insert(std::pair<std::string,UARTWrapper*>(std::string(m_UARTHandle->m_InterfaceName),this));
+    uartWrapperInstances.insert(
+            std::pair<std::string, UARTWrapper *>(std::string(m_UARTHandle->m_InterfaceName), this));
     return InitializeUARTDeviceSpecific(m_UARTHandle);
 }
 
@@ -83,15 +84,23 @@ MEM_ERROR UARTWrapper::Initialize() {
  * @return MEM_ERROR if no error occured otherwise return an error code.
  */
 #if STM32
-const char* ErrorCodeToString(uint32_t errorCode) {
+
+const char *ErrorCodeToString(uint32_t errorCode) {
     switch (errorCode) {
-        case HAL_UART_ERROR_NONE: return "No Error";
-        case HAL_UART_ERROR_PE: return "Parity Error";
-        case HAL_UART_ERROR_NE: return "Noise Error";
-        case HAL_UART_ERROR_FE: return "Frame Error";
-        case HAL_UART_ERROR_ORE: return "Overrun Error";
-        case HAL_UART_ERROR_DMA: return "DMA Transfer Error";
-        default: return "Unknown Error";
+        case HAL_UART_ERROR_NONE:
+            return "No Error";
+        case HAL_UART_ERROR_PE:
+            return "Parity Error";
+        case HAL_UART_ERROR_NE:
+            return "Noise Error";
+        case HAL_UART_ERROR_FE:
+            return "Frame Error";
+        case HAL_UART_ERROR_ORE:
+            return "Overrun Error";
+        case HAL_UART_ERROR_DMA:
+            return "DMA Transfer Error";
+        default:
+            return "Unknown Error";
     }
 }
 
@@ -119,13 +128,13 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
             uint16_t sendSize = (m_BufferingSize == 0) ? *size : m_BufferIdx;
             m_Buffer[sendSize] = '\0';
             // Avoid starting next buffer with \n
-            if(sendSize - bufferFillBefore == (*size -1)) {
+            if (sendSize - bufferFillBefore == (*size - 1)) {
                 sendSize = sendSize + 2;
-                m_Buffer[sendSize-2] = '\n';
-                m_Buffer[sendSize-1] = '\0';
-            }else if(sendSize - bufferFillBefore < (*size -1)) {
+                m_Buffer[sendSize - 2] = '\n';
+                m_Buffer[sendSize - 1] = '\0';
+            } else if (sendSize - bufferFillBefore < (*size - 1)) {
                 sendSize = sendSize + 1;
-                m_Buffer[sendSize-1] = '\0';
+                m_Buffer[sendSize - 1] = '\0';
             }
             auto ret = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, m_Buffer, sendSize, timeout);
             // Start filling the buffer from the beginning starting at the next loop iteration
@@ -139,9 +148,10 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
             }
 
             if (ret == HAL_ERROR) {
-                UART_HandleTypeDef* handle = reinterpret_cast<UART_HandleTypeDef *>(m_UARTHandle->m_UARTHandle);
+                UART_HandleTypeDef *handle = reinterpret_cast<UART_HandleTypeDef *>(m_UARTHandle->m_UARTHandle);
                 uint32_t errorCode = handle->ErrorCode;
-                Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__, "Interface %s returned with an error: %s (0x%08lX)",
+                Logger::log(LogLevel::ERROR, __FILE_NAME__, __LINE__,
+                            "Interface %s returned with an error: %s (0x%08lX)",
                             m_UARTHandle->m_InterfaceName, ErrorCodeToString(errorCode), errorCode);
                 return MemoryErrorHandling::MEM_IO_ERROR;
             }
@@ -157,6 +167,7 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
     }
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+
 #else
 MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout, bool forceFlush) {
     return MemoryErrorHandling::MEM_INTERFACE_NOT_FOUND;
@@ -171,12 +182,14 @@ MEM_ERROR UARTWrapper::SendData(uint8_t *data, uint16_t *size, uint32_t timeout,
  * @return MEM_ERROR if no error occured otherwise return an error code.
  */
 #if STM32
+
 MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) {
     HAL_StatusTypeDef ret;
-    if(blockingMode == BLOCKING) {
+    if (blockingMode == BLOCKING) {
         ret = HAL_UART_Receive(m_UARTHandle->m_UARTHandle, data, *size, timeout);
     } else {
-        Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Entering non-blocking mode (HAL_UART_Receive_IT) for UART receive");
+        Logger::log(LogLevel::DEBUG, __FILE__, __LINE__,
+                    "Entering non-blocking mode (HAL_UART_Receive_IT) for UART receive");
         memset(m_UARTHandle->rx_buffer, 0x00, 256);
         ret = HAL_UART_Receive_IT(m_UARTHandle->m_UARTHandle, m_UARTHandle->rx_buffer, 512);
     }
@@ -193,10 +206,11 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, BlockingMode b
         Logger::log(LogLevel::WARNING, __FILE__, __LINE__, "UART Receive operation timed out.");
         return MemoryErrorHandling::MEM_HAL_TIMEOUT;
     }
-    if(blockingMode == BLOCKING)
+    if (blockingMode == BLOCKING)
         Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Data received successfully, size: %d bytes.", *size);
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
+
 #else
 MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) {
     return MemoryErrorHandling::MEM_INTERFACE_NOT_FOUND;
@@ -204,20 +218,18 @@ MEM_ERROR UARTWrapper::ReceiveData(uint8_t *data, uint16_t *size, BlockingMode b
 #endif
 
 #if STM32
+
 /**
  * @brief This function initializes the device specific properties of an UART interface.
  * In this case the function is implementd for an STM32 board. It sets the baudrate, word length, stop bits, etc.
  */
-MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
-{
+MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties) {
     Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Initialize UART on STM32F429 Interface: %s Baudrate: %d",
-                m_UARTHandle->m_InterfaceName,  m_UARTHandle->m_Baudrate);
+                m_UARTHandle->m_InterfaceName, m_UARTHandle->m_Baudrate);
     int elemCtr = 0;
     bool interfaceFound = false;
-    for(const AvailableUARTProperties& availPorts: m_AvailableUARTPorts)
-    {
-        if(availPorts.GetName() == uartProperties->m_InterfaceName)
-        {
+    for (const AvailableUARTProperties &availPorts: m_AvailableUARTPorts) {
+        if (availPorts.GetName() == uartProperties->m_InterfaceName) {
             uartProperties->m_UARTHandle->Instance = m_AvailableUARTPorts[elemCtr].GetUARTHandle();
             Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Interface %s detected", m_UARTHandle->m_InterfaceName);
             interfaceFound = true;
@@ -251,15 +263,15 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
 
     if (uartProperties->m_StopBits == UARTWrapper_STOP_BITS_1)
         uartProperties->m_UARTHandle->Init.StopBits = UART_STOPBITS_1;
-    else if(uartProperties->m_StopBits == UARTWrapper_STOP_BITS_2)
+    else if (uartProperties->m_StopBits == UARTWrapper_STOP_BITS_2)
         uartProperties->m_UARTHandle->Init.StopBits = UART_STOPBITS_2;
 
-    if(uartProperties->m_Parity == UARTWrapper_NO_PARITY)
+    if (uartProperties->m_Parity == UARTWrapper_NO_PARITY)
         uartProperties->m_UARTHandle->Init.Parity = UART_PARITY_NONE;
-    else if(uartProperties->m_Parity == UARTWrapper_PARITY_EVEN)
+    else if (uartProperties->m_Parity == UARTWrapper_PARITY_EVEN)
         uartProperties->m_UARTHandle->Init.Parity = UART_PARITY_EVEN;
-    else if(uartProperties->m_Parity == UARTWrapper_PARITY_ODD)
-         uartProperties->m_UARTHandle->Init.Parity = UART_PARITY_ODD;
+    else if (uartProperties->m_Parity == UARTWrapper_PARITY_ODD)
+        uartProperties->m_UARTHandle->Init.Parity = UART_PARITY_ODD;
 
     if (uartProperties->m_Mode == UARTWrapper_TRANSMIT)
         uartProperties->m_UARTHandle->Init.Mode = UART_MODE_TX;
@@ -278,7 +290,8 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     }
 
     if (m_UARTHandle->m_InterruptMode == UART_MODE_INTERRUPT) {
-        Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Initializing interrupt mode for interface: %s", m_UARTHandle->m_InterfaceName);
+        Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Initializing interrupt mode for interface: %s",
+                    m_UARTHandle->m_InterfaceName);
 
         __HAL_UART_ENABLE_IT(m_UARTHandle->m_UARTHandle, UART_IT_RXNE);
 
@@ -287,18 +300,15 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
             HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
             HAL_NVIC_EnableIRQ(USART1_IRQn);
             Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "USART1 IRQ enabled");
-        }
-        else if (strcmp(m_UARTHandle->m_InterfaceName, "USART2") == 0) {
+        } else if (strcmp(m_UARTHandle->m_InterfaceName, "USART2") == 0) {
             HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
             HAL_NVIC_EnableIRQ(USART2_IRQn);
             Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "USART2 IRQ enabled");
-        }
-        else if (strcmp(m_UARTHandle->m_InterfaceName, "USART3") == 0) {
+        } else if (strcmp(m_UARTHandle->m_InterfaceName, "USART3") == 0) {
             HAL_NVIC_SetPriority(USART3_IRQn, 0, 0);
             HAL_NVIC_EnableIRQ(USART3_IRQn);
             Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "USART3 IRQ enabled");
-        }
-        else {
+        } else {
             Logger::log(LogLevel::WARNING, __FILE__, __LINE__, "Unknown interface: %s", m_UARTHandle->m_InterfaceName);
         }
     }
@@ -308,13 +318,12 @@ MEM_ERROR UARTWrapper::InitializeUARTDeviceSpecific(UARTHandle *uartProperties)
     return MemoryErrorHandling::MEM_NO_ERROR;
 }
 
-void UARTWrapper::SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout, bool forceFlush) {
+void UARTWrapper::SendData(uint8_t *msg, uint16_t msg_len, uint32_t timeout, bool forceFlush) {
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Send data: %s", msg);
 
     // Transmit the data over UART
     auto returnValue = HAL_UART_Transmit(m_UARTHandle->m_UARTHandle, msg, msg_len, timeout);
-    switch(returnValue)
-    {
+    switch (returnValue) {
         case HAL_BUSY:
             Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "UART Transmit is busy. Unable to process request.");
             break;
@@ -328,8 +337,8 @@ void UARTWrapper::SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout, boo
 }
 
 vector<uint8_t> UARTWrapper::ReceiveToIdle(uint16_t size, uint32_t timeout) {
-  uint8_t data[MAX_BUFFER_SIZE];
-  uint16_t real_size;
+    uint8_t data[MAX_BUFFER_SIZE];
+    uint16_t real_size;
     Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Waiting for data to receive");
     switch (HAL_UARTEx_ReceiveToIdle(m_UARTHandle->m_UARTHandle, data, size, &real_size, timeout)) {
         case HAL_OK:
@@ -345,9 +354,10 @@ vector<uint8_t> UARTWrapper::ReceiveToIdle(uint16_t size, uint32_t timeout) {
             Logger::log(LogLevel::WARNING, __FILE__, __LINE__, "Interface timeout occured");
             break;
     }
-  vector<uint8_t> r(data, data + real_size);
-  return r;
+    vector<uint8_t> r(data, data + real_size);
+    return r;
 }
+
 #else
 /**
  * @brief Dummy implementation to allow compilation when no board is defined.
@@ -368,11 +378,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
         auto it = UARTWrapper::uartWrapperInstances.find("USART1");
         if (it != UARTWrapper::uartWrapperInstances.end()) {
             //memset(it->second->getUARTHandle()->rx_buffer, 0x00, 512);
-            HAL_StatusTypeDef status = HAL_UART_Receive_IT(it->second->getUARTHandle()->m_UARTHandle, it->second->getUARTHandle()->rx_buffer, 256);
+            HAL_StatusTypeDef status = HAL_UART_Receive_IT(it->second->getUARTHandle()->m_UARTHandle,
+                                                           it->second->getUARTHandle()->rx_buffer, 256);
             if (status == HAL_OK) {
-                Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Received data %s", it->second->getUARTHandle()->rx_buffer);
+                Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Received data %s",
+                            it->second->getUARTHandle()->rx_buffer);
             } else {
-                Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Error re-enabling UART receive interrupt: %d", status);
+                Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "Error re-enabling UART receive interrupt: %d",
+                            status);
             }
         } else {
             Logger::log(LogLevel::WARNING, __FILE__, __LINE__, "USART1 not found in the map.");
@@ -382,6 +395,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     }
 }
 
+bool second = false;
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "UART Error detected\n");
@@ -421,13 +435,13 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 extern "C" void USART1_IRQHandler(void) {
     auto it = UARTWrapper::uartWrapperInstances.find("USART1");
     if (it == UARTWrapper::uartWrapperInstances.end()) {
-        Logger::log(LogLevel::ERROR,__FILE__, __LINE__, "USART1 instance not found.");
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "USART1 instance not found.");
         return;
     }
 
     auto uartHandle = it->second->getUARTHandle();
     if (!uartHandle) {
-        Logger::log(LogLevel::ERROR,__FILE__, __LINE__, "UART handle is null.");
+        Logger::log(LogLevel::ERROR, __FILE__, __LINE__, "UART handle is null.");
         return;
     }
 
@@ -440,25 +454,35 @@ extern "C" void USART1_IRQHandler(void) {
         if (it->second->m_ReceiveCallbackCalled) {
             it->second->m_ReceiveCallbackCalled = false;
             returnBuffer.clear();
-            Logger::log(LogLevel::DEBUG,__FILE__, __LINE__, "Callback reset. Return buffer cleared.");
+            Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Callback reset. Return buffer cleared.");
         }
-
         if (uartHandle->rx_index == 1 && received_char == '"') {
-            Logger::log(LogLevel::DEBUG,__FILE__, __LINE__, "Ignoring leading double quote.");
+            Logger::log(LogLevel::DEBUG, __FILE__, __LINE__, "Ignoring leading double quote.");
         } else {
             if (received_char == END_OF_TRANSMISSION) {
                 if (uartHandle->rx_index < MAX_BUFFER_SIZE) {
                     rx_buffer[uartHandle->rx_index] = '\0';
                     returnBuffer += reinterpret_cast<char *>(rx_buffer);
-                    returnBuffer += "\n";
+            //        if (second)
+              //          printf("SACKL %s\n", returnBuffer.c_str());
+                    if (strcmp(CONTINUE_STR, returnBuffer.c_str()) == 0 || strcmp("continue", returnBuffer.c_str()) == 0) { // TODO greislig
+                        Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Received continue string");
+                        it->second->m_ReceiveCallbackFunction(returnBuffer, MSG_CONTINUE);
+                        returnBuffer.clear();
+                        second = true;
+                    } else {
+                        returnBuffer += "\n";
+                    }
+
+
                     uartHandle->rx_index = 0;
                 } else {
                     Logger::log(LogLevel::WARNING, __FILE__, __LINE__, "RX buffer overflow at END_OF_TRANSMISSION.");
                 }
             } else if (received_char == END_JSON) {
                 returnBuffer += "}\n";
-               // Logger::log(LogLevel::INFO,__FILE__, __LINE__, "JSON received: %s", returnBuffer.c_str());
-                it->second->m_ReceiveCallbackFunction(returnBuffer);
+                // Logger::log(LogLevel::INFO,__FILE__, __LINE__, "JSON received: %s", returnBuffer.c_str());
+                it->second->m_ReceiveCallbackFunction(returnBuffer, MSG_CMD);
                 it->second->m_ReceiveCallbackCalled = true;
             } else {
                 if (uartHandle->rx_index < MAX_BUFFER_SIZE - 1) {
@@ -475,9 +499,10 @@ extern "C" void USART1_IRQHandler(void) {
 }
 
 
-void UARTWrapper::RegisterReceiveCallback(void (*receiveCallback)(std::string &str)) {
+void UARTWrapper::RegisterReceiveCallback(void (*receiveCallback)(std::string &str, RecvMsgType receivedMsgType)) {
     m_ReceiveCallbackFunction = receiveCallback;
 }
+
 #else
 MEM_ERROR UARTWrapper::RegisterReceiveCallback(void (*receiveCallback)(*)){
     return MemoryErrorHandling::MEM_INTERFACE_NOT_SUPPORTED;

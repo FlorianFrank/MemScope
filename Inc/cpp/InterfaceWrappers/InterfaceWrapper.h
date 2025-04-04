@@ -18,6 +18,11 @@ enum BlockingMode {
     BLOCKING, NON_BLOCKING
 };
 
+enum RecvMsgType {
+    MSG_CMD,
+    MSG_CONTINUE
+};
+
 using MEM_ERROR = MemoryErrorHandling::MEM_ERROR;
 
 /**

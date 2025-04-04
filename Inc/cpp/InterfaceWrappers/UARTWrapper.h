@@ -43,12 +43,12 @@ public:
 
     MEM_ERROR ReceiveData(uint8_t *data, uint16_t *size, BlockingMode blockingMode, uint32_t timeout) override;
 
-    void RegisterReceiveCallback(void (*receiveCallback)(std::string &str));
+    void RegisterReceiveCallback(void (*receiveCallback)(std::string &str, RecvMsgType receivedMsgType));
 
     void SendData(uint8_t* msg, uint16_t msg_len, uint32_t timeout, bool forceFlush);
     std::vector<uint8_t> ReceiveToIdle(uint16_t size, uint32_t timeout);
 
-    void (*m_ReceiveCallbackFunction)(std::string &str);
+    void (*m_ReceiveCallbackFunction)(std::string &str, RecvMsgType receivedMsgType);
     bool m_ReceiveCallbackCalled = false;
 
 private:
