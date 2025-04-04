@@ -37,6 +37,9 @@ public:
 
     virtual ~MemoryExperiment() = default;
 
+    inline bool getContinueState() const { return m_Continue; };
+    inline void notifyContinue() { m_Continue = true; }
+
 protected:
     MemoryExperiment(MemoryController &memoryController, PUFConfiguration &pufConfig,
                      InterfaceWrapper &interfaceWrapper);
@@ -45,12 +48,16 @@ protected:
     MemoryErrorHandling::MEM_ERROR initializeMemory(uint16_t initValue);
     void sendProcessingStarted();
     void sendMessageFinished();
+    MemoryErrorHandling::MEM_ERROR sendCurrentState(const char* state);
+
+    MemoryErrorHandling::MEM_ERROR waitContinue() const;
+    inline void resetContinue() { m_Continue = false; }
 
     MemoryController& m_MemoryController;
     PUFConfiguration m_PUFConfiguration;
     InterfaceWrapper& m_InterfaceWrapper;
-
 private:
+    bool m_Continue = false;
     static std::vector<MemoryExperiment *> experiments;
 
 };

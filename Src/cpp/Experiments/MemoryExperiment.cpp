@@ -22,6 +22,7 @@
 #include "cpp/Experiments/Reliability.h"
 #include "cpp/Experiments/ReadLatency.h"
 #include "cpp/Experiments/WriteLatency.h"
+#include "cpp/Experiments/VoltageVariations.h"
 
 /*static*/ std::vector<MemoryExperiment *> MemoryExperiment::experiments = {};
 
@@ -120,4 +121,23 @@ void MemoryExperiment::sendMessageFinished() {
     uint16_t finalLen = strlen(finalResponse);
     Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Experiment done send %s", finalResponse);
     m_InterfaceWrapper.SendData(reinterpret_cast<uint8_t *>(const_cast<char *>(finalResponse)), &finalLen, 1000, true);
+}
+
+MemoryErrorHandling::MEM_ERROR MemoryExperiment::sendCurrentState(const char *state) {
+    uint16_t finalLen = strlen(state);
+    Logger::log(LogLevel::INFO, __FILE__, __LINE__, "Experiment done send %s", state);
+    printf("SEND current state %s\n", state);
+    return m_InterfaceWrapper.SendData(reinterpret_cast<uint8_t *>(const_cast<char *>(state)), &finalLen, 1000, true);
+}
+
+constexpr int TIMEOUT = 10;
+constexpr int SLEEP_DURATIOn = 1000;
+
+MemoryErrorHandling::MEM_ERROR MemoryExperiment::waitContinue() const {
+    for (int i = 0; i < TIMEOUT; i++) {
+        HAL_Delay(SLEEP_DURATIOn);
+        if (m_Continue)
+            return MEM_ERROR::MEM_NO_ERROR;
+    }
+    return MEM_ERROR::MEM_TIMEOUT;
 }

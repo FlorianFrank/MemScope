@@ -81,7 +81,10 @@ PUFType parsePUFType(char *str) {
     if (strstr(str, "readLatency")) {
         return READ_LATENCY;
     }
-    if (strstr(str, "voltageVariations")) {
+    if (strstr(str, "voltageRead")) {
+        return VOLTAGE_VARIATIONS;
+    }
+    if (strstr(str, "voltageWrite")) {
         return VOLTAGE_VARIATIONS;
     }
     return UNKNOWN_PUF_TEST;
